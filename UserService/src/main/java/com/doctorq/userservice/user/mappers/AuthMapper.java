@@ -10,11 +10,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.Random;
 
 @Service
 @RequiredArgsConstructor
-public class UserMapper {
+public class AuthMapper {
     private final PasswordEncoder passwordEncoder;
 
     public User toUser(RegisterUserDto registerUserDto, String code) {

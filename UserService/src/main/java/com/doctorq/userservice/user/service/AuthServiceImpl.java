@@ -8,7 +8,7 @@ import com.doctorq.userservice.mail.EmailService;
 import com.doctorq.userservice.response.ApiResponse;
 import com.doctorq.userservice.user.dtos.*;
 import com.doctorq.userservice.user.entities.User;
-import com.doctorq.userservice.user.mappers.UserMapper;
+import com.doctorq.userservice.user.mappers.AuthMapper;
 import com.doctorq.userservice.user.repository.UserRepository;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
@@ -31,7 +31,7 @@ import java.util.Random;
 public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
-    private final UserMapper userMapper;
+    private final AuthMapper authMapper;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
@@ -44,14 +44,14 @@ public class AuthServiceImpl implements AuthService {
 
         if (userExists) throw new ConflictException("User already exists");
 
-        User user = userRepository.save(userMapper.toUser(registerUserDto, generateVerificationCode()));
+        User user = userRepository.save(authMapper.toUser(registerUserDto, generateVerificationCode()));
 
         //Send email.
         emailService.sendVerificationCode(user.getEmail(), user.getVerificationCode());
         return new ApiResponse<>(
                 HttpStatus.OK.value(),
                 registerUserDto.email() + " registered successfully",
-                userMapper.fromUser(user)
+                authMapper.fromUser(user)
         );
     }
 
@@ -124,7 +124,7 @@ public class AuthServiceImpl implements AuthService {
             return new ApiResponse<>(
                     HttpStatus.OK.value(),
                     "Login successful",
-                    userMapper.fromLoggedInUser(user, token)
+                    authMapper.fromLoggedInUser(user, token)
             );
         } catch (AuthenticationException e) {
             throw new ForbiddenException(e.getMessage());

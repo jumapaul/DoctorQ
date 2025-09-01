@@ -1,6 +1,7 @@
 package com.doctorq.userservice.user.entities;
 
 import com.doctorq.userservice.user.Roles;
+import com.doctorq.userservice.user_profile.dtos.UserProfile;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;
@@ -34,6 +35,9 @@ public class User implements UserDetails {
     private LocalDateTime restPassCodeExpiresAt;
     @Enumerated(EnumType.STRING)
     private Roles role;
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "profile_id", referencedColumnName = "id")
+    private UserProfile userProfile;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

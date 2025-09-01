@@ -36,10 +36,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain) throws ServletException, IOException {
 
-        if (request.getHeader("Authorization") == null) {
-            handleNoTokenProvided(response);
-            return;
-        }
+//        if (request.getHeader("Authorization") == null) {
+//            handleNoTokenProvided(response);
+//            return;
+//        }
 
         final String authHeader = request.getHeader("Authorization");
 
