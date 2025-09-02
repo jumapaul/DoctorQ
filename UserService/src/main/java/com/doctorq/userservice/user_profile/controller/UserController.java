@@ -8,6 +8,7 @@ import com.doctorq.userservice.user_profile.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -53,5 +54,12 @@ public class UserController {
         return ResponseEntity.ok(userService.updateUserProfile(request, userId));
     }
 
+    @PostMapping("/uploadProfileImage/{userId}")
+    public ResponseEntity<ApiResponse<String>> upload(
+            @RequestParam("file") MultipartFile multipartFile,
+            @PathVariable(name = "userId") Long userId
+    ) throws Exception {
+        return ResponseEntity.ok(userService.uploadProfileImage(multipartFile, userId));
+    }
 
 }

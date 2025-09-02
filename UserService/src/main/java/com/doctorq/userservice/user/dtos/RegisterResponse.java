@@ -1,7 +1,8 @@
 package com.doctorq.userservice.user.dtos;
 
 public record RegisterResponse(
-        String username,
+        String firstname,
+        String lastname,
         String email,
         String verificationCode,
         String role

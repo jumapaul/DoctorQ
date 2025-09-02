@@ -50,6 +50,13 @@ public class AuthController {
         return ResponseEntity.ok(userService.sendResetCode(email));
     }
 
+    @PostMapping("/verifyPasswordResetCode")
+    public ResponseEntity<ApiResponse<String>> verifyPassResetCode(
+            @RequestBody VerifyPassResetCode verifyPassResetCode
+    ) {
+        return ResponseEntity.ok(userService.verifyPassResetCode(verifyPassResetCode));
+    }
+
     @PostMapping("/resetPassword")
     public ResponseEntity<ApiResponse<String>> resetPassword(
             @RequestBody ResetPasswordRequest request

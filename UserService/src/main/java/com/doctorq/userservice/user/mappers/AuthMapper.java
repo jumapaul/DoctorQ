@@ -18,7 +18,8 @@ public class AuthMapper {
 
     public User toUser(RegisterUserDto registerUserDto, String code) {
         return User.builder()
-                .username(registerUserDto.username())
+                .firstname(registerUserDto.firstname())
+                .lastname(registerUserDto.lastname())
                 .email(registerUserDto.email())
                 .password(passwordEncoder.encode(registerUserDto.password()))
                 .isEnabled(false)
@@ -30,7 +31,8 @@ public class AuthMapper {
 
     public RegisterResponse fromUser(User user) {
         return new RegisterResponse(
-                user.getUsername(),
+                user.getFirstname(),
+                user.getLastname(),
                 user.getEmail(),
                 user.getVerificationCode(),
                 user.getRole().name()
@@ -40,7 +42,8 @@ public class AuthMapper {
     public LoginResponse fromLoggedInUser(User user, String token) {
         return new LoginResponse(
                 user.getId(),
-                user.getUsername(),
+                user.getFirstname(),
+                user.getLastname(),
                 user.getEmail(),
                 token,
                 user.getRole()

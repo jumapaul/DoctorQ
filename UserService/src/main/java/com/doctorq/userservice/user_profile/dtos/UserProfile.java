@@ -16,6 +16,8 @@ public class UserProfile {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    private String fullName;
+    private String email;
     private String gender;
     private String dateOfBirth;
     private String address;

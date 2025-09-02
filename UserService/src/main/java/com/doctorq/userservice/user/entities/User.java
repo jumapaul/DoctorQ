@@ -3,7 +3,6 @@ package com.doctorq.userservice.user.entities;
 import com.doctorq.userservice.user.Roles;
 import com.doctorq.userservice.user_profile.dtos.UserProfile;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -25,7 +24,8 @@ public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String username;
+    private String firstname;
+    private String lastname;
     private String email;
     private String password;
     private boolean isEnabled;

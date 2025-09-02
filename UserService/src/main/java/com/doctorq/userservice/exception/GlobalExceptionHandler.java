@@ -11,6 +11,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 
 @RestControllerAdvice
@@ -75,8 +76,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<Object> handleAuthenticationException(AuthenticationException exception) {
         return new ResponseEntity<>(new ApiResponse<>(
-                HttpStatus.FORBIDDEN.value(), exception.getMessage(), null
-        ), HttpStatus.FORBIDDEN);
+                HttpStatus.UNAUTHORIZED.value(), exception.getMessage(), null
+        ), HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(ExpiredJwtException.class)
@@ -86,10 +87,21 @@ public class GlobalExceptionHandler {
         ), HttpStatus.FORBIDDEN);
     }
 
-//    @ExceptionHandler(Exception.class)
-//    public ResponseEntity<Object> handeGenericException(Exception exception) {
-//        return new ResponseEntity<>(new ApiResponse<>(
-//                HttpStatus.INTERNAL_SERVER_ERROR.value(), exception.getMessage(), null
-//        ), HttpStatus.INTERNAL_SERVER_ERROR);
-//    }
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Object> handeGenericException(Exception exception) {
+        return new ResponseEntity<>(new ApiResponse<>(
+                HttpStatus.INTERNAL_SERVER_ERROR.value(), exception.getMessage(), null
+        ), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(FileNotFoundException.class)
+    public ResponseEntity<Object> handleFileNotFoundException(FileNotFoundException exception) {
+        return new ResponseEntity<>(
+                new ApiResponse<>(
+                        HttpStatus.NOT_FOUND.value(),
+                        exception.getMessage(),
+                        null
+                ), HttpStatus.NOT_FOUND
+        );
+    }
 }

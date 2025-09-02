@@ -17,6 +17,8 @@ public interface AuthService {
     ApiResponse<String> sendResetCode(String email) throws MessagingException;
 
     ApiResponse<String> resetPassword(ResetPasswordRequest request);
+
+    ApiResponse<String> verifyPassResetCode(VerifyPassResetCode verifyPassResetCode);
     //send reset verification code
 
     // reset password

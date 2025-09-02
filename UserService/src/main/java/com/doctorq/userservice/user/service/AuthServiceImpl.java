@@ -4,6 +4,7 @@ import com.doctorq.userservice.config.JwtService;
 import com.doctorq.userservice.exception.BadRequestException;
 import com.doctorq.userservice.exception.ConflictException;
 import com.doctorq.userservice.exception.ForbiddenException;
+import com.doctorq.userservice.exception.UnAuthorizedException;
 import com.doctorq.userservice.mail.EmailService;
 import com.doctorq.userservice.response.ApiResponse;
 import com.doctorq.userservice.user.dtos.*;
@@ -16,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -117,8 +119,6 @@ public class AuthServiceImpl implements AuthService {
                     new UsernameNotFoundException("User with the email " + request.email() + " not found")
             );
 
-            if (!user.isEnabled()) throw new ForbiddenException("User not verified");
-
             String token = jwtService.generateToken(user);
 
             return new ApiResponse<>(
@@ -126,8 +126,11 @@ public class AuthServiceImpl implements AuthService {
                     "Login successful",
                     authMapper.fromLoggedInUser(user, token)
             );
+        } catch (DisabledException exception) {
+            throw new ForbiddenException("User not verified");
         } catch (AuthenticationException e) {
-            throw new ForbiddenException(e.getMessage());
+            log.info("===========>exception is: {}", e.getMessage());
+            throw new UnAuthorizedException(e.getMessage());
         }
     }
 
@@ -150,13 +153,26 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    public ApiResponse<String> verifyPassResetCode(VerifyPassResetCode verifyPassResetCode) {
+        User user = userRepository.findByEmail(verifyPassResetCode.email()).orElseThrow(() ->
+                new UsernameNotFoundException("User with email " + verifyPassResetCode.email() + " not found")
+        );
+
+        if (!user.getRestPassCode().equals(verifyPassResetCode.resetPassCode())) throw
+                new BadRequestException("Invalid verification code");
+
+        return new ApiResponse<>(
+                HttpStatus.OK.value(),
+                "Reset code verified",
+                null
+        );
+    }
+
+    @Override
     public ApiResponse<String> resetPassword(ResetPasswordRequest request) {
         User user = userRepository.findByEmail(request.email()).orElseThrow(() ->
                 new UsernameNotFoundException(request.email() + " not found")
         );
-
-        if (user.getRestPassCode() == null) throw new BadRequestException("Invalid rest code");
-        if (!user.getRestPassCode().equals(request.resetCode())) throw new BadRequestException("Invalid reset code");
 
         user.setPassword(passwordEncoder.encode(request.newPassword()));
         user.setRestPassCode(null);

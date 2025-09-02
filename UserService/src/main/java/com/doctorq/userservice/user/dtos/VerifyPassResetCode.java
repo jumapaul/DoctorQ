@@ -1,7 +1,7 @@
 package com.doctorq.userservice.user.dtos;
 
-public record ResetPasswordRequest(
+public record VerifyPassResetCode(
         String email,
-        String newPassword
+        String resetPassCode
 ) {
 }

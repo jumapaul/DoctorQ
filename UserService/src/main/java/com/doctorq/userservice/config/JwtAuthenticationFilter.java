@@ -36,11 +36,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain) throws ServletException, IOException {
 
-//        if (request.getHeader("Authorization") == null) {
-//            handleNoTokenProvided(response);
-//            return;
-//        }
-
         final String authHeader = request.getHeader("Authorization");
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
@@ -102,11 +97,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private void handleGenericException(HttpServletResponse response, Exception e) throws IOException {
-        response.setStatus(HttpStatus.FORBIDDEN.value());
+        response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         response.setContentType("application/json");
 
         ApiResponse<Object> apiResponse = new ApiResponse<>(
-                HttpStatus.FORBIDDEN.value(),
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 e.getMessage(),
                 null
         );

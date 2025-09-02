@@ -4,7 +4,8 @@ import com.doctorq.userservice.user.Roles;
 
 public record LoginResponse(
         Long id,
-        String username,
+        String firstname,
+        String lastname,
         String email,
         String token,
         Roles role
