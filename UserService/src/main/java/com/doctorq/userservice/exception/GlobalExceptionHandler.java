@@ -5,6 +5,7 @@ import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.mail.MessagingException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -80,18 +81,11 @@ public class GlobalExceptionHandler {
         ), HttpStatus.UNAUTHORIZED);
     }
 
-    @ExceptionHandler(ExpiredJwtException.class)
-    public ResponseEntity<Object> handleExpiredTokenException(ExpiredJwtException exception) {
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<Object> handleAccessDeniedException(AccessDeniedException exception) {
         return new ResponseEntity<>(new ApiResponse<>(
                 HttpStatus.FORBIDDEN.value(), exception.getMessage(), null
         ), HttpStatus.FORBIDDEN);
-    }
-
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<Object> handeGenericException(Exception exception) {
-        return new ResponseEntity<>(new ApiResponse<>(
-                HttpStatus.INTERNAL_SERVER_ERROR.value(), exception.getMessage(), null
-        ), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler(FileNotFoundException.class)
@@ -103,5 +97,12 @@ public class GlobalExceptionHandler {
                         null
                 ), HttpStatus.NOT_FOUND
         );
+    }
+
+        @ExceptionHandler(Exception.class)
+    public ResponseEntity<Object> handeGenericException(Exception exception) {
+        return new ResponseEntity<>(new ApiResponse<>(
+                HttpStatus.INTERNAL_SERVER_ERROR.value(), exception.getMessage(), null
+        ), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

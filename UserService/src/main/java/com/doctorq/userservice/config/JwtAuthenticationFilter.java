@@ -10,7 +10,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -24,6 +26,7 @@ import java.io.IOException;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
@@ -83,18 +86,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         response.getWriter().write(objectMapper.writeValueAsString(apiResponse));
     }
 
-    private void handleNoTokenProvided(HttpServletResponse response) throws IOException {
-        response.setStatus(HttpStatus.UNAUTHORIZED.value());
-        response.setContentType("application/json");
-
-        ApiResponse<Object> apiResponse = new ApiResponse<>(
-                HttpStatus.UNAUTHORIZED.value(),
-                "Authentication header not provided",
-                null
-        );
-
-        response.getWriter().write(objectMapper.writeValueAsString(apiResponse));
-    }
 
     private void handleGenericException(HttpServletResponse response, Exception e) throws IOException {
         response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());

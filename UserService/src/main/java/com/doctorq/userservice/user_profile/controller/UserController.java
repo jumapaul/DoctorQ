@@ -7,6 +7,7 @@ import com.doctorq.userservice.user_profile.dtos.UserResponseDto;
 import com.doctorq.userservice.user_profile.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -19,6 +20,7 @@ public class UserController {
 
     private final UserService userService;
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<ApiResponse<List<UserResponseDto>>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
@@ -32,6 +34,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{userId}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<ApiResponse<String>> deleteUser(
             @PathVariable(name = "userId") Long userId
     ) {
@@ -39,6 +42,7 @@ public class UserController {
     }
 
     @PostMapping("/userProfile/{userId}")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<ApiResponse<UserResponseDto>> addUserProfile(
             @RequestBody UserProfileRequest request,
             @PathVariable(name = "userId") Long userId
@@ -47,6 +51,7 @@ public class UserController {
     }
 
     @PutMapping("/updateProfile/{userId}")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<ApiResponse<UserResponseDto>> updateUserProfile(
             @RequestBody UserProfileRequest request,
             @PathVariable(name = "userId") Long userId

@@ -44,14 +44,19 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ApiResponse<List<UserResponseDto>> getAllUsers() {
-        List<User> users = userRepository.findAll();
+        try {
+            List<User> users = userRepository.findAll();
 
 
-        return new ApiResponse<>(
-                HttpStatus.OK.value(),
-                "Users retrieved successfully",
-                users.stream().map(mapper::fromUser).collect(Collectors.toList())
-        );
+            return new ApiResponse<>(
+                    HttpStatus.OK.value(),
+                    "Users retrieved successfully",
+                    users.stream().map(mapper::fromUser).collect(Collectors.toList())
+            );
+        } catch (Exception e) {
+            log.info("------------->message: {}", e.getMessage());
+            throw new RuntimeException(e.getMessage());
+        }
     }
 
     @Override

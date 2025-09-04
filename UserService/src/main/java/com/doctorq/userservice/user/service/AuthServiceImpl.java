@@ -129,8 +129,9 @@ public class AuthServiceImpl implements AuthService {
         } catch (DisabledException exception) {
             throw new ForbiddenException("User not verified");
         } catch (AuthenticationException e) {
-            log.info("===========>exception is: {}", e.getMessage());
             throw new UnAuthorizedException(e.getMessage());
+        } catch (Exception exception) {
+            throw new RuntimeException(exception.getMessage());
         }
     }
 
