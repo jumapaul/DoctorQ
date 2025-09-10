@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/DoctorQBackend.iml" filepath="$PROJECT_DIR$/.idea/DoctorQBackend.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/DoctorService.main.iml" filepath="$PROJECT_DIR$/.idea/modules/DoctorService.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/GatewayService.main.iml" filepath="$PROJECT_DIR$/.idea/modules/GatewayService.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/UserService.main.iml" filepath="$PROJECT_DIR$/.idea/modules/UserService.main.iml" />
     </modules>

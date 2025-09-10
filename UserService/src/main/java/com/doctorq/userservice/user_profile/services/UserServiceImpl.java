@@ -111,6 +111,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ApiResponse<UserResponseDto> getUserById(Long userId) {
+        log.info("-----------------> method is called");
         User user = userRepository.findById(userId).orElseThrow(() ->
                 new UsernameNotFoundException("User with id " + userId + " not found")
         );

@@ -12,6 +12,14 @@
         </option>
       </GradleProjectSettings>
       <GradleProjectSettings>
+        <option name="externalProjectPath" value="$PROJECT_DIR$/DoctorService" />
+        <option name="modules">
+          <set>
+            <option value="$PROJECT_DIR$/DoctorService" />
+          </set>
+        </option>
+      </GradleProjectSettings>
+      <GradleProjectSettings>
         <option name="externalProjectPath" value="$PROJECT_DIR$/EurekaDiscoveryService" />
         <option name="modules">
           <set>

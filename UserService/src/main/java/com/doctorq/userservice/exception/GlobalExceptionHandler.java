@@ -25,12 +25,12 @@ public class GlobalExceptionHandler {
         ), HttpStatus.CONFLICT);
     }
 
-    @ExceptionHandler(UsernameNotFoundException.class)
-    public ResponseEntity<Object> handleUserNotFoundException(UsernameNotFoundException exception) {
-        return new ResponseEntity<>(new ApiResponse<>(
-                HttpStatus.NOT_FOUND.value(), exception.getMessage(), null
-        ), HttpStatus.NOT_FOUND);
-    }
+//    @ExceptionHandler(UsernameNotFoundException.class)
+//    public ResponseEntity<Object> handleUserNotFoundException(UsernameNotFoundException exception) {
+//        return new ResponseEntity<>(new ApiResponse<>(
+//                HttpStatus.NOT_FOUND.value(), exception.getMessage(), null
+//        ), HttpStatus.NOT_FOUND);
+//    }
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Object> handleIllegalArgumentException(IllegalArgumentException exception) {
@@ -99,10 +99,10 @@ public class GlobalExceptionHandler {
         );
     }
 
-        @ExceptionHandler(Exception.class)
-    public ResponseEntity<Object> handeGenericException(Exception exception) {
-        return new ResponseEntity<>(new ApiResponse<>(
-                HttpStatus.INTERNAL_SERVER_ERROR.value(), exception.getMessage(), null
-        ), HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+//        @ExceptionHandler(Exception.class)
+//    public ResponseEntity<Object> handeGenericException(Exception exception) {
+//        return new ResponseEntity<>(new ApiResponse<>(
+//                HttpStatus.INTERNAL_SERVER_ERROR.value(), exception.getMessage(), null
+//        ), HttpStatus.INTERNAL_SERVER_ERROR);
+//    }
 }

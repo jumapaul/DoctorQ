@@ -4,10 +4,13 @@ import com.doctorq.userservice.response.ApiResponse;
 import com.doctorq.userservice.user.dtos.*;
 import com.doctorq.userservice.user.service.AuthService;
 import jakarta.mail.MessagingException;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
 
 @RequestMapping("api/v1/auth")
 @RestController

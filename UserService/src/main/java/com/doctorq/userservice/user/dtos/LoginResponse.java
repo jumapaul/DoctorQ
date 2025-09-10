@@ -1,6 +1,7 @@
 package com.doctorq.userservice.user.dtos;
 
 import com.doctorq.userservice.user.Roles;
+import com.doctorq.userservice.user_profile.dtos.UserProfile;
 
 public record LoginResponse(
         Long id,
@@ -8,6 +9,7 @@ public record LoginResponse(
         String lastname,
         String email,
         String token,
-        Roles role
+        Roles role,
+        UserProfile userProfile
 ) {
 }

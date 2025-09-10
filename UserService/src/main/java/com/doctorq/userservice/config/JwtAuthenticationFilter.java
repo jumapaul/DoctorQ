@@ -68,8 +68,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
         } catch (MalformedJwtException | ExpiredJwtException exception) {
             handleJwtException(response, exception);
-        } catch (Exception exception) {
-            handleGenericException(response, exception);
+        } catch (Exception e) {
+            handleForbiddenException(response, e);
         }
     }
 
@@ -87,12 +87,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
 
-    private void handleGenericException(HttpServletResponse response, Exception e) throws IOException {
-        response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+    private void handleForbiddenException(HttpServletResponse response, Exception e) throws IOException {
+        response.setStatus(HttpStatus.FORBIDDEN.value());
         response.setContentType("application/json");
 
         ApiResponse<Object> apiResponse = new ApiResponse<>(
-                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                HttpStatus.FORBIDDEN.value(),
                 e.getMessage(),
                 null
         );

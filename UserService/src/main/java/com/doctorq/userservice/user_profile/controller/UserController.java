@@ -1,7 +1,6 @@
 package com.doctorq.userservice.user_profile.controller;
 
 import com.doctorq.userservice.response.ApiResponse;
-import com.doctorq.userservice.user.entities.User;
 import com.doctorq.userservice.user_profile.dtos.UserProfileRequest;
 import com.doctorq.userservice.user_profile.dtos.UserResponseDto;
 import com.doctorq.userservice.user_profile.services.UserService;
@@ -20,7 +19,7 @@ public class UserController {
 
     private final UserService userService;
 
-    @PreAuthorize("hasRole('ADMIN')")
+//    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<ApiResponse<List<UserResponseDto>>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());

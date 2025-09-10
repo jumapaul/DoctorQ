@@ -1,6 +1,5 @@
 spring:
   datasource:
-    driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5432/doctorq-users
     username: postgres
     password: postgres
@@ -25,6 +24,22 @@ spring:
         connectiontimeout: 5000
         timeout: 3000
         writetimeout: 5000
+
+#  security:
+#    oauth2:
+#      client:
+#        registration:
+#          google:
+#            client-id: ${googleClientId}
+#            client-secret: ${googleClientSecret}
+#            scope:
+#              - email
+#              - profile
+#          github:
+#            client-id: ${githubClientId}
+#            client-secret: ${githubClientSecret}
+#            scope:
+#              - user:email
 
 security:
   jwt:
