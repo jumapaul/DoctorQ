@@ -28,4 +28,15 @@ public class GlobalResourceHandler {
                 HttpStatus.BAD_REQUEST
         );
     }
+
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<ApiResponse<Object>> handleConflictException(ConflictException exception) {
+        return new ResponseEntity<>(
+                new ApiResponse<>(
+                        HttpStatus.CONFLICT.value(),
+                        exception.getMessage(), null
+                ),
+                HttpStatus.CONFLICT
+        );
+    }
 }

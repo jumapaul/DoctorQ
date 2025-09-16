@@ -2,14 +2,17 @@ package com.doctorq.doctorservice.entities;
 
 import com.doctorq.doctorservice.dtos.Roles;
 import com.doctorq.doctorservice.dtos.Specialization;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
-@Data
+@Getter
+@Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -19,9 +22,15 @@ public class DoctorEntity {
     private Long id;
     private String fullName;
     private String email;
-    @Enumerated(EnumType.STRING)
-    private Specialization specialization;
     private String hospital;
     @Enumerated(EnumType.STRING)
     private Roles role;
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "doctor_categories",
+            joinColumns = @JoinColumn(name = "doctorId"),
+            inverseJoinColumns = @JoinColumn(name = "courseId")
+    )
+    @JsonManagedReference
+    private Set<DoctorCategoryEntity> doctorCategory = new HashSet<>();
 }

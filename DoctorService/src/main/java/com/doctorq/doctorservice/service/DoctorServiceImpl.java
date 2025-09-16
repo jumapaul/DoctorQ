@@ -62,7 +62,6 @@ public class DoctorServiceImpl implements DoctorService {
 
         doctor.setFullName(request.fullName());
         doctor.setEmail(request.email());
-        doctor.setSpecialization(request.specialization());
         doctor.setHospital(request.hospital());
 
         doctorRepository.save(doctor);
