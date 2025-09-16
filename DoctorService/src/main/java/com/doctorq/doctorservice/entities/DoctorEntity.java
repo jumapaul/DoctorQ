@@ -1,8 +1,6 @@
 package com.doctorq.doctorservice.entities;
 
 import com.doctorq.doctorservice.dtos.Roles;
-import com.doctorq.doctorservice.dtos.Specialization;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
