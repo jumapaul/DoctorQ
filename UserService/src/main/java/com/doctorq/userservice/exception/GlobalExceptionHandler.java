@@ -25,12 +25,12 @@ public class GlobalExceptionHandler {
         ), HttpStatus.CONFLICT);
     }
 
-//    @ExceptionHandler(UsernameNotFoundException.class)
-//    public ResponseEntity<Object> handleUserNotFoundException(UsernameNotFoundException exception) {
-//        return new ResponseEntity<>(new ApiResponse<>(
-//                HttpStatus.NOT_FOUND.value(), exception.getMessage(), null
-//        ), HttpStatus.NOT_FOUND);
-//    }
+    @ExceptionHandler(UsernameNotFoundException.class)
+    public ResponseEntity<Object> handleUserNotFoundException(UsernameNotFoundException exception) {
+        return new ResponseEntity<>(new ApiResponse<>(
+                HttpStatus.NOT_FOUND.value(), exception.getMessage(), null
+        ), HttpStatus.NOT_FOUND);
+    }
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Object> handleIllegalArgumentException(IllegalArgumentException exception) {

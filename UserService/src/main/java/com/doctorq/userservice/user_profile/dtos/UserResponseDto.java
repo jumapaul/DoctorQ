@@ -4,7 +4,8 @@ import com.doctorq.userservice.user.Roles;
 
 public record UserResponseDto(
         Long id,
-        String username,
+        String firstname,
+        String lastname,
         String email,
         Roles roles,
         UserProfile userProfile

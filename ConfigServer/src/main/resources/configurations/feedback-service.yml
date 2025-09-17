@@ -1,0 +1,18 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/feedbacks
+    username: postgres
+    password: postgres
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+application:
+  config:
+    user-url: http://localhost:8010/api/v1/users
+    doctor-url: http://localhost:8020/api/v1/doctors
+
+server:
+  port: 8030

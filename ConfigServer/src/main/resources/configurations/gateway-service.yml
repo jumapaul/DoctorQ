@@ -34,6 +34,13 @@ spring:
               filters:
                 - AuthenticationFilter
 
+            - id: feedback-service
+              uri: lb:http://FEEDBACK-SERVICE
+              predicates:
+                - Path=/api/v1/feedbacks/**
+              filters:
+                - AuthenticationFilter
+
 server:
   port: 8222
 

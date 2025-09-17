@@ -54,7 +54,6 @@ public class UserServiceImpl implements UserService {
                     users.stream().map(mapper::fromUser).collect(Collectors.toList())
             );
         } catch (Exception e) {
-            log.info("------------->message: {}", e.getMessage());
             throw new RuntimeException(e.getMessage());
         }
     }
@@ -111,7 +110,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ApiResponse<UserResponseDto> getUserById(Long userId) {
-        log.info("-----------------> method is called");
         User user = userRepository.findById(userId).orElseThrow(() ->
                 new UsernameNotFoundException("User with id " + userId + " not found")
         );
