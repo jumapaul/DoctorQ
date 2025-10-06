@@ -17,6 +17,67 @@ services:
       - "1080:1080"
       - "1025:1025"
 
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.15.2
+    container_name: elasticsearch
+    environment:
+      - node.name=elasticsearch
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - 'ES_JAVA_OPTS=-Xms512m -Xmx512m'
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - elasticsearch:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.15.2
+    container_name: logstash
+    volumes:
+      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml
+      - ./logstash/pipeline/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+      - ./UserService/logs:/usr/share/logstash/user-service
+      - ./DoctorService/logs:/usr/share/logstash/doctor-service
+      - ./FeedbackService/logs:/usr/share/logstash/feedback-service
+    ports:
+      - "5044:5044"
+    environment:
+      - 'LS_JAVA_OPTS=-Xmx256m -Xms256m'
+
+    depends_on:
+      - elasticsearch
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.15.2
+    container_name: kibana
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - 'NODE_OPTIONS=--max-old-space-size=2048'
+    depends_on:
+      - elasticsearch
+
+  zipkin:
+    image: openzipkin/zipkin
+    container_name: zipkin
+    environment:
+      - STORAGE_TYPE=mem
+    ports:
+      - "9411:9411"
+
+  redis:
+    image: redis:7.4.2
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - doctorq-net
+
 
 networks:
   doctorq-net:
@@ -24,3 +85,5 @@ networks:
 
 volumes:
   postgres:
+  elasticsearch:
+#  docker system prune -a --volumes

@@ -5,6 +5,7 @@ import java.util.List;
 public record DoctorRequest(
         String fullName,
         String email,
+        String profilePicUrl,
         String hospital,
         List<Long> doctorCategory
 ) {

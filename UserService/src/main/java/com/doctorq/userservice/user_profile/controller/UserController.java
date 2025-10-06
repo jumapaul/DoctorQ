@@ -5,6 +5,7 @@ import com.doctorq.userservice.user_profile.dtos.UserProfileRequest;
 import com.doctorq.userservice.user_profile.dtos.UserResponseDto;
 import com.doctorq.userservice.user_profile.services.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -19,25 +20,30 @@ public class UserController {
 
     private final UserService userService;
 
-//    @PreAuthorize("hasRole('ADMIN')")
+    //    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<ApiResponse<List<UserResponseDto>>> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+        List<UserResponseDto> responseDtoList = userService.getAllUsers();
+        return ResponseEntity.ok(response(responseDtoList));
     }
 
     @GetMapping("/{userId}")
     public ResponseEntity<ApiResponse<UserResponseDto>> getUserById(
             @PathVariable(name = "userId") Long userId
     ) {
-        return ResponseEntity.ok(userService.getUserById(userId));
+        UserResponseDto responseDto = userService.getUserById(userId);
+        return ResponseEntity.ok(response(responseDto));
     }
 
     @DeleteMapping("/{userId}")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    public ResponseEntity<ApiResponse<String>> deleteUser(
+    public ResponseEntity<ApiResponse<Void>> deleteUser(
             @PathVariable(name = "userId") Long userId
     ) {
-        return ResponseEntity.ok(userService.deleteUser(userId));
+        userService.deleteUser(userId);
+        return ResponseEntity.ok(
+                response(null)
+        );
     }
 
     @PostMapping("/userProfile/{userId}")
@@ -46,7 +52,8 @@ public class UserController {
             @RequestBody UserProfileRequest request,
             @PathVariable(name = "userId") Long userId
     ) {
-        return ResponseEntity.ok(userService.addUserProfile(request, userId));
+        UserResponseDto responseDto = userService.addUserProfile(request, userId);
+        return ResponseEntity.ok(response(responseDto));
     }
 
     @PutMapping("/updateProfile/{userId}")
@@ -55,7 +62,8 @@ public class UserController {
             @RequestBody UserProfileRequest request,
             @PathVariable(name = "userId") Long userId
     ) {
-        return ResponseEntity.ok(userService.updateUserProfile(request, userId));
+        UserResponseDto userResponseDto = userService.updateUserProfile(request, userId);
+        return ResponseEntity.ok(response(userResponseDto));
     }
 
     @PostMapping("/uploadProfileImage/{userId}")
@@ -63,7 +71,15 @@ public class UserController {
             @RequestParam("file") MultipartFile multipartFile,
             @PathVariable(name = "userId") Long userId
     ) throws Exception {
-        return ResponseEntity.ok(userService.uploadProfileImage(multipartFile, userId));
+        String url = userService.uploadProfileImage(multipartFile, userId);
+        return ResponseEntity.ok(response(url));
     }
 
+    private <T> ApiResponse<T> response(T data) {
+        return new ApiResponse<T>(
+                HttpStatus.OK.value(),
+                "Success",
+                data
+        );
+    }
 }
