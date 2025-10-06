@@ -7,13 +7,13 @@ import com.doctorq.doctorservice.response.ApiResponse;
 import java.util.List;
 
 public interface DoctorService {
-    ApiResponse<DoctorEntity> addDoctors(DoctorRequest request);
+    DoctorEntity addDoctor(DoctorRequest request);
 
-    ApiResponse<List<DoctorEntity>> getAllDoctors();
+    List<DoctorEntity> getAllDoctors();
 
-    ApiResponse<DoctorEntity> getDoctorById(Long id);
+    DoctorEntity getDoctorById(Long id);
 
-    ApiResponse<DoctorEntity> updateDoctor(Long id, DoctorRequest request);
+    DoctorEntity updateDoctor(Long id, DoctorRequest request);
 
-    ApiResponse<String> deleteDoctor(Long id);
+    void deleteDoctor(Long id);
 }

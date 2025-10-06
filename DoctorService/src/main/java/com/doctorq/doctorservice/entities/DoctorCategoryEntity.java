@@ -22,7 +22,8 @@ public class DoctorCategoryEntity {
     private Long id;
     private String name;
     private String description;
-    @ManyToMany(mappedBy = "doctorCategory", fetch = FetchType.EAGER)
-    @JsonBackReference
+    private Integer doctorsCount = 0;
+    private String categoryIcon;
+    @ManyToMany(mappedBy = "doctorCategory", fetch = FetchType.LAZY)
     private Set<DoctorEntity> doctors = new HashSet<>();
 }

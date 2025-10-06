@@ -8,6 +8,7 @@ import com.doctorq.doctorservice.exception.ResourceNotFoundException;
 import com.doctorq.doctorservice.repository.DoctorCategoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -27,6 +28,7 @@ public class DoctorMapper {
         return DoctorEntity.builder()
                 .fullName(request.fullName())
                 .email(request.email())
+                .profilePictureUrl(request.profilePicUrl())
                 .hospital(request.hospital())
                 .role(Roles.DOCTOR)
                 .doctorCategory(categoryEntitySet)
