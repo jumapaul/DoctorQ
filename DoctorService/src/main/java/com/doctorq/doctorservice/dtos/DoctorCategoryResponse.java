@@ -1,10 +1,13 @@
 package com.doctorq.doctorservice.dtos;
 
+import java.util.List;
+
 public record DoctorCategoryResponse(
         Long id,
         String name,
         String description,
         String categoryIcon,
-        Integer doctorsCount
+        Integer doctorsCount,
+        List<DoctorDto> doctors
 ) {
 }

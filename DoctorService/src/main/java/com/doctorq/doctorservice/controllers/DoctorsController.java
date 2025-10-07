@@ -1,6 +1,7 @@
 package com.doctorq.doctorservice.controllers;
 
 import com.doctorq.doctorservice.dtos.DoctorRequest;
+import com.doctorq.doctorservice.dtos.DoctorResponse;
 import com.doctorq.doctorservice.entities.DoctorEntity;
 import com.doctorq.doctorservice.response.ApiResponse;
 import com.doctorq.doctorservice.service.DoctorService;
@@ -19,8 +20,8 @@ public class DoctorsController {
     private final DoctorService doctorService;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<DoctorEntity>> addDoctor(@RequestBody DoctorRequest request) {
-        DoctorEntity doctor = doctorService.addDoctor(request);
+    public ResponseEntity<ApiResponse<DoctorResponse>> addDoctor(@RequestBody DoctorRequest request) {
+        DoctorResponse doctor = doctorService.addDoctor(request);
 
         return ResponseEntity.ok(
                 success(doctor)
@@ -28,26 +29,26 @@ public class DoctorsController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<DoctorEntity>>> getAllDoctors() {
-        List<DoctorEntity> doctors = doctorService.getAllDoctors();
+    public ResponseEntity<ApiResponse<List<DoctorResponse>>> getAllDoctors() {
+        List<DoctorResponse> doctors = doctorService.getAllDoctors();
         return ResponseEntity.ok(
                 success(doctors)
         );
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<DoctorEntity>> getDoctorById(@PathVariable Long id) {
-        DoctorEntity doctor = doctorService.getDoctorById(id);
+    public ResponseEntity<ApiResponse<DoctorResponse>> getDoctorById(@PathVariable Long id) {
+        DoctorResponse doctor = doctorService.getDoctorById(id);
         return ResponseEntity.ok(
                 success(doctor)
         );
     }
 
     @PutMapping("/{doctorId}")
-    public ResponseEntity<ApiResponse<DoctorEntity>> updateDoctor(
+    public ResponseEntity<ApiResponse<DoctorResponse>> updateDoctor(
             @PathVariable Long doctorId, @RequestBody DoctorRequest request) {
 
-        DoctorEntity doctor = doctorService.updateDoctor(doctorId, request);
+        DoctorResponse doctor = doctorService.updateDoctor(doctorId, request);
         return ResponseEntity.ok(
                 success(doctor)
         );
@@ -60,6 +61,15 @@ public class DoctorsController {
         doctorService.deleteDoctor(id);
         return ResponseEntity.ok(
                 success(null)
+        );
+    }
+
+    @GetMapping("/topRated")
+    public ResponseEntity<ApiResponse<List<DoctorResponse>>> getTopDoctorResponse() {
+        List<DoctorResponse> topDoctors = doctorService.getTopDoctors();
+
+        return ResponseEntity.ok(
+                success(topDoctors)
         );
     }
 

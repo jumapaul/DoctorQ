@@ -2,6 +2,7 @@ package com.doctorq.doctorservice.service;
 
 import com.doctorq.doctorservice.dtos.DoctorCategoryRequest;
 import com.doctorq.doctorservice.dtos.DoctorCategoryResponse;
+import com.doctorq.doctorservice.dtos.DoctorDto;
 import com.doctorq.doctorservice.entities.DoctorCategoryEntity;
 import com.doctorq.doctorservice.exception.ConflictException;
 import com.doctorq.doctorservice.exception.ResourceNotFoundException;
@@ -13,7 +14,6 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -25,6 +25,7 @@ public class DoctorCategoryServiceImpl implements DoctorCategoryService {
     private final DoctorCategoryRepository doctorCategoryRepository;
     private final DoctorCategoryMapper doctorCategoryMapper;
 
+    @CacheEvict(value = "allDoctorsCategory", allEntries = true)
     @Override
     public DoctorCategoryEntity addCategory(DoctorCategoryRequest request) {
 
@@ -34,27 +35,43 @@ public class DoctorCategoryServiceImpl implements DoctorCategoryService {
         return doctorCategoryRepository.save(doctorCategoryMapper.toDoctorsCategoryEntity(request));
     }
 
-    @Cacheable(value = "doctorsCategory")
+    @Cacheable(value = "allDoctorsCategory")
     @Override
-    public List<DoctorCategoryResponse> getAllCategories() {
-        List<DoctorCategoryEntity> allCategories = doctorCategoryRepository.findAll();
+    public List<DoctorCategoryEntity> getAllCategories() {
+        return doctorCategoryRepository.findAll();
 
-        return allCategories.stream().map(doctorCategoryMapper::fromDoctorEntity)
-                .toList();
+//        return allCategories.stream().map(doctorCategoryMapper::fromDoctorEntity)
+//                .toList();
     }
 
-    //    @Cacheable(value = "DoctorCategoryEntity", key = "#id")
-//    @Transactional(readOnly = true)
+    @Cacheable(value = "doctorCategoryByIdCache", key = "#id")
     @Override
-    public DoctorCategoryEntity getCategoryById(Long id) {
-        return doctorCategoryRepository.findById(id).orElseThrow(() ->
+    public DoctorCategoryResponse getCategoryById(Long id) {
+        DoctorCategoryEntity doctorCategory = doctorCategoryRepository.findById(id).orElseThrow(() ->
                 new ResourceNotFoundException("Category not found")
+        );
+
+        List<DoctorDto> doctors = doctorCategory.getDoctors().stream()
+                .map(doctorCategoryMapper::fromEntity).toList();
+
+        return new DoctorCategoryResponse(
+                doctorCategory.getId(),
+                doctorCategory.getCategoryIcon(),
+                doctorCategory.getDescription(),
+                doctorCategory.getName(),
+                doctorCategory.getDoctorsCount(),
+                doctors
         );
     }
 
-    @CacheEvict(value = "#DoctorCategoryEntity", key = "id")
+    @Caching(
+            evict = {
+                    @CacheEvict(value = "doctorCategoryByIdCache", key = "id"),
+                    @CacheEvict(value = "allDoctorsCategory", allEntries = true)
+            }
+    )
     @Override
-    public DoctorCategoryEntity updateCategory(Long id, DoctorCategoryRequest request) {
+    public DoctorCategoryResponse updateCategory(Long id, DoctorCategoryRequest request) {
         DoctorCategoryEntity doctorCategoryEntity = doctorCategoryRepository.findById(id).orElseThrow(() ->
                 new ResourceNotFoundException("Category with id " + id + " not found")
         );
@@ -62,12 +79,23 @@ public class DoctorCategoryServiceImpl implements DoctorCategoryService {
         doctorCategoryEntity.setName(request.name());
         doctorCategoryEntity.setDescription(request.description());
 
-        return doctorCategoryRepository.save(doctorCategoryEntity);
+        DoctorCategoryEntity doctorCategory = doctorCategoryRepository.save(doctorCategoryEntity);
+
+        List<DoctorDto> doctors = doctorCategory.getDoctors().stream()
+                .map(doctorCategoryMapper::fromEntity).toList();
+        return new DoctorCategoryResponse(
+                doctorCategory.getId(),
+                doctorCategory.getCategoryIcon(),
+                doctorCategory.getDescription(),
+                doctorCategory.getName(),
+                doctorCategory.getDoctorsCount(),
+                doctors
+        );
     }
 
     @Caching(
             evict = {
-                    @CacheEvict(value = "DoctorCategoryEntity", key = "#id"),
+                    @CacheEvict(value = "doctorCategoryByIdCache", key = "#id"),
                     @CacheEvict(value = "doctorsCategory", allEntries = true)
             }
     )

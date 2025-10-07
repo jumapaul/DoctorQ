@@ -25,5 +25,6 @@ public class DoctorCategoryEntity {
     private Integer doctorsCount = 0;
     private String categoryIcon;
     @ManyToMany(mappedBy = "doctorCategory", fetch = FetchType.LAZY)
+    @JsonIgnore
     private Set<DoctorEntity> doctors = new HashSet<>();
 }

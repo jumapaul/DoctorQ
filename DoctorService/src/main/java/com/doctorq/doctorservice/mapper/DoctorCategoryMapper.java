@@ -2,8 +2,13 @@ package com.doctorq.doctorservice.mapper;
 
 import com.doctorq.doctorservice.dtos.DoctorCategoryRequest;
 import com.doctorq.doctorservice.dtos.DoctorCategoryResponse;
+import com.doctorq.doctorservice.dtos.DoctorDto;
+import com.doctorq.doctorservice.dtos.DoctorResponse;
 import com.doctorq.doctorservice.entities.DoctorCategoryEntity;
+import com.doctorq.doctorservice.entities.DoctorEntity;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class DoctorCategoryMapper {
@@ -12,17 +17,19 @@ public class DoctorCategoryMapper {
         return DoctorCategoryEntity.builder()
                 .name(request.name())
                 .description(request.description())
+                .doctorsCount(0)
                 .categoryIcon(request.categoryUrl())
                 .build();
     }
 
-    public DoctorCategoryResponse fromDoctorEntity(DoctorCategoryEntity entity) {
-        return new DoctorCategoryResponse(
+    public DoctorDto fromEntity(DoctorEntity entity) {
+        return new DoctorDto(
                 entity.getId(),
-                entity.getName(),
-                entity.getDescription(),
-                entity.getCategoryIcon(),
-                entity.getDoctors().size()
+                entity.getFullName(),
+                entity.getEmail(),
+                entity.getProfilePictureUrl(),
+                entity.getHospital(),
+                entity.getRating()
         );
     }
 }

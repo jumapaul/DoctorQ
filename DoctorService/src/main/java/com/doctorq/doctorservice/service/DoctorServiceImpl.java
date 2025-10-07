@@ -1,6 +1,7 @@
 package com.doctorq.doctorservice.service;
 
 import com.doctorq.doctorservice.dtos.DoctorRequest;
+import com.doctorq.doctorservice.dtos.DoctorResponse;
 import com.doctorq.doctorservice.entities.DoctorCategoryEntity;
 import com.doctorq.doctorservice.entities.DoctorEntity;
 import com.doctorq.doctorservice.exception.ConflictException;
@@ -30,9 +31,13 @@ public class DoctorServiceImpl implements DoctorService {
     private final DoctorCategoryRepository doctorCategoryRepository;
     private final DoctorMapper doctorMapper;
 
+    @Caching(evict = {
+            @CacheEvict(value = "allDoctors", allEntries = true),
+            @CacheEvict(value = "topDoctors", allEntries = true)
+    })
     @Transactional
     @Override
-    public DoctorEntity addDoctor(DoctorRequest request) {
+    public DoctorResponse addDoctor(DoctorRequest request) {
 
         Optional<DoctorEntity> existingDoctor = doctorRepository.findByEmail(request.email());
 
@@ -54,27 +59,35 @@ public class DoctorServiceImpl implements DoctorService {
                 doctorCategoryRepository.incrementDoctorCount(category.getId())
         );
 
-        return doctor;
+        return doctorMapper.fromDoctorEntity(doctor);
     }
 
     @Cacheable(value = "allDoctors")
     @Override
-    public List<DoctorEntity> getAllDoctors() {
-        return doctorRepository.findAll();
+    public List<DoctorResponse> getAllDoctors() {
+        List<DoctorEntity> doctors = doctorRepository.findAll();
+
+        return doctors.stream().map(doctorMapper::fromDoctorEntity).toList();
     }
 
-    @Cacheable(key = "#id", value = "DoctorEntity")
+    @Cacheable(value = "doctorByIdCache", key = "#id")
     @Override
-    public DoctorEntity getDoctorById(Long id) {
+    public DoctorResponse getDoctorById(Long id) {
 
-        return doctorRepository.findById(id).orElseThrow(() ->
+        DoctorEntity doctor = doctorRepository.findById(id).orElseThrow(() ->
                 new ResourceNotFoundException("Doctor with id " + id + " not found")
         );
+
+        return doctorMapper.fromDoctorEntity(doctor);
     }
 
-    @CacheEvict(value = "DoctorEntity", key = "#id")
+    @Caching(evict = {
+            @CacheEvict(value = "doctorByIdCache", key = "#id"),
+            @CacheEvict(value = "allDoctors", allEntries = true),
+            @CacheEvict(value = "topDoctors", allEntries = true)
+    })
     @Override
-    public DoctorEntity updateDoctor(Long id, DoctorRequest request) {
+    public DoctorResponse updateDoctor(Long id, DoctorRequest request) {
         DoctorEntity doctor = doctorRepository.findById(id).orElseThrow(() ->
                 new ResourceNotFoundException("Doctor with id " + id + " not found")
         );
@@ -83,18 +96,27 @@ public class DoctorServiceImpl implements DoctorService {
         doctor.setEmail(request.email());
         doctor.setHospital(request.hospital());
 
-        return doctorRepository.save(doctor);
+        DoctorEntity doctor1 = doctorRepository.save(doctor);
+
+        return doctorMapper.fromDoctorEntity(doctor1);
     }
 
 
     @Caching(
             evict = {
-                    @CacheEvict(value = "DoctorEntity", key = "#id"),
+                    @CacheEvict(value = "doctorByIdCache", key = "#id"),
                     @CacheEvict(value = "allDoctors", allEntries = true)
             }
     )
     @Override
     public void deleteDoctor(Long id) {
-         doctorRepository.deleteById(id);
+        doctorRepository.deleteById(id);
+    }
+
+    @Cacheable(value = "topDoctors")
+    @Override
+    public List<DoctorResponse> getTopDoctors() {
+        List<DoctorEntity> topDoctors = doctorRepository.getTopDoctor();
+        return topDoctors.stream().map(doctorMapper::fromDoctorEntity).toList();
     }
 }
