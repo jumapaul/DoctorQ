@@ -27,6 +27,13 @@ spring:
               filters:
                 - AuthenticationFilter
 
+            - id: doctor-category-service
+              uri: lb:http://DOCTOR-SERVICE
+              predicates:
+                - Path=/api/v1/category/**
+              filters:
+                - AuthenticationFilter
+
 server:
   port: 8222
 
