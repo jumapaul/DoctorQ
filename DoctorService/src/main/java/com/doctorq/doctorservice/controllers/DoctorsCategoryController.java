@@ -28,25 +28,25 @@ public class DoctorsCategoryController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<DoctorCategoryResponse>>> getAllCategories() {
+    public ResponseEntity<ApiResponse<List<DoctorCategoryEntity>>> getAllCategories() {
 
-        List<DoctorCategoryResponse> categoryResponseList = doctorCategoryService.getAllCategories();
+        List<DoctorCategoryEntity> categoryResponseList = doctorCategoryService.getAllCategories();
         return ResponseEntity.ok(response(categoryResponseList));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<DoctorCategoryEntity>> getCategoryById(
+    public ResponseEntity<ApiResponse<DoctorCategoryResponse>> getCategoryById(
             @PathVariable(name = "id") Long id) {
-        DoctorCategoryEntity doctorCategory = doctorCategoryService.getCategoryById(id);
+        DoctorCategoryResponse doctorCategory = doctorCategoryService.getCategoryById(id);
         return ResponseEntity.ok(response(doctorCategory));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<DoctorCategoryEntity>> updateCategory(
+    public ResponseEntity<ApiResponse<DoctorCategoryResponse>> updateCategory(
             @PathVariable(name = "id") Long id,
             @RequestBody DoctorCategoryRequest request
     ) {
-        DoctorCategoryEntity doctorCategory = doctorCategoryService.updateCategory(id, request);
+        DoctorCategoryResponse doctorCategory = doctorCategoryService.updateCategory(id, request);
         return ResponseEntity.ok(response(doctorCategory));
     }
 
