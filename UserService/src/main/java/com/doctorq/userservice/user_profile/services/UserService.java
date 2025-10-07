@@ -8,15 +8,15 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 public interface UserService {
-    ApiResponse<List<UserResponseDto>> getAllUsers();
+    List<UserResponseDto> getAllUsers();
 
-    ApiResponse<UserResponseDto> getUserById(Long userId);
+    UserResponseDto getUserById(Long userId);
 
-    ApiResponse<String> deleteUser(Long userId);
+    void deleteUser(Long userId);
 
-    ApiResponse<UserResponseDto> addUserProfile(UserProfileRequest request, Long userId);
+    UserResponseDto addUserProfile(UserProfileRequest request, Long userId);
 
-    ApiResponse<UserResponseDto> updateUserProfile(UserProfileRequest request, Long userId);
+    UserResponseDto updateUserProfile(UserProfileRequest request, Long userId);
 
-    ApiResponse<String> uploadProfileImage(MultipartFile multipartFile, Long userId) throws Exception;
+    String uploadProfileImage(MultipartFile multipartFile, Long userId) throws Exception;
 }

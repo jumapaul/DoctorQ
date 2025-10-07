@@ -1,12 +1,15 @@
 package com.doctorq.doctorservice.controllers;
 
 import com.doctorq.doctorservice.dtos.DoctorCategoryRequest;
+import com.doctorq.doctorservice.dtos.DoctorCategoryResponse;
 import com.doctorq.doctorservice.entities.DoctorCategoryEntity;
 import com.doctorq.doctorservice.response.ApiResponse;
 import com.doctorq.doctorservice.service.DoctorCategoryService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
@@ -19,32 +22,47 @@ public class DoctorsCategoryController {
     @PostMapping
     public ResponseEntity<ApiResponse<DoctorCategoryEntity>> addCategory(
             @RequestBody DoctorCategoryRequest request) {
-        return ResponseEntity.ok(doctorCategoryService.addCategory(request));
+
+        DoctorCategoryEntity doctorCategory = doctorCategoryService.addCategory(request);
+        return ResponseEntity.ok(response(doctorCategory));
     }
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<DoctorCategoryEntity>>> getAllCategories() {
-        return ResponseEntity.ok(doctorCategoryService.getAllCategories());
+
+        List<DoctorCategoryEntity> categoryResponseList = doctorCategoryService.getAllCategories();
+        return ResponseEntity.ok(response(categoryResponseList));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<DoctorCategoryEntity>> getCategoryById(
+    public ResponseEntity<ApiResponse<DoctorCategoryResponse>> getCategoryById(
             @PathVariable(name = "id") Long id) {
-        return ResponseEntity.ok(doctorCategoryService.getCategoryById(id));
+        DoctorCategoryResponse doctorCategory = doctorCategoryService.getCategoryById(id);
+        return ResponseEntity.ok(response(doctorCategory));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<DoctorCategoryEntity>> updateCategory(
+    public ResponseEntity<ApiResponse<DoctorCategoryResponse>> updateCategory(
             @PathVariable(name = "id") Long id,
             @RequestBody DoctorCategoryRequest request
     ) {
-        return ResponseEntity.ok(doctorCategoryService.updateCategory(id, request));
+        DoctorCategoryResponse doctorCategory = doctorCategoryService.updateCategory(id, request);
+        return ResponseEntity.ok(response(doctorCategory));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<String>> deleteCategory(
+    public ResponseEntity<ApiResponse<Void>> deleteCategory(
             @PathVariable(name = "id") Long id
     ) {
-        return ResponseEntity.ok(doctorCategoryService.deleteCategory(id));
+        doctorCategoryService.deleteCategory(id);
+        return ResponseEntity.ok(response(null));
+    }
+
+    private <T> ApiResponse<T> response(T data) {
+        return new ApiResponse<T>(
+                HttpStatus.OK.value(),
+                "Success",
+                data
+        );
     }
 }

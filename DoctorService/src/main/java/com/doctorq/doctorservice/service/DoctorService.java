@@ -1,19 +1,22 @@
 package com.doctorq.doctorservice.service;
 
 import com.doctorq.doctorservice.dtos.DoctorRequest;
+import com.doctorq.doctorservice.dtos.DoctorResponse;
 import com.doctorq.doctorservice.entities.DoctorEntity;
 import com.doctorq.doctorservice.response.ApiResponse;
 
 import java.util.List;
 
 public interface DoctorService {
-    ApiResponse<DoctorEntity> addDoctors(DoctorRequest request);
+    DoctorResponse addDoctor(DoctorRequest request);
 
-    ApiResponse<List<DoctorEntity>> getAllDoctors();
+    List<DoctorResponse> getAllDoctors();
 
-    ApiResponse<DoctorEntity> getDoctorById(Long id);
+    List<DoctorResponse> getTopDoctors();
 
-    ApiResponse<DoctorEntity> updateDoctor(Long id, DoctorRequest request);
+    DoctorResponse getDoctorById(Long id);
 
-    ApiResponse<String> deleteDoctor(Long id);
+    DoctorResponse updateDoctor(Long id, DoctorRequest request);
+
+    void deleteDoctor(Long id);
 }

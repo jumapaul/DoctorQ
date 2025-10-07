@@ -40,7 +40,7 @@ public class AuthServiceImpl implements AuthService {
     private final EmailService emailService;
 
     @Override
-    public ApiResponse<RegisterResponse> registerUser(@Valid RegisterUserDto registerUserDto) throws MessagingException {
+    public RegisterResponse registerUser(@Valid RegisterUserDto registerUserDto) throws MessagingException {
 
         boolean userExists = userRepository.findByEmail(registerUserDto.email()).isPresent();
 
@@ -50,15 +50,12 @@ public class AuthServiceImpl implements AuthService {
 
         //Send email.
         emailService.sendVerificationCode(user.getEmail(), user.getVerificationCode());
-        return new ApiResponse<>(
-                HttpStatus.OK.value(),
-                registerUserDto.email() + " registered successfully",
-                authMapper.fromUser(user)
-        );
+
+        return authMapper.fromUser(user);
     }
 
     @Override
-    public ApiResponse<String> verifyUser(VerifyUserDto verifyUserDto) {
+    public void verifyUser(VerifyUserDto verifyUserDto) {
         User user = userRepository.findByEmail(verifyUserDto.email()).orElseThrow(() ->
                 new UsernameNotFoundException("User with email " + verifyUserDto.email() + " not found")
         );
@@ -73,19 +70,13 @@ public class AuthServiceImpl implements AuthService {
             user.setEnabled(true);
 
             userRepository.save(user);
-
-            return new ApiResponse<>(
-                    HttpStatus.OK.value(),
-                    "User verified successfully",
-                    null
-            );
         } else {
             throw new BadRequestException("Invalid verification code");
         }
     }
 
     @Override
-    public ApiResponse<String> resendVerificationCode(String email) throws MessagingException {
+    public void resendVerificationCode(String email) throws MessagingException {
         User user = userRepository.findByEmail(email).orElseThrow(() ->
                 new UsernameNotFoundException(email + " not found")
         );
@@ -97,15 +88,10 @@ public class AuthServiceImpl implements AuthService {
         userRepository.save(user);
 
         emailService.sendVerificationCode(email, user.getVerificationCode());
-        return new ApiResponse<>(
-                HttpStatus.OK.value(),
-                "Verification code sent to email",
-                null
-        );
     }
 
     @Override
-    public ApiResponse<LoginResponse> loginUser(LoginRequest request) {
+    public LoginResponse loginUser(LoginRequest request) {
 
         try {
             authenticationManager.authenticate(
@@ -121,11 +107,7 @@ public class AuthServiceImpl implements AuthService {
 
             String token = jwtService.generateToken(user);
 
-            return new ApiResponse<>(
-                    HttpStatus.OK.value(),
-                    "Login successful",
-                    authMapper.fromLoggedInUser(user, token)
-            );
+            return authMapper.fromLoggedInUser(user, token);
         } catch (DisabledException exception) {
             throw new ForbiddenException("User not verified");
         } catch (AuthenticationException e) {
@@ -136,7 +118,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public ApiResponse<String> sendResetCode(String email) throws MessagingException {
+    public void sendResetCode(String email) throws MessagingException {
         User user = userRepository.findByEmail(email).orElseThrow(() ->
                 new UsernameNotFoundException(email + " not found")
         );
@@ -146,31 +128,20 @@ public class AuthServiceImpl implements AuthService {
         User user1 = userRepository.save(user);
 
         emailService.sendPasswordResetCode(email, user1.getRestPassCode());
-        return new ApiResponse<>(
-                HttpStatus.OK.value(),
-                "Password reset code sent to email",
-                null
-        );
     }
 
     @Override
-    public ApiResponse<String> verifyPassResetCode(VerifyPassResetCode verifyPassResetCode) {
+    public void verifyPassResetCode(VerifyPassResetCode verifyPassResetCode) {
         User user = userRepository.findByEmail(verifyPassResetCode.email()).orElseThrow(() ->
                 new UsernameNotFoundException("User with email " + verifyPassResetCode.email() + " not found")
         );
 
         if (!user.getRestPassCode().equals(verifyPassResetCode.resetPassCode())) throw
                 new BadRequestException("Invalid verification code");
-
-        return new ApiResponse<>(
-                HttpStatus.OK.value(),
-                "Reset code verified",
-                null
-        );
     }
 
     @Override
-    public ApiResponse<String> resetPassword(ResetPasswordRequest request) {
+    public void resetPassword(ResetPasswordRequest request) {
         User user = userRepository.findByEmail(request.email()).orElseThrow(() ->
                 new UsernameNotFoundException(request.email() + " not found")
         );
@@ -180,11 +151,6 @@ public class AuthServiceImpl implements AuthService {
         user.setRestPassCodeExpiresAt(null);
 
         userRepository.save(user);
-        return new ApiResponse<>(
-                HttpStatus.OK.value(),
-                "Password successfully reset",
-                null
-        );
     }
 
     private String generateVerificationCode() {

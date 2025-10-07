@@ -43,24 +43,18 @@ public class UserServiceImpl implements UserService {
     private final Storage storage;
 
     @Override
-    public ApiResponse<List<UserResponseDto>> getAllUsers() {
+    public List<UserResponseDto> getAllUsers() {
         try {
             List<User> users = userRepository.findAll();
 
-
-            return new ApiResponse<>(
-                    HttpStatus.OK.value(),
-                    "Users retrieved successfully",
-                    users.stream().map(mapper::fromUser).collect(Collectors.toList())
-            );
+            return users.stream().map(mapper::fromUser).toList();
         } catch (Exception e) {
-            log.info("------------->message: {}", e.getMessage());
             throw new RuntimeException(e.getMessage());
         }
     }
 
     @Override
-    public ApiResponse<UserResponseDto> addUserProfile(UserProfileRequest request, Long userId) {
+    public UserResponseDto addUserProfile(UserProfileRequest request, Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() ->
                 new UsernameNotFoundException("User not found")
         );
@@ -78,15 +72,11 @@ public class UserServiceImpl implements UserService {
         user.setUserProfile(userProfile);
         userProfile.setUser(user);
         User savedUser = userRepository.save(user);
-        return new ApiResponse<>(
-                HttpStatus.OK.value(),
-                "User profile added successfully",
-                mapper.fromUser(savedUser)
-        );
+        return mapper.fromUser(savedUser);
     }
 
     @Override
-    public ApiResponse<UserResponseDto> updateUserProfile(UserProfileRequest request, Long userId) {
+    public UserResponseDto updateUserProfile(UserProfileRequest request, Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() ->
                 new UsernameNotFoundException("User not found")
         );
@@ -102,43 +92,29 @@ public class UserServiceImpl implements UserService {
         }
 
         userRepository.save(user);
-        return new ApiResponse<>(
-                HttpStatus.OK.value(),
-                "User profile added successfully",
-                mapper.fromUser(user)
-        );
+        return mapper.fromUser(user);
     }
 
     @Override
-    public ApiResponse<UserResponseDto> getUserById(Long userId) {
-        log.info("-----------------> method is called");
+    public UserResponseDto getUserById(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() ->
                 new UsernameNotFoundException("User with id " + userId + " not found")
         );
 
-        return new ApiResponse<>(
-                HttpStatus.OK.value(),
-                "User retrieved successfully",
-                mapper.fromUser(user)
-        );
+        return mapper.fromUser(user);
     }
 
     @Override
-    public ApiResponse<String> deleteUser(Long userId) {
+    public void deleteUser(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() ->
                 new UsernameNotFoundException("User with id " + userId + " not found")
         );
 
         userRepository.delete(user);
-        return new ApiResponse<>(
-                HttpStatus.OK.value(),
-                "User successfully deleted",
-                null
-        );
     }
 
     @Override
-    public ApiResponse<String> uploadProfileImage(MultipartFile multipartFile, Long userId) throws Exception {
+    public String uploadProfileImage(MultipartFile multipartFile, Long userId) throws Exception {
         try {
             String fileName = multipartFile.getOriginalFilename();
             assert fileName != null;
@@ -146,13 +122,7 @@ public class UserServiceImpl implements UserService {
             String name = String.format("%s%s%s", "profile_", userId, ".jpeg");
 
             File jpegFile = this.convertToJpegFile(multipartFile, name);
-            String downloadUrl = this.uploadFile(jpegFile, name);
-
-            return new ApiResponse<>(
-                    HttpStatus.OK.value(),
-                    "Profile image uploaded successfully",
-                    downloadUrl
-            );
+            return this.uploadFile(jpegFile, name);
 
         } catch (Exception exception) {
             throw new Exception(exception.getMessage());
