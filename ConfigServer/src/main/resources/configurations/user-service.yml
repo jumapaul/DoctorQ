@@ -48,6 +48,8 @@ spring:
 security:
   jwt:
     secret-key: e9cddb5db6c1ef9a6a5d4b4677ef1d6c6fff514fdf3fd23b9099d754b0c42b03b7560d34cd4a78620cf619e6bee5a3926b803e737153667c856081bb90d145fa
-    expiration-time: 7200000
+    expiration-time: 1800000
+    refresh-token:
+      expiration: 604800000
 server:
   port: 8010

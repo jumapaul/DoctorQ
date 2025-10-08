@@ -3,6 +3,10 @@ package com.doctorq.userservice.user.service;
 import com.doctorq.userservice.response.ApiResponse;
 import com.doctorq.userservice.user.dtos.*;
 import jakarta.mail.MessagingException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+import java.io.IOException;
 
 public interface AuthService {
 
@@ -19,4 +23,6 @@ public interface AuthService {
     void resetPassword(ResetPasswordRequest request);
 
     void verifyPassResetCode(VerifyPassResetCode verifyPassResetCode);
+
+    void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException;
 }

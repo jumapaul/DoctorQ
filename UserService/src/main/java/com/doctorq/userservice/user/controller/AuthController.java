@@ -4,6 +4,7 @@ import com.doctorq.userservice.response.ApiResponse;
 import com.doctorq.userservice.user.dtos.*;
 import com.doctorq.userservice.user.service.AuthService;
 import jakarta.mail.MessagingException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,12 +19,12 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final AuthService userService;
+    private final AuthService authService;
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<RegisterResponse>> registerUser(
             @RequestBody @Valid RegisterUserDto registerUserDto) throws MessagingException {
-        RegisterResponse response = userService.registerUser(registerUserDto);
+        RegisterResponse response = authService.registerUser(registerUserDto);
 
         return ResponseEntity.ok(
                 response(response, registerUserDto.email() + " registered successfully")
@@ -34,7 +35,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse<Void>> verifyUser(
             @RequestBody VerifyUserDto verifyUserDto
     ) {
-        userService.verifyUser(verifyUserDto);
+        authService.verifyUser(verifyUserDto);
         return ResponseEntity.ok(response(null, "User verified successfully"));
     }
 
@@ -42,7 +43,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse<LoginResponse>> loginUser(
             @RequestBody LoginRequest loginRequest
     ) {
-        LoginResponse response = userService.loginUser(loginRequest);
+        LoginResponse response = authService.loginUser(loginRequest);
         return ResponseEntity.ok(response(response, "Login successful"));
     }
 
@@ -50,7 +51,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse<String>> resendVerificationCode(
             @RequestParam(name = "email") String email
     ) throws MessagingException {
-        userService.resendVerificationCode(email);
+        authService.resendVerificationCode(email);
         return ResponseEntity.ok(response(null, "Verification code sent to email"));
     }
 
@@ -58,7 +59,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse<String>> sendResetCode(
             @RequestParam(name = "email") String email
     ) throws MessagingException {
-        userService.sendResetCode(email);
+        authService.sendResetCode(email);
         return ResponseEntity.ok(
                 response(null, "Password reset code sent to email")
         );
@@ -68,7 +69,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse<String>> verifyPassResetCode(
             @RequestBody VerifyPassResetCode verifyPassResetCode
     ) {
-        userService.verifyPassResetCode(verifyPassResetCode);
+        authService.verifyPassResetCode(verifyPassResetCode);
         return ResponseEntity.ok(response(null, "Reset code verified"));
     }
 
@@ -76,8 +77,16 @@ public class AuthController {
     public ResponseEntity<ApiResponse<String>> resetPassword(
             @RequestBody ResetPasswordRequest request
     ) {
-        userService.resetPassword(request);
+        authService.resetPassword(request);
         return ResponseEntity.ok(response(null, "Password successfully reset"));
+    }
+
+    @PostMapping("/refreshToken")
+    public void refreshToken(
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) throws IOException {
+        authService.refreshToken(request, response);
     }
 
     private <T> ApiResponse<T> response(T data, String message) {

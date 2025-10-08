@@ -11,19 +11,28 @@ import com.doctorq.userservice.user.dtos.*;
 import com.doctorq.userservice.user.entities.User;
 import com.doctorq.userservice.user.mappers.AuthMapper;
 import com.doctorq.userservice.user.repository.UserRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.mail.MessagingException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Random;
 
@@ -106,8 +115,8 @@ public class AuthServiceImpl implements AuthService {
             );
 
             String token = jwtService.generateToken(user);
-
-            return authMapper.fromLoggedInUser(user, token);
+            String refreshToken = jwtService.generateRefreshToken(user);
+            return authMapper.fromLoggedInUser(user, token, refreshToken);
         } catch (DisabledException exception) {
             throw new ForbiddenException("User not verified");
         } catch (AuthenticationException e) {
@@ -157,5 +166,35 @@ public class AuthServiceImpl implements AuthService {
         Random random = new Random();
         int code = random.nextInt(900000) + 100000;
         return String.valueOf(code);
+    }
+
+    @Override
+    public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+        final String userEmail;
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return;
+        }
+
+        final String refreshToken = authHeader.substring(7);
+
+
+        userEmail = jwtService.extractUsername(refreshToken);
+
+        if (userEmail != null) {
+            var userDetails = this.userRepository.findByEmail(userEmail).orElseThrow(() ->
+                    new UsernameNotFoundException("User not found")
+            );
+
+            if (jwtService.isTokenValid(refreshToken, userDetails)) {
+                var accessToken = jwtService.generateToken(userDetails);
+                var authResponse = new RefreshTokenResponse(
+                        accessToken,
+                        refreshToken
+                );
+
+                new ObjectMapper().writeValue(response.getOutputStream(), authResponse);
+            }
+        }
     }
 }

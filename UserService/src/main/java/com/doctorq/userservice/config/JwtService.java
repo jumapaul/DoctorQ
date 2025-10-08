@@ -2,11 +2,13 @@ package com.doctorq.userservice.config;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+
 import java.security.Key;
 import java.time.Instant;
 import java.util.Date;
@@ -21,7 +23,10 @@ public class JwtService {
     private String SECRET_KEY;
 
     @Value("${security.jwt.expiration-time}")
-    private String JWT_EXPIRATION_TIME;
+    private Long JWT_EXPIRATION_TIME;
+
+    @Value("${security.jwt.refresh-token.expiration}")
+    private Long REFRESH_TOKEN_EXPIRATION;
 
     public String extractUsername(String jwtToken) {
         return extractClaim(jwtToken, Claims::getSubject);
@@ -44,19 +49,34 @@ public class JwtService {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    private String generateToken(Map<String, Object> extractClaims, UserDetails userDetails) {
+    public String generateToken(UserDetails userDetails) {
+        return generateToken(new HashMap<>(), userDetails);
+    }
+
+    public String generateToken(
+            Map<String, Object> extraClaims,
+            UserDetails userDetails
+    ) {
+        return buildToken(extraClaims, userDetails, JWT_EXPIRATION_TIME);
+    }
+
+    public String generateRefreshToken(UserDetails userDetails) {
+        return buildToken(new HashMap<>(), userDetails, REFRESH_TOKEN_EXPIRATION);
+    }
+
+    private String buildToken(
+            Map<String, Object> extractClaims,
+            UserDetails userDetails,
+            long expiration
+    ) {
         return Jwts
                 .builder()
                 .claims(extractClaims)
                 .subject(userDetails.getUsername())
                 .issuedAt(Date.from(Instant.now()))
-                .expiration(Date.from(Instant.now().plusMillis(Long.parseLong(JWT_EXPIRATION_TIME))))
+                .expiration(Date.from(Instant.now().plusMillis(expiration)))
                 .signWith(getSignInKey())
                 .compact();
-    }
-
-    public String generateToken(UserDetails userDetails) {
-        return generateToken(new HashMap<>(), userDetails);
     }
 
     public boolean isTokenValid(String token, UserDetails userDetails) {

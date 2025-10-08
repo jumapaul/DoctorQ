@@ -39,13 +39,14 @@ public class AuthMapper {
         );
     }
 
-    public LoginResponse fromLoggedInUser(User user, String token) {
+    public LoginResponse fromLoggedInUser(User user, String token, String refreshToken) {
         return new LoginResponse(
                 user.getId(),
                 user.getFirstname(),
                 user.getLastname(),
                 user.getEmail(),
                 token,
+                refreshToken,
                 user.getRole(),
                 user.getUserProfile()
         );

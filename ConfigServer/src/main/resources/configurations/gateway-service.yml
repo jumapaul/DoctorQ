@@ -9,37 +9,96 @@ spring:
 
           routes:
             - id: authentication-service
-              uri: lb:http://USER-SERVICE
+              uri: lb://USER-SERVICE
               predicates:
                 - Path=/api/v1/auth/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: userServiceCircuitBreaker
+                    fallbackUri: forward:/fallback/userService
 
             - id: user-service
-              uri: lb:http://USER-SERVICE
+              uri: lb://USER-SERVICE
               predicates:
                 - Path=/api/v1/users/**
               filters:
                 - AuthenticationFilter
+                - name: CircuitBreaker
+                  args:
+                    name: userServiceCircuitBreaker
+                    fallbackUri: forward:/fallback/userService
 
             - id: doctor-service
-              uri: lb:http://DOCTOR-SERVICE
+              uri: lb://DOCTOR-SERVICE
               predicates:
                 - Path=/api/v1/doctors/**
               filters:
                 - AuthenticationFilter
-
-            - id: doctor-category-service
-              uri: lb:http://DOCTOR-SERVICE
-              predicates:
-                - Path=/api/v1/category/**
-              filters:
-                - AuthenticationFilter
+                - name: CircuitBreaker
+                  args:
+                    name: doctorServiceCircuitBreaker
+                    fallbackUri: forward:/fallback/doctorService
 
             - id: feedback-service
-              uri: lb:http://FEEDBACK-SERVICE
+              uri: lb://FEEDBACK-SERVICE
               predicates:
                 - Path=/api/v1/feedbacks/**
               filters:
                 - AuthenticationFilter
+                - name: CircuitBreaker
+                  args:
+                    name: feedbackServiceCircuitBreaker
+                    fallbackUri: forward:/fallback/feedbackService
+
+management:
+  endpoint:
+    health:
+      show-details: always
+
+  endpoints:
+    web:
+      exposure:
+        include: health
+  health:
+    circuitbreakers:
+      enabled: true
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      userServiceCircuitBreaker:
+        register-health-indicator: true
+        event-consumer-buffer-size: 10
+        failure-rate-threshold: 50
+        minimum-number-of-calls: 5
+        automatic-transition-from-open-to-half-open-enabled: true
+        wait-duration-in-open-state: 5s
+        permitted-number-of-calls-in-half-open-state: 3
+        sliding-window-size: 10
+        sliding-window-type: COUNT_BASED
+
+      doctorServiceCircuitBreaker:
+        register-health-indicator: true
+        event-consumer-buffer-size: 10
+        failure-rate-threshold: 50
+        minimum-number-of-calls: 5
+        automatic-transition-from-open-to-half-open-enabled: true
+        wait-duration-in-open-state: 5s
+        permitted-number-of-calls-in-half-open-state: 3
+        sliding-window-size: 10
+        sliding-window-type: COUNT_BASED
+
+      feedbackServiceCircuitBreaker:
+        register-health-indicator: true
+        event-consumer-buffer-size: 10
+        failure-rate-threshold: 50
+        minimum-number-of-calls: 5
+        automatic-transition-from-open-to-half-open-enabled: true
+        wait-duration-in-open-state: 5s
+        permitted-number-of-calls-in-half-open-state: 3
+        sliding-window-size: 10
+        sliding-window-type: COUNT_BASED
 
 server:
   port: 8222

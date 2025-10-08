@@ -8,7 +8,8 @@ public record LoginResponse(
         String firstname,
         String lastname,
         String email,
-        String token,
+        String accessToken,
+        String refreshToken,
         Roles role,
         UserProfile userProfile
 ) {
