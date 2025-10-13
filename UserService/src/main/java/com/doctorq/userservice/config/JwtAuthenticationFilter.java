@@ -23,6 +23,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Scanner;
 
 @Component
 @RequiredArgsConstructor
@@ -35,9 +41,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(
-            @NonNull HttpServletRequest request,
-            @NonNull HttpServletResponse response,
-            @NonNull FilterChain filterChain) throws ServletException, IOException {
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain filterChain) throws ServletException, IOException {
 
         final String authHeader = request.getHeader("Authorization");
 
@@ -46,8 +52,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        final String jwtToken = authHeader.substring(7);
+        String jwtToken = authHeader.substring(7);
 
+        try {
+            handleJwt(jwtToken, response, request);
+        } catch (MalformedJwtException | ExpiredJwtException e) {
+            handleJwtException(response, e);
+            return; // stop further processing
+        } catch (Exception e) {
+            handleForbiddenException(response, e);
+            return;
+        }
+
+        filterChain.doFilter(request, response);
+    }
+
+    private void handleJwt(String jwtToken, HttpServletResponse response, HttpServletRequest request) throws IOException {
         try {
             final String userEmail = jwtService.extractUsername(jwtToken);
 
@@ -65,7 +85,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
 
-            filterChain.doFilter(request, response);
         } catch (MalformedJwtException | ExpiredJwtException exception) {
             handleJwtException(response, exception);
         } catch (Exception e) {
@@ -100,3 +119,4 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         response.getWriter().write(objectMapper.writeValueAsString(apiResponse));
     }
 }
+

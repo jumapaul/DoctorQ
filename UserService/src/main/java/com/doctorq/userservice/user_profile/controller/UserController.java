@@ -5,6 +5,7 @@ import com.doctorq.userservice.user_profile.dtos.UserProfileRequest;
 import com.doctorq.userservice.user_profile.dtos.UserResponseDto;
 import com.doctorq.userservice.user_profile.services.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,10 +20,12 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    private final Environment environment;
 
     //    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<ApiResponse<List<UserResponseDto>>> getAllUsers() {
+
         List<UserResponseDto> responseDtoList = userService.getAllUsers();
         return ResponseEntity.ok(response(responseDtoList));
     }
