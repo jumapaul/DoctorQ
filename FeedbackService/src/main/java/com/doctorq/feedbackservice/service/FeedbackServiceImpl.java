@@ -4,14 +4,15 @@ import com.doctorq.feedbackservice.doctor_client.DoctorClient;
 import com.doctorq.feedbackservice.dtos.FeedbackRequest;
 import com.doctorq.feedbackservice.entity.FeedbackEntity;
 import com.doctorq.feedbackservice.exception.ResourceNotFoundException;
+import com.doctorq.feedbackservice.exception.ServiceUnavailableException;
 import com.doctorq.feedbackservice.mapper.FeedbackMapper;
 import com.doctorq.feedbackservice.repository.FeedbackRepository;
 import com.doctorq.feedbackservice.response.ApiResponse;
 import com.doctorq.feedbackservice.user_client.UserClient;
 import com.doctorq.feedbackservice.user_client.UserResponseDto;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,44 +31,38 @@ public class FeedbackServiceImpl implements FeedbackService {
 
     @Transactional
     @Override
-    public ApiResponse<FeedbackEntity> addFeedback(FeedbackRequest request, String authHeader) {
+    public FeedbackEntity addFeedback(FeedbackRequest request, String token) {
 
-        ApiResponse<UserResponseDto> user = userClient.getUserById(request.userId(), authHeader);
+        ApiResponse<UserResponseDto> user = getUserById(request, token);
+        getDoctorById(request);
+        doctorClient.getDoctorById(request.doctorId());
 
-        doctorClient.getDoctorById(request.doctorId(), authHeader);
+        return feedbackRepository.save(feedbackMapper.toFeedback(request, user.getData().firstname()));
+    }
 
-        FeedbackEntity feedbackEntity = feedbackRepository.save(feedbackMapper.toFeedback(request, user.getData().firstname()));
+    @CircuitBreaker(name = "userCircuitBreaker", fallbackMethod = "userFallback")
+    private ApiResponse<UserResponseDto> getUserById(FeedbackRequest request, String token) {
+        return userClient.getUserById(request.userId(), token);
+    }
 
-        return new ApiResponse<>(
-                HttpStatus.OK.value(),
-                "Feedback added successfully",
-                feedbackEntity
-        );
+    @CircuitBreaker(name = "doctorCircuitBreaker", fallbackMethod = "doctorFallback")
+    private void  getDoctorById(FeedbackRequest request) {
+        doctorClient.getDoctorById(request.doctorId());
     }
 
     @Override
-    public ApiResponse<String> deleteFeedback(Long id) {
+    public void deleteFeedback(Long id) {
         feedbackRepository.deleteById(id);
-        return new ApiResponse<>(
-                HttpStatus.OK.value(),
-                "Feedback successfully deleted",
-                null
-        );
     }
 
     @Override
-    public ApiResponse<List<FeedbackEntity>> getAllDoctorFeedback(Long doctorId) {
-        List<FeedbackEntity> doctorFeeds = feedbackRepository.findByDoctorId(doctorId);
+    public List<FeedbackEntity> getAllDoctorFeedback(Long doctorId) {
+        return feedbackRepository.findByDoctorId(doctorId);
 
-        return new ApiResponse<>(
-                HttpStatus.OK.value(),
-                "Doctor feeds retrieved",
-                doctorFeeds
-        );
     }
 
     @Override
-    public ApiResponse<FeedbackEntity> updateFeedback(Long id, FeedbackRequest request) {
+    public FeedbackEntity updateFeedback(Long id, FeedbackRequest request) {
         FeedbackEntity entity = feedbackRepository.findById(id).orElseThrow(() ->
                 new ResourceNotFoundException("Feedback of id " + id + " not found")
         );
@@ -78,11 +73,20 @@ public class FeedbackServiceImpl implements FeedbackService {
         entity.setRating(request.rating());
         entity.setReview(request.review());
 
-        feedbackRepository.save(entity);
-        return new ApiResponse<>(
-                HttpStatus.OK.value(),
-                "Feedback updated successfully",
-                entity
+        return feedbackRepository.save(entity);
+    }
+
+    private FeedbackEntity doctorFallback(FeedbackRequest request, String token, Exception ex) {
+        log.error("Circuit breaker activated: {}", ex.getMessage());
+        throw new ServiceUnavailableException(
+                "Doctor service is temporarily unavailable. Please try again later"
+        );
+    }
+
+    private FeedbackEntity userFallback(FeedbackRequest request, String token, Exception ex) {
+        log.error("Circuit breaker activated: {}", ex.getMessage());
+        throw new ServiceUnavailableException(
+                "User service is temporarily unavailable. Please try again later"
         );
     }
 }

@@ -8,15 +8,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 
 @FeignClient(
-        name = "doctor-client",
-        url = "${application.config.doctor-url}",
+        name = "DOCTOR-SERVICE",
         configuration = FeignClientConfiguration.class
 )
 public interface DoctorClient {
 
-    @GetMapping("/{id}")
+    @GetMapping("/api/v1/doctors/{id}")
     ApiResponse<DoctorResponse> getDoctorById(
-            @PathVariable(name = "id") Long id,
-            @RequestHeader("Authorization") String authHeader
+            @PathVariable(name = "id") Long id
     );
 }

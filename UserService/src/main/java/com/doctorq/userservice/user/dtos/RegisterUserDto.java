@@ -10,6 +10,7 @@ public record RegisterUserDto(
         @Size(max = 50, message = "Last name must not exceed 50 characters")
         String lastname,
         @Email(message = "Invalid email format")
+        @NotBlank(message = "Email is required")
         String email,
         @NotBlank(message = "password is required")
         @Size(message = "Password must be at least 8 characters")

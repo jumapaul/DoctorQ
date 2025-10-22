@@ -1,0 +1,5 @@
+DoctorService/logs
+FeedbackService/logs
+UserService/logs
+UserService/build
+doctorq-aws.pem

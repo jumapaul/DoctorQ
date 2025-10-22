@@ -24,7 +24,7 @@ public class DoctorsController {
         DoctorResponse doctor = doctorService.addDoctor(request);
 
         return ResponseEntity.ok(
-                success(doctor)
+                success(doctor, "Doctor added successfully")
         );
     }
 
@@ -32,7 +32,7 @@ public class DoctorsController {
     public ResponseEntity<ApiResponse<List<DoctorResponse>>> getAllDoctors() {
         List<DoctorResponse> doctors = doctorService.getAllDoctors();
         return ResponseEntity.ok(
-                success(doctors)
+                success(doctors, "All doctors retrieved successfully")
         );
     }
 
@@ -40,7 +40,7 @@ public class DoctorsController {
     public ResponseEntity<ApiResponse<DoctorResponse>> getDoctorById(@PathVariable Long id) {
         DoctorResponse doctor = doctorService.getDoctorById(id);
         return ResponseEntity.ok(
-                success(doctor)
+                success(doctor, "Doctor retrieved successfully")
         );
     }
 
@@ -50,7 +50,7 @@ public class DoctorsController {
 
         DoctorResponse doctor = doctorService.updateDoctor(doctorId, request);
         return ResponseEntity.ok(
-                success(doctor)
+                success(doctor, "Doctor updated successfully")
         );
     }
 
@@ -60,7 +60,7 @@ public class DoctorsController {
     ) {
         doctorService.deleteDoctor(id);
         return ResponseEntity.ok(
-                success(null)
+                success(null, "Doctor deleted successfully")
         );
     }
 
@@ -69,14 +69,14 @@ public class DoctorsController {
         List<DoctorResponse> topDoctors = doctorService.getTopDoctors();
 
         return ResponseEntity.ok(
-                success(topDoctors)
+                success(topDoctors, "Top rated doctors retrieved successfully")
         );
     }
 
-    private <T> ApiResponse<T> success(T data) {
+    private <T> ApiResponse<T> success(T data, String message) {
         return new ApiResponse<T>(
                 HttpStatus.OK.value(),
-                "Success",
+                message,
                 data
         );
     }

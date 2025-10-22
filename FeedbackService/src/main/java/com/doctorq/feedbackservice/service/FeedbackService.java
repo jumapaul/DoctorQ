@@ -8,11 +8,11 @@ import java.util.List;
 
 public interface FeedbackService {
 
-    ApiResponse<FeedbackEntity> addFeedback(FeedbackRequest request, String authHeader);
+    FeedbackEntity addFeedback(FeedbackRequest request, String token);
 
-    ApiResponse<String> deleteFeedback(Long id);
+    void deleteFeedback(Long id);
 
-    ApiResponse<List<FeedbackEntity>> getAllDoctorFeedback(Long doctorId);
+    List<FeedbackEntity> getAllDoctorFeedback(Long doctorId);
 
-    ApiResponse<FeedbackEntity> updateFeedback(Long id, FeedbackRequest request);
+    FeedbackEntity updateFeedback(Long id, FeedbackRequest request);
 }

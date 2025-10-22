@@ -8,6 +8,6 @@ public record UserResponseDto(
         String lastname,
         String email,
         Roles roles,
-        UserProfile userProfile
+        UserProfileResponse userProfile
 ) {
 }

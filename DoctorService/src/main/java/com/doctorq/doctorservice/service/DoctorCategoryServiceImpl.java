@@ -11,6 +11,7 @@ import com.doctorq.doctorservice.repository.DoctorCategoryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
@@ -65,10 +66,8 @@ public class DoctorCategoryServiceImpl implements DoctorCategoryService {
     }
 
     @Caching(
-            evict = {
-                    @CacheEvict(value = "doctorCategoryByIdCache", key = "id"),
-                    @CacheEvict(value = "allDoctorsCategory", allEntries = true)
-            }
+            evict = {@CacheEvict(value = "allDoctorsCategory", allEntries = true)},
+            put = {@CachePut(value = "doctorCategoryByIdCache", key = "id"),}
     )
     @Override
     public DoctorCategoryResponse updateCategory(Long id, DoctorCategoryRequest request) {

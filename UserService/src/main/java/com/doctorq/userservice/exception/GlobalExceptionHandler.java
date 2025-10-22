@@ -1,17 +1,12 @@
 package com.doctorq.userservice.exception;
 
 import com.doctorq.userservice.response.ApiResponse;
-import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.mail.MessagingException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 
@@ -25,8 +20,8 @@ public class GlobalExceptionHandler {
         ), HttpStatus.CONFLICT);
     }
 
-    @ExceptionHandler(UsernameNotFoundException.class)
-    public ResponseEntity<Object> handleUserNotFoundException(UsernameNotFoundException exception) {
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<Object> handleUserNotFoundException(ResourceNotFoundException exception) {
         return new ResponseEntity<>(new ApiResponse<>(
                 HttpStatus.NOT_FOUND.value(), exception.getMessage(), null
         ), HttpStatus.NOT_FOUND);
@@ -74,13 +69,6 @@ public class GlobalExceptionHandler {
         ), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<Object> handleAuthenticationException(AuthenticationException exception) {
-        return new ResponseEntity<>(new ApiResponse<>(
-                HttpStatus.UNAUTHORIZED.value(), exception.getMessage(), null
-        ), HttpStatus.UNAUTHORIZED);
-    }
-
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Object> handleAccessDeniedException(AccessDeniedException exception) {
         return new ResponseEntity<>(new ApiResponse<>(
@@ -99,10 +87,26 @@ public class GlobalExceptionHandler {
         );
     }
 
-//        @ExceptionHandler(Exception.class)
-//    public ResponseEntity<Object> handeGenericException(Exception exception) {
-//        return new ResponseEntity<>(new ApiResponse<>(
-//                HttpStatus.INTERNAL_SERVER_ERROR.value(), exception.getMessage(), null
-//        ), HttpStatus.INTERNAL_SERVER_ERROR);
-//    }
+    @ExceptionHandler(ServiceUnavailableException.class)
+    public ResponseEntity<Object> handleServiceUnavailable(ServiceUnavailableException exception) {
+        return new ResponseEntity<>(
+                new ApiResponse<>(
+                        HttpStatus.SERVICE_UNAVAILABLE.value(),
+                        exception.getMessage(),
+                        null
+                ), HttpStatus.SERVICE_UNAVAILABLE
+        );
+    }
+
+    @ExceptionHandler(UnAuthorizedException.class)
+    public ResponseEntity<Object> handleUnAuthorizedException(UnAuthorizedException exception) {
+        return new ResponseEntity<>(
+                new ApiResponse<>(
+                        HttpStatus.UNAUTHORIZED.value(),
+                        exception.getMessage(),
+                        null
+                ),
+                HttpStatus.UNAUTHORIZED
+        );
+    }
 }

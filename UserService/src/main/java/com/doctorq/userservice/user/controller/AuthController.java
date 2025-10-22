@@ -8,12 +8,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 
+@Slf4j
 @RequestMapping("api/v1/auth")
 @RestController
 @RequiredArgsConstructor
@@ -43,6 +45,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse<LoginResponse>> loginUser(
             @RequestBody LoginRequest loginRequest
     ) {
+        log.info("--------------->Method is called");
         LoginResponse response = authService.loginUser(loginRequest);
         return ResponseEntity.ok(response(response, "Login successful"));
     }

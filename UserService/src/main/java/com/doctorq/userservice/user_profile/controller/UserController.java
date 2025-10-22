@@ -1,11 +1,13 @@
 package com.doctorq.userservice.user_profile.controller;
 
 import com.doctorq.userservice.response.ApiResponse;
+import com.doctorq.userservice.user_profile.dtos.PaginatedResponse;
 import com.doctorq.userservice.user_profile.dtos.UserProfileRequest;
 import com.doctorq.userservice.user_profile.dtos.UserResponseDto;
 import com.doctorq.userservice.user_profile.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.env.Environment;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,10 +26,13 @@ public class UserController {
 
     //    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
-    public ResponseEntity<ApiResponse<List<UserResponseDto>>> getAllUsers() {
+    public ResponseEntity<PaginatedResponse> getAllUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
 
-        List<UserResponseDto> responseDtoList = userService.getAllUsers();
-        return ResponseEntity.ok(response(responseDtoList));
+        PaginatedResponse responseDtoList = userService.getAllUsers(page, size);
+        return ResponseEntity.ok(responseDtoList);
     }
 
     @GetMapping("/{userId}")

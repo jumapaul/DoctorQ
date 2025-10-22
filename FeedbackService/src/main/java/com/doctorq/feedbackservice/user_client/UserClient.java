@@ -10,13 +10,12 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import java.util.Optional;
 
 @FeignClient(
-        name = "user-client",
-        url = "${application.config.user-url}",
+        name = "USER-SERVICE",
         configuration = FeignClientConfiguration.class
 )
 public interface UserClient {
 
-    @GetMapping("/{userId}")
+    @GetMapping("/api/v1/users/{userId}")
     ApiResponse<UserResponseDto> getUserById(
             @PathVariable(name = "userId") Long userId,
             @RequestHeader("Authorization") String authHeader

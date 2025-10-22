@@ -5,6 +5,7 @@ import com.doctorq.feedbackservice.entity.FeedbackEntity;
 import com.doctorq.feedbackservice.response.ApiResponse;
 import com.doctorq.feedbackservice.service.FeedbackService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,23 +21,26 @@ public class FeedbackController {
     @PostMapping
     public ResponseEntity<ApiResponse<FeedbackEntity>> addFeedback(
             @RequestBody FeedbackRequest request,
-            @RequestHeader("Authorization") String authHeader
+            @RequestHeader("Authorization") String token
     ) {
-        return ResponseEntity.ok(feedbackService.addFeedback(request, authHeader));
+        FeedbackEntity response = feedbackService.addFeedback(request, token);
+        return ResponseEntity.ok(success(response, "Feedback added successfully"));
     }
 
     @GetMapping("/{doctorId}")
     public ResponseEntity<ApiResponse<List<FeedbackEntity>>> getAllFeedbacks(
             @PathVariable(name = "doctorId") Long doctorId
     ) {
-        return ResponseEntity.ok(feedbackService.getAllDoctorFeedback(doctorId));
+        List<FeedbackEntity> allFeedback = feedbackService.getAllDoctorFeedback(doctorId);
+        return ResponseEntity.ok(success(allFeedback, "All feedback retrieved successfully"));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<String>> deleteFeedback(
+    public ResponseEntity<ApiResponse<Void>> deleteFeedback(
             @PathVariable(name = "id") Long id
     ) {
-        return ResponseEntity.ok(feedbackService.deleteFeedback(id));
+        feedbackService.deleteFeedback(id);
+        return ResponseEntity.ok(success(null, "Feedback deleted successfully"));
     }
 
     @PutMapping("/{id}")
@@ -44,7 +48,15 @@ public class FeedbackController {
             @PathVariable(name = "id") Long id,
             @RequestBody FeedbackRequest request
     ) {
-        return ResponseEntity.ok(feedbackService.updateFeedback(id, request));
+        FeedbackEntity response = feedbackService.updateFeedback(id, request);
+        return ResponseEntity.ok(success(response, "Feedback updated successfully"));
     }
 
+    private <T> ApiResponse<T> success(T data, String message) {
+        return new ApiResponse<T>(
+                HttpStatus.OK.value(),
+                message,
+                data
+        );
+    }
 }

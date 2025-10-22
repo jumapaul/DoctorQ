@@ -4,6 +4,7 @@ import com.doctorq.userservice.exception.BadRequestException;
 import com.doctorq.userservice.response.ApiResponse;
 import com.doctorq.userservice.user.entities.User;
 import com.doctorq.userservice.user.repository.UserRepository;
+import com.doctorq.userservice.user_profile.dtos.PaginatedResponse;
 import com.doctorq.userservice.user_profile.dtos.UserProfile;
 import com.doctorq.userservice.user_profile.dtos.UserProfileRequest;
 import com.doctorq.userservice.user_profile.dtos.UserResponseDto;
@@ -13,6 +14,13 @@ import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -42,17 +50,36 @@ public class UserServiceImpl implements UserService {
     private final UserMapper mapper;
     private final Storage storage;
 
+    @Cacheable(value = "getAllUsers")
     @Override
-    public List<UserResponseDto> getAllUsers() {
+    public PaginatedResponse getAllUsers(int page, int size) {
         try {
-            List<User> users = userRepository.findAll();
+            Pageable pageable = PageRequest.of(page, size);
+            Page<User> paginatedUsers = userRepository.findAll(pageable);
 
-            return users.stream().map(mapper::fromUser).toList();
+            List<UserResponseDto> response = paginatedUsers
+                    .getContent()
+                    .stream()
+                    .map(mapper::fromUser).toList();
+            return new PaginatedResponse(
+                    response,
+                    paginatedUsers.getNumber(),
+                    paginatedUsers.getTotalPages(),
+                    paginatedUsers.getSize(),
+                    paginatedUsers.getNumberOfElements(),
+                    paginatedUsers.getSort().isSorted(),
+                    paginatedUsers.isLast()
+
+            );
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
         }
     }
 
+    @Caching(
+            evict = {@CacheEvict(value = "getAllUsers", allEntries = true)},
+            put = {@CachePut(value = "getUserById", key = "#userId")}
+    )
     @Override
     public UserResponseDto addUserProfile(UserProfileRequest request, Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() ->
@@ -75,6 +102,10 @@ public class UserServiceImpl implements UserService {
         return mapper.fromUser(savedUser);
     }
 
+    @Caching(
+            evict = {@CacheEvict(value = "getAllUsers", allEntries = true)},
+            put = {@CachePut(value = "getUserById", key = "#userId")}
+    )
     @Override
     public UserResponseDto updateUserProfile(UserProfileRequest request, Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() ->
@@ -95,6 +126,7 @@ public class UserServiceImpl implements UserService {
         return mapper.fromUser(user);
     }
 
+    @Cacheable(value = "getUserById", key = "#userId")
     @Override
     public UserResponseDto getUserById(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() ->
@@ -104,6 +136,12 @@ public class UserServiceImpl implements UserService {
         return mapper.fromUser(user);
     }
 
+    @Caching(
+            evict = {
+                    @CacheEvict(value = "getAllUsers", allEntries = true),
+                    @CacheEvict(value = "getUserById", key = "#userId")
+            }
+    )
     @Override
     public void deleteUser(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() ->

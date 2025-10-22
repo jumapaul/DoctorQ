@@ -1,5 +1,10 @@
 spring:
   application:
     name: doctor-service
+
   config:
     import: optional:configserver:http://localhost:8000
+
+  cloud:
+    config:
+      fail-fast: true

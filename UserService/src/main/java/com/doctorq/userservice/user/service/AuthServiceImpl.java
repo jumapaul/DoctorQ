@@ -1,12 +1,8 @@
 package com.doctorq.userservice.user.service;
 
 import com.doctorq.userservice.config.JwtService;
-import com.doctorq.userservice.exception.BadRequestException;
-import com.doctorq.userservice.exception.ConflictException;
-import com.doctorq.userservice.exception.ForbiddenException;
-import com.doctorq.userservice.exception.UnAuthorizedException;
+import com.doctorq.userservice.exception.*;
 import com.doctorq.userservice.mail.EmailService;
-import com.doctorq.userservice.response.ApiResponse;
 import com.doctorq.userservice.user.dtos.*;
 import com.doctorq.userservice.user.entities.User;
 import com.doctorq.userservice.user.mappers.AuthMapper;
@@ -18,18 +14,13 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -48,6 +39,7 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
 
+    @CacheEvict(value = "getAllUsers", allEntries = true)
     @Override
     public RegisterResponse registerUser(@Valid RegisterUserDto registerUserDto) throws MessagingException {
 
@@ -66,7 +58,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public void verifyUser(VerifyUserDto verifyUserDto) {
         User user = userRepository.findByEmail(verifyUserDto.email()).orElseThrow(() ->
-                new UsernameNotFoundException("User with email " + verifyUserDto.email() + " not found")
+                new ResourceNotFoundException("User with email " + verifyUserDto.email() + " not found")
         );
 
         if (user.getVerificationCode() == null) throw new ConflictException("User already verified");
@@ -87,7 +79,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public void resendVerificationCode(String email) throws MessagingException {
         User user = userRepository.findByEmail(email).orElseThrow(() ->
-                new UsernameNotFoundException(email + " not found")
+                new ResourceNotFoundException(email + " not found")
         );
 
         if (user.isEnabled()) throw new BadRequestException("User already verified");
@@ -102,6 +94,10 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public LoginResponse loginUser(LoginRequest request) {
 
+        User user = userRepository.findByEmail(request.email()).orElseThrow(() ->
+                new ResourceNotFoundException("User with the email " + request.email() + " not found")
+        );
+
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -110,26 +106,21 @@ public class AuthServiceImpl implements AuthService {
                     )
             );
 
-            User user = userRepository.findByEmail(request.email()).orElseThrow(() ->
-                    new UsernameNotFoundException("User with the email " + request.email() + " not found")
-            );
-
             String token = jwtService.generateToken(user);
             String refreshToken = jwtService.generateRefreshToken(user);
             return authMapper.fromLoggedInUser(user, token, refreshToken);
+
         } catch (DisabledException exception) {
             throw new ForbiddenException("User not verified");
         } catch (AuthenticationException e) {
-            throw new UnAuthorizedException(e.getMessage());
-        } catch (Exception exception) {
-            throw new RuntimeException(exception.getMessage());
+            throw new UnAuthorizedException("Invalid credentials");
         }
     }
 
     @Override
     public void sendResetCode(String email) throws MessagingException {
         User user = userRepository.findByEmail(email).orElseThrow(() ->
-                new UsernameNotFoundException(email + " not found")
+                new ResourceNotFoundException(email + " not found")
         );
         user.setRestPassCode(generateVerificationCode());
         user.setRestPassCodeExpiresAt(LocalDateTime.now().plusMinutes(10));
@@ -142,7 +133,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public void verifyPassResetCode(VerifyPassResetCode verifyPassResetCode) {
         User user = userRepository.findByEmail(verifyPassResetCode.email()).orElseThrow(() ->
-                new UsernameNotFoundException("User with email " + verifyPassResetCode.email() + " not found")
+                new ResourceNotFoundException("User with email " + verifyPassResetCode.email() + " not found")
         );
 
         if (!user.getRestPassCode().equals(verifyPassResetCode.resetPassCode())) throw
@@ -152,7 +143,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public void resetPassword(ResetPasswordRequest request) {
         User user = userRepository.findByEmail(request.email()).orElseThrow(() ->
-                new UsernameNotFoundException(request.email() + " not found")
+                new ResourceNotFoundException(request.email() + " not found")
         );
 
         user.setPassword(passwordEncoder.encode(request.newPassword()));
@@ -183,7 +174,7 @@ public class AuthServiceImpl implements AuthService {
 
         if (userEmail != null) {
             var userDetails = this.userRepository.findByEmail(userEmail).orElseThrow(() ->
-                    new UsernameNotFoundException("User not found")
+                    new ResourceNotFoundException("User not found")
             );
 
             if (jwtService.isTokenValid(refreshToken, userDetails)) {

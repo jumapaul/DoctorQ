@@ -3,4 +3,8 @@ spring:
     name: gateway-service
 
   config:
-    import: optional:configserver:http://localhost:8000
+    import: optional:configserver:http://44.244.227.40:8000
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    reactor.netty.http.client: DEBUG

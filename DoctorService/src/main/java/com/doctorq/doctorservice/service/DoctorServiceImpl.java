@@ -12,6 +12,7 @@ import com.doctorq.doctorservice.repository.DoctorRepository;
 import com.doctorq.doctorservice.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.http.HttpStatus;
@@ -81,11 +82,13 @@ public class DoctorServiceImpl implements DoctorService {
         return doctorMapper.fromDoctorEntity(doctor);
     }
 
-    @Caching(evict = {
-            @CacheEvict(value = "doctorByIdCache", key = "#id"),
-            @CacheEvict(value = "allDoctors", allEntries = true),
-            @CacheEvict(value = "topDoctors", allEntries = true)
-    })
+    @Caching(
+            evict = {
+                    @CacheEvict(value = "allDoctors", allEntries = true),
+                    @CacheEvict(value = "topDoctors", allEntries = true)
+            },
+            put = {@CachePut(value = "doctorByIdCache", key = "#id"),}
+    )
     @Override
     public DoctorResponse updateDoctor(Long id, DoctorRequest request) {
         DoctorEntity doctor = doctorRepository.findById(id).orElseThrow(() ->
