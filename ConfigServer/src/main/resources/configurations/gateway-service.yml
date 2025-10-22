@@ -9,7 +9,7 @@ spring:
 
           routes:
             - id: authentication-service
-              uri: lb://USER-SERVICE
+              uri: lb://user-service
               predicates:
                 - Path=/api/v1/auth/**
               filters:
@@ -22,6 +22,16 @@ spring:
               uri: lb://USER-SERVICE
               predicates:
                 - Path=/api/v1/users/**
+              filters:
+                - AuthenticationFilter
+                - name: CircuitBreaker
+                  args:
+                    name: userServiceCircuitBreaker
+                    fallbackUri: forward:/fallback/userService
+            - id: favorite-service
+              uri: lb://USER-SERVICE
+              predicates:
+                - Path=/api/v1/favorite/**
               filters:
                 - AuthenticationFilter
                 - name: CircuitBreaker
@@ -50,19 +60,6 @@ spring:
                   args:
                     name: feedbackServiceCircuitBreaker
                     fallbackUri: forward:/fallback/feedbackService
-
-management:
-  endpoint:
-    health:
-      show-details: always
-
-  endpoints:
-    web:
-      exposure:
-        include: health
-  health:
-    circuitbreakers:
-      enabled: true
 
 resilience4j:
   circuitbreaker:
@@ -102,7 +99,3 @@ resilience4j:
 
 server:
   port: 8222
-
-security:
-  jwt:
-    secret-key: e9cddb5db6c1ef9a6a5d4b4677ef1d6c6fff514fdf3fd23b9099d754b0c42b03b7560d34cd4a78620cf619e6bee5a3926b803e737153667c856081bb90d145fa

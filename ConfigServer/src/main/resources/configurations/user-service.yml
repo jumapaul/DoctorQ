@@ -1,11 +1,7 @@
 spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5432/doctorq-users
-    username: postgres
-    password: postgres
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     database-platform: org.hibernate.dialect.PostgreSQLDialect
   flyway:
     enabled: true
@@ -15,9 +11,6 @@ spring:
   mail:
     host: localhost
     port: 1025
-    from_mail: noreply@gmail.com
-    username: juma
-    password: juma
     properties:
       mail:
         smtp:
@@ -28,28 +21,32 @@ spring:
         connectiontimeout: 5000
         timeout: 3000
         writetimeout: 5000
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            client-name: Google
 
-#  security:
-#    oauth2:
-#      client:
-#        registration:
-#          google:
-#            client-id: ${googleClientId}
-#            client-secret: ${googleClientSecret}
-#            scope:
-#              - email
-#              - profile
-#          github:
-#            client-id: ${githubClientId}
-#            client-secret: ${githubClientSecret}
-#            scope:
-#              - user:email
+          github:
+            scope:
+              - read:user
+              - user:email
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            client-name: Github
+        provider:
+          google:
+            authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
+            token-uri: https://www.googleapis.com/oauth2/v4/token
+            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
+            user-name-attribute: sub
 
-security:
-  jwt:
-    secret-key: e9cddb5db6c1ef9a6a5d4b4677ef1d6c6fff514fdf3fd23b9099d754b0c42b03b7560d34cd4a78620cf619e6bee5a3926b803e737153667c856081bb90d145fa
-    expiration-time: 1800000
-    refresh-token:
-      expiration: 604800000
+#security:
+#  jwt:
+#    expiration-time: 1800000
+#    refresh-token:
+#      expiration: 604800000
+
 server:
   port: 8010

@@ -1,18 +1,34 @@
 spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5432/feedbacks
-    username: postgres
-    password: postgres
-
   jpa:
     hibernate:
       ddl-auto: update
     database-platform: org.hibernate.dialect.PostgreSQLDialect
 
-application:
-  config:
-    user-url: http://localhost:8010/api/v1/users
-    doctor-url: http://localhost:8020/api/v1/doctors
+resilience4j:
+  circuitbreaker:
+    instances:
+      doctorCircuitBreaker:
+        register-health-indicator: true
+        event-consumer-buffer-size: 10
+        failure-rate-threshold: 50
+        minimum-number-of-calls: 5
+        automatic-transition-from-open-to-half-open-enabled: true
+        wait-duration-in-open-state: 5s
+        permitted-number-of-calls-in-half-open-state: 3
+        sliding-window-size: 10
+        sliding-window-type: COUNT_BASED
+
+      userCircuitBreaker:
+        register-health-indicator: true
+        event-consumer-buffer-size: 10
+        failure-rate-threshold: 50
+        minimum-number-of-calls: 5
+        automatic-transition-from-open-to-half-open-enabled: true
+        wait-duration-in-open-state: 5s
+        permitted-number-of-calls-in-half-open-state: 3
+        sliding-window-size: 10
+        sliding-window-type: COUNT_BASED
+
 
 server:
   port: 8030
