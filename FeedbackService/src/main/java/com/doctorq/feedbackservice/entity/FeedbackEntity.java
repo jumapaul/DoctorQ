@@ -10,6 +10,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Entity
 @Data
@@ -25,5 +26,5 @@ public class FeedbackEntity {
     private Long doctorId;
     private Integer rating = null;
     private String review = null;
-    private LocalDateTime time;
+    private OffsetDateTime time;
 }

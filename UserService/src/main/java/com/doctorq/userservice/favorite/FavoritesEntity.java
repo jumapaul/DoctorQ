@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "FavoritesTable")
@@ -21,5 +22,5 @@ public class FavoritesEntity {
     private Long id;
     private Long userId;
     private Long doctorId;
-    private LocalDateTime createdAt;
+    private OffsetDateTime createdAt;
 }

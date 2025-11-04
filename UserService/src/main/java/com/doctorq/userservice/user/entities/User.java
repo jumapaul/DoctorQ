@@ -11,6 +11,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Collection;
 
 @Entity(name = "DoctorQUsers")
@@ -29,9 +30,9 @@ public class User implements UserDetails {
     private String password;
     private boolean isEnabled;
     private String verificationCode;
-    private LocalDateTime verificationExpiresAt;
+    private OffsetDateTime verificationExpiresAt;
     private String restPassCode;
-    private LocalDateTime restPassCodeExpiresAt;
+    private OffsetDateTime restPassCodeExpiresAt;
     @Enumerated(EnumType.STRING)
     private Roles role;
     @OneToOne(cascade = CascadeType.ALL)

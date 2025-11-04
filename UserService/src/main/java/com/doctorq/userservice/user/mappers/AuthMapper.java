@@ -8,8 +8,7 @@ import com.doctorq.userservice.user.entities.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -24,7 +23,7 @@ public class AuthMapper {
                 .password(passwordEncoder.encode(registerUserDto.password()))
                 .isEnabled(false)
                 .verificationCode(code)
-                .verificationExpiresAt(LocalDateTime.now().plusMinutes(30))
+                .verificationExpiresAt(OffsetDateTime.now().plusMinutes(30))
                 .role(Roles.USER)
                 .build();
     }

@@ -24,7 +24,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Random;
 
 @Service
@@ -63,7 +63,7 @@ public class AuthServiceImpl implements AuthService {
 
         if (user.getVerificationCode() == null) throw new ConflictException("User already verified");
 
-        if (user.getVerificationExpiresAt().isBefore(LocalDateTime.now()))
+        if (user.getVerificationExpiresAt().isBefore(OffsetDateTime.now()))
             throw new BadRequestException("Verification code already expired.");
 
         if (verifyUserDto.verificationCode().equals(user.getVerificationCode())) {
@@ -84,7 +84,7 @@ public class AuthServiceImpl implements AuthService {
 
         if (user.isEnabled()) throw new BadRequestException("User already verified");
         user.setVerificationCode(generateVerificationCode());
-        user.setVerificationExpiresAt(LocalDateTime.now().plusMinutes(15));
+        user.setVerificationExpiresAt(OffsetDateTime.now().plusMinutes(15));
 
         userRepository.save(user);
 
@@ -123,7 +123,7 @@ public class AuthServiceImpl implements AuthService {
                 new ResourceNotFoundException(email + " not found")
         );
         user.setRestPassCode(generateVerificationCode());
-        user.setRestPassCodeExpiresAt(LocalDateTime.now().plusMinutes(10));
+        user.setRestPassCodeExpiresAt(OffsetDateTime.now().plusMinutes(10));
 
         User user1 = userRepository.save(user);
 
@@ -160,16 +160,16 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public RefreshTokenResponse refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
         final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
         final String userEmail;
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return;
+            throw new UnAuthorizedException("No auth header provided");
         }
 
         final String refreshToken = authHeader.substring(7);
 
-
+        RefreshTokenResponse refreshTokenResponse = null;
         userEmail = jwtService.extractUsername(refreshToken);
 
         if (userEmail != null) {
@@ -179,13 +179,16 @@ public class AuthServiceImpl implements AuthService {
 
             if (jwtService.isTokenValid(refreshToken, userDetails)) {
                 var accessToken = jwtService.generateToken(userDetails);
-                var authResponse = new RefreshTokenResponse(
+
+                refreshTokenResponse = new RefreshTokenResponse(
                         accessToken,
                         refreshToken
                 );
 
-                new ObjectMapper().writeValue(response.getOutputStream(), authResponse);
+//                new ObjectMapper().writeValue(response.getOutputStream(), authResponse);
             }
         }
+
+        return refreshTokenResponse;
     }
 }

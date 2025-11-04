@@ -15,11 +15,10 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Slf4j
@@ -46,7 +45,7 @@ public class FavoriteDoctorServiceImpl implements FavoriteDoctorService {
         FavoritesEntity favoritesEntity = FavoritesEntity.builder()
                 .userId(request.userId())
                 .doctorId(request.doctorId())
-                .createdAt(LocalDateTime.now())
+                .createdAt(OffsetDateTime.now())
                 .build();
 
         favoriteRepository.save(favoritesEntity);

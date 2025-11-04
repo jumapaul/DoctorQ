@@ -1,4 +1,7 @@
 spring:
+  cloud:
+    config:
+      fail-fast: true
   jpa:
     hibernate:
       ddl-auto: update
@@ -8,19 +11,25 @@ spring:
     locations: classpath:db/migrations
     baselineOnMigrate: true
 
-  mail:
-    host: localhost
-    port: 1025
-    properties:
-      mail:
-        smtp:
-          trust: "*"
-        auth: true
-        starttls:
-          enabled: true
-        connectiontimeout: 5000
-        timeout: 3000
-        writetimeout: 5000
+#  ('user-service', 'spring.mail.port', '587'),
+#  ('user-service', 'spring.mail.password', 'yknqamfcszrsjetm'),
+#  ('user-service', 'spring.mail.properties.mail.smtp.starttls.enable', 'true'),
+#  ('user-service', 'spring.mail.properties.mail.smtp.auth', 'true');
+#  mail:
+#    host: smtp.gmail.com
+#    port: 587
+#    username: noreply@gmail.com
+#    password: yknqamfcszrsjetm
+#    properties:
+#      mail:
+#        smtp:
+#          trust: "*"
+#        auth: true
+#        starttls:
+#          enabled: true
+#        connectiontimeout: 5000
+#        timeout: 3000
+#        writetimeout: 5000
   security:
     oauth2:
       client:

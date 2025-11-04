@@ -3,8 +3,4 @@ spring:
     name: doctor-service
 
   config:
-    import: optional:configserver:http://localhost:8000
-
-  cloud:
-    config:
-      fail-fast: true
+    import: optional:configserver:http://52.33.219.55:8000

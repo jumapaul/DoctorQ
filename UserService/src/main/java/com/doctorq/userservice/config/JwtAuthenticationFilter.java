@@ -8,11 +8,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -23,12 +20,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Scanner;
 
 @Component
 @RequiredArgsConstructor
@@ -55,20 +46,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String jwtToken = authHeader.substring(7);
 
         try {
-            handleJwt(jwtToken, response, request);
-        } catch (MalformedJwtException | ExpiredJwtException e) {
-            handleJwtException(response, e);
-            return; // stop further processing
-        } catch (Exception e) {
-            handleForbiddenException(response, e);
-            return;
-        }
-
-        filterChain.doFilter(request, response);
-    }
-
-    private void handleJwt(String jwtToken, HttpServletResponse response, HttpServletRequest request) throws IOException {
-        try {
             final String userEmail = jwtService.extractUsername(jwtToken);
 
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -86,37 +63,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
         } catch (MalformedJwtException | ExpiredJwtException exception) {
-            handleJwtException(response, exception);
+            writeErrorResponse(response, HttpServletResponse.SC_FORBIDDEN, exception.getMessage());
+            return;
         } catch (Exception e) {
-            handleForbiddenException(response, e);
+            writeErrorResponse(response, HttpServletResponse.SC_FORBIDDEN, e.getMessage());
+            return;
         }
-    }
 
-    private void handleJwtException(HttpServletResponse response, Exception e) throws IOException {
-        response.setStatus(HttpStatus.FORBIDDEN.value());
-        response.setContentType("application/json");
-
-        ApiResponse<Object> apiResponse = new ApiResponse<>(
-                HttpStatus.FORBIDDEN.value(),
-                e.getMessage(),
-                null
-        );
-
-        response.getWriter().write(objectMapper.writeValueAsString(apiResponse));
+        filterChain.doFilter(request, response);
     }
 
 
-    private void handleForbiddenException(HttpServletResponse response, Exception e) throws IOException {
-        response.setStatus(HttpStatus.FORBIDDEN.value());
+    private void writeErrorResponse(HttpServletResponse response, int status, String message) throws IOException {
+        response.setStatus(status);
         response.setContentType("application/json");
-
-        ApiResponse<Object> apiResponse = new ApiResponse<>(
-                HttpStatus.FORBIDDEN.value(),
-                e.getMessage(),
-                null
-        );
-
-        response.getWriter().write(objectMapper.writeValueAsString(apiResponse));
+        ApiResponse<Object> apiResponse = new ApiResponse<>(status, message, null);
+        response.getWriter().write(new ObjectMapper().writeValueAsString(apiResponse));
     }
 }
 

@@ -3,3 +3,7 @@ FeedbackService/logs
 UserService/logs
 UserService/build
 doctorq-aws.pem
+doctorq_latest.pem
+doctorq-api.crt
+doctorq-api.csr
+doctorq-api.key

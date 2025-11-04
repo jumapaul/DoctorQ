@@ -2,5 +2,5 @@ spring:
   application:
     name: eureka-service
   config:
-    import: optional:configserver:http://localhost:8000
+    import: optional:configserver:http://52.33.219.55:8000
 

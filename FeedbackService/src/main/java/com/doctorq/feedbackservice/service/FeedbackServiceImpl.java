@@ -58,7 +58,6 @@ public class FeedbackServiceImpl implements FeedbackService {
     @Override
     public List<FeedbackEntity> getAllDoctorFeedback(Long doctorId) {
         return feedbackRepository.findByDoctorId(doctorId);
-
     }
 
     @Override

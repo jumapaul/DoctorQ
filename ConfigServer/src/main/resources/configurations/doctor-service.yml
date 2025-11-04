@@ -1,4 +1,7 @@
 spring:
+  cloud:
+    config:
+      fail-fast: true
   jpa:
     hibernate:
       ddl-auto: update

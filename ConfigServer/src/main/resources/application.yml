@@ -14,9 +14,9 @@ spring:
           search-locations: classpath:/configurations
 
   datasource:
-    url: jdbc:postgresql://44.244.227.40:5432/config-database
-    username: postgres
-    password: postgres
+    url: ${dataSourceUrl}
+    username: ${username}
+    password: ${password}
   jpa:
     hibernate:
       ddl-auto: update

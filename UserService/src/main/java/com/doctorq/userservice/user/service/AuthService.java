@@ -24,5 +24,5 @@ public interface AuthService {
 
     void verifyPassResetCode(VerifyPassResetCode verifyPassResetCode);
 
-    void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException;
+    RefreshTokenResponse refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException;
 }

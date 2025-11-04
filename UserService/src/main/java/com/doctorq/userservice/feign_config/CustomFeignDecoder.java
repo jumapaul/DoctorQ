@@ -4,7 +4,6 @@ import com.doctorq.userservice.exception.AccessDeniedException;
 import com.doctorq.userservice.exception.ServiceUnavailableException;
 import feign.Response;
 import feign.codec.ErrorDecoder;
-import jakarta.ws.rs.InternalServerErrorException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;

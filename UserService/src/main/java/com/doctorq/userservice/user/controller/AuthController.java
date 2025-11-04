@@ -14,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.time.Duration;
+import java.time.LocalDateTime;
 
 @Slf4j
 @RequestMapping("api/v1/auth")
@@ -45,7 +47,6 @@ public class AuthController {
     public ResponseEntity<ApiResponse<LoginResponse>> loginUser(
             @RequestBody LoginRequest loginRequest
     ) {
-        log.info("--------------->Method is called");
         LoginResponse response = authService.loginUser(loginRequest);
         return ResponseEntity.ok(response(response, "Login successful"));
     }
@@ -85,11 +86,13 @@ public class AuthController {
     }
 
     @PostMapping("/refreshToken")
-    public void refreshToken(
+    public ResponseEntity<ApiResponse<RefreshTokenResponse>> refreshToken(
             HttpServletRequest request,
             HttpServletResponse response
     ) throws IOException {
-        authService.refreshToken(request, response);
+        RefreshTokenResponse data = authService.refreshToken(request, response);
+
+        return ResponseEntity.ok(response(data, "Token successfully refreshed"));
     }
 
     private <T> ApiResponse<T> response(T data, String message) {

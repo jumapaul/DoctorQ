@@ -1,7 +1,6 @@
 package com.doctorq.userservice.user_profile.services;
 
 import com.doctorq.userservice.exception.BadRequestException;
-import com.doctorq.userservice.response.ApiResponse;
 import com.doctorq.userservice.user.entities.User;
 import com.doctorq.userservice.user.repository.UserRepository;
 import com.doctorq.userservice.user_profile.dtos.PaginatedResponse;
@@ -21,7 +20,6 @@ import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -40,7 +38,6 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service

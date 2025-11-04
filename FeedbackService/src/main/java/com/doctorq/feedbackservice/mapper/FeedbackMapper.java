@@ -5,6 +5,7 @@ import com.doctorq.feedbackservice.entity.FeedbackEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Service
 public class FeedbackMapper {
@@ -16,7 +17,7 @@ public class FeedbackMapper {
                 .review(request.review())
                 .rating(request.rating())
                 .username(username)
-                .time(LocalDateTime.now())
+                .time(OffsetDateTime.now())
                 .build();
     }
 }

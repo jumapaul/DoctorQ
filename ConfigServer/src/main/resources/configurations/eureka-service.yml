@@ -2,7 +2,5 @@ eureka:
   client:
     fetch-registry: false
     register-with-eureka: false
-    service-url:
-      defaultZone: http://44.244.227.40:8761/eureka/
 server:
   port: 8761

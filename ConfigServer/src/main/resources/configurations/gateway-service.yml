@@ -1,6 +1,11 @@
 spring:
   cloud:
     gateway:
+      httpclient:
+        connect-timeout: 5000
+        response-timeout: 30s
+      globalcors:
+        add-to-simple-url-handler-mapping: true
       server:
         webflux:
           discovery:
@@ -63,39 +68,38 @@ spring:
 
 resilience4j:
   circuitbreaker:
+    configs:
+      default:
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10000
+        permittedNumberOfCallsInHalfOpenState: 3
+        sliding-window-type: COUNT_BASED
+        automatic-transition-from-open-to-half-open-enabled: true
+        register-health-indicator: true
+        event-consumer-buffer-size: 10
     instances:
       userServiceCircuitBreaker:
-        register-health-indicator: true
-        event-consumer-buffer-size: 10
-        failure-rate-threshold: 50
-        minimum-number-of-calls: 5
-        automatic-transition-from-open-to-half-open-enabled: true
-        wait-duration-in-open-state: 5s
-        permitted-number-of-calls-in-half-open-state: 3
-        sliding-window-size: 10
-        sliding-window-type: COUNT_BASED
+        base-config: default
 
       doctorServiceCircuitBreaker:
-        register-health-indicator: true
-        event-consumer-buffer-size: 10
-        failure-rate-threshold: 50
-        minimum-number-of-calls: 5
-        automatic-transition-from-open-to-half-open-enabled: true
-        wait-duration-in-open-state: 5s
-        permitted-number-of-calls-in-half-open-state: 3
-        sliding-window-size: 10
-        sliding-window-type: COUNT_BASED
+        base-config: default
 
       feedbackServiceCircuitBreaker:
-        register-health-indicator: true
-        event-consumer-buffer-size: 10
-        failure-rate-threshold: 50
-        minimum-number-of-calls: 5
-        automatic-transition-from-open-to-half-open-enabled: true
-        wait-duration-in-open-state: 5s
-        permitted-number-of-calls-in-half-open-state: 3
-        sliding-window-size: 10
-        sliding-window-type: COUNT_BASED
+        base-config: default
+  timelimiter:
+    configs:
+      default:
+        timeout-duration: 30s
+    instances:
+      userServiceCircuitBreaker:
+        base-config: default
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    reactor.netty.http.client: DEBUG
 
 server:
   port: 8222
