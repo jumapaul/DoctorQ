@@ -29,6 +29,12 @@ public class FallbackController {
                 .body(success("Feedback Service is currently unavailable. Please try again later."));
     }
 
+    @GetMapping("/fallback/favoriteService")
+    public ResponseEntity<ApiResponse<String>> favoriteFallback() {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(success("Favorite Service is currently unavailable. Please try again later."));
+    }
+
     private <T> ApiResponse<T> success(String message) {
         return new ApiResponse<T>(
                 HttpStatus.SERVICE_UNAVAILABLE.value(),
