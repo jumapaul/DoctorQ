@@ -21,7 +21,7 @@ jobs:
       - name: Recreate Firebase client.json
         run: |
           mkdir -p src/main/resources
-          echo "${{ secrets.FIREBASE_CLIENT_JSON }}" | base64 -d > src/main/resources/client.json
+          echo "${{ secrets.FIREBASE_CLIENT_JSON }}" | base64 -d > src/main/resources/client_secret.json
 
 
       - name: Set up JDK 21
