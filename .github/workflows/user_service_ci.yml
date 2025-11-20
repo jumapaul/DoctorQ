@@ -6,9 +6,6 @@ on:
     paths:
       - 'UserService/**'
 
-env:
-  GIT_SHA: ${{ github.sha }}
-
 jobs:
   build:
     name: Build and test user service
@@ -20,6 +17,12 @@ jobs:
     steps:
       - name: Checkout source code
         uses: actions/checkout@v4
+
+      - name: Recreate Firebase client.json
+        run: |
+          mkdir -p src/main/resources
+          echo "${{ secrets.FIREBASE_CLIENT_JSON }}" | base64 -d > src/main/resources/client.json
+
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
