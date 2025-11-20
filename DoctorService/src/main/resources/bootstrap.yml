@@ -2,12 +2,12 @@ spring:
   application:
     name: doctor-service
   config:
-    import: optional:configserver:http://localhost:8000
+    import: optional:configserver:http://52.43.55.176:8000
 
-  kafka:
-    consumer:
-      bootstrap-servers: localhost:9092
-      properties:
-        schema:
-          registry:
-            url: "http://127.0.0.1:8081"
+#  kafka:
+#    consumer:
+#      bootstrap-servers: localhost:9092
+#      properties:
+#        schema:
+#          registry:
+#            url: "http://127.0.0.1:8081"
