@@ -24,7 +24,7 @@ public class FeedbackEntity {
     private Long userId;
     private String username;
     private Long doctorId;
-    private Integer rating = null;
-    private String review = null;
+    private String review;
+    private Integer rating;
     private OffsetDateTime time;
 }

@@ -45,14 +45,14 @@ public class GlobalExceptionHandler {
         ), HttpStatus.UNAUTHORIZED);
     }
 
-    @ExceptionHandler(RuntimeException.class)
-    ResponseEntity<Object> handleInternalServerErrorException(RuntimeException exception) {
-        return new ResponseEntity<>(new ApiResponse<>(
-                HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                exception.getMessage(),
-                null
-        ), HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+//    @ExceptionHandler(RuntimeException.class)
+//    ResponseEntity<Object> handleInternalServerErrorException(RuntimeException exception) {
+//        return new ResponseEntity<>(new ApiResponse<>(
+//                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+//                exception.getMessage(),
+//                null
+//        ), HttpStatus.INTERNAL_SERVER_ERROR);
+//    }
 
     @ExceptionHandler(ServiceUnavailableException.class)
     ResponseEntity<Object> handleServiceUnavailableException(ServiceUnavailableException exception) {

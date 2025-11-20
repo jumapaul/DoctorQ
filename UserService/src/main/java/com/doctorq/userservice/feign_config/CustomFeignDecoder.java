@@ -24,7 +24,7 @@ public class CustomFeignDecoder implements ErrorDecoder {
             case BAD_REQUEST -> new IllegalArgumentException("Invalid request: " + responseBody);
             case UNAUTHORIZED -> new SecurityException("Unauthorized accessed");
             case FORBIDDEN -> new AccessDeniedException("Access Forbidden");
-            case NOT_FOUND -> new UsernameNotFoundException("User not found");
+            case NOT_FOUND -> new UsernameNotFoundException("Resource not found");
             case INTERNAL_SERVER_ERROR -> new RuntimeException("----------->Internal server error " + responseBody);
             case SERVICE_UNAVAILABLE -> new ServiceUnavailableException("Service not available");
             default -> new Exception("Unexpected error: " + responseBody);

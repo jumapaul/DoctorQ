@@ -24,6 +24,8 @@ public class DoctorEntity {
     private String profilePictureUrl;
     private String hospital;
     private Double rating;
+    private Integer ratingCount;
+    private Integer reviewsCount;
     @Enumerated(EnumType.STRING)
     private Roles role;
     @ManyToMany(fetch = FetchType.EAGER)

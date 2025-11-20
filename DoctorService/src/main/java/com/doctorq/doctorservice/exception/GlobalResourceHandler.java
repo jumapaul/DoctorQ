@@ -1,6 +1,7 @@
 package com.doctorq.doctorservice.exception;
 
 import com.doctorq.doctorservice.response.ApiResponse;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -26,6 +27,17 @@ public class GlobalResourceHandler {
                         exception.getMessage(), null
                 ),
                 HttpStatus.BAD_REQUEST
+        );
+    }
+
+    @ExceptionHandler(JsonProcessingException.class)
+    public ResponseEntity<ApiResponse<Object>> handleJsonProcessingException(JsonProcessingException exception) {
+        return new ResponseEntity<>(
+                new ApiResponse<>(
+                        HttpStatus.UNPROCESSABLE_ENTITY.value(),
+                        exception.getMessage(), null
+                ),
+                HttpStatus.UNPROCESSABLE_ENTITY
         );
     }
 

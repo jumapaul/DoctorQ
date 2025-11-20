@@ -1,0 +1,30 @@
+{
+  "namespace": "com.doctorq.feedbackservice.kafka",
+  "type": "record",
+  "name": "FeedbackAvcEvent",
+  "fields": [
+    {
+      "name": "id",
+      "type": "long",
+      "default": 0
+    },
+    {
+      "name": "doctorId",
+      "type": "long"
+    },
+    {
+      "name": "rating",
+      "type": "double"
+    },
+    {
+      "name": "ratingCount",
+      "type": "int",
+      "default": 0
+    },
+    {
+      "name": "reviewsCount",
+      "type": "int",
+      "default": 0
+    }
+  ]
+}

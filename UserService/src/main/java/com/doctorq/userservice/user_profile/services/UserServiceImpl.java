@@ -3,7 +3,7 @@ package com.doctorq.userservice.user_profile.services;
 import com.doctorq.userservice.exception.BadRequestException;
 import com.doctorq.userservice.user.entities.User;
 import com.doctorq.userservice.user.repository.UserRepository;
-import com.doctorq.userservice.user_profile.dtos.PaginatedResponse;
+import com.doctorq.userservice.response.PaginatedResponse;
 import com.doctorq.userservice.user_profile.dtos.UserProfile;
 import com.doctorq.userservice.user_profile.dtos.UserProfileRequest;
 import com.doctorq.userservice.user_profile.dtos.UserResponseDto;

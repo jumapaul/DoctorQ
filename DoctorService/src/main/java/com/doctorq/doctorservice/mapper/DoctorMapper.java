@@ -32,6 +32,8 @@ public class DoctorMapper {
                 .email(request.email())
                 .profilePictureUrl(request.profilePicUrl())
                 .hospital(request.hospital())
+                .ratingCount(0)
+                .reviewsCount(0)
                 .role(Roles.DOCTOR)
                 .doctorCategory(categoryEntitySet)
                 .rating(0.0)
@@ -48,7 +50,9 @@ public class DoctorMapper {
                 entity.getHospital(),
                 categories,
                 entity.getRating(),
-                entity.getRole()
+                entity.getRole(),
+                entity.getRatingCount(),
+                entity.getReviewsCount()
         );
     }
 }

@@ -1,20 +1,17 @@
 package com.doctorq.userservice.user_profile.controller;
 
 import com.doctorq.userservice.response.ApiResponse;
-import com.doctorq.userservice.user_profile.dtos.PaginatedResponse;
+import com.doctorq.userservice.response.PaginatedResponse;
 import com.doctorq.userservice.user_profile.dtos.UserProfileRequest;
 import com.doctorq.userservice.user_profile.dtos.UserResponseDto;
 import com.doctorq.userservice.user_profile.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.env.Environment;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/users")

@@ -5,6 +5,7 @@ import com.doctorq.doctorservice.dtos.DoctorCategoryResponse;
 import com.doctorq.doctorservice.entities.DoctorCategoryEntity;
 import com.doctorq.doctorservice.response.ApiResponse;
 import com.doctorq.doctorservice.service.DoctorCategoryService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +29,7 @@ public class DoctorsCategoryController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<DoctorCategoryEntity>>> getAllCategories() {
+    public ResponseEntity<ApiResponse<List<DoctorCategoryEntity>>> getAllCategories() throws JsonProcessingException {
 
         List<DoctorCategoryEntity> categoryResponseList = doctorCategoryService.getAllCategories();
         return ResponseEntity.ok(response(categoryResponseList));
@@ -36,7 +37,7 @@ public class DoctorsCategoryController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<DoctorCategoryResponse>> getCategoryById(
-            @PathVariable(name = "id") Long id) {
+            @PathVariable(name = "id") Long id) throws JsonProcessingException {
         DoctorCategoryResponse doctorCategory = doctorCategoryService.getCategoryById(id);
         return ResponseEntity.ok(response(doctorCategory));
     }
@@ -45,7 +46,7 @@ public class DoctorsCategoryController {
     public ResponseEntity<ApiResponse<DoctorCategoryResponse>> updateCategory(
             @PathVariable(name = "id") Long id,
             @RequestBody DoctorCategoryRequest request
-    ) {
+    ) throws JsonProcessingException {
         DoctorCategoryResponse doctorCategory = doctorCategoryService.updateCategory(id, request);
         return ResponseEntity.ok(response(doctorCategory));
     }

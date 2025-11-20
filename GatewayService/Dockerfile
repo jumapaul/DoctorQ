@@ -1,4 +1,4 @@
-FROM openjdk:17-jdk-alpine
+FROM eclipse-temurin:17-jdk-alpine
 WORKDIR /DoctorQBackend/GatewayService
 COPY build/libs/GatewayService-0.0.1-SNAPSHOT.jar /DoctorQBackend/GatewayService/GatewayService-0.0.1-SNAPSHOT.jar
 EXPOSE 8222

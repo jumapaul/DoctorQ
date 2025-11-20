@@ -2,4 +2,14 @@ spring:
   application:
     name: feedback-service
   config:
-    import: optional:configserver:http://52.33.219.55:8000
+    import: optional:configserver:http://localhost:8000
+
+  kafka:
+    producer:
+      properties:
+        schema:
+          registry:
+            url: "http://127.0.0.1:8081"
+    admin:
+      auto-create: false
+    bootstrap-servers: localhost:9092

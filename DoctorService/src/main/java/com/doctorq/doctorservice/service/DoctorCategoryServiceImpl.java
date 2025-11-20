@@ -8,6 +8,9 @@ import com.doctorq.doctorservice.exception.ConflictException;
 import com.doctorq.doctorservice.exception.ResourceNotFoundException;
 import com.doctorq.doctorservice.mapper.DoctorCategoryMapper;
 import com.doctorq.doctorservice.repository.DoctorCategoryRepository;
+import com.doctorq.doctorservice.utils.RedisUtil;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -15,8 +18,14 @@ import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+
+import static com.doctorq.doctorservice.utils.Constants.allDoctorsCategoryCache;
+import static com.doctorq.doctorservice.utils.Constants.doctorCategoryByIdCache;
+import static com.doctorq.doctorservice.utils.RedisRetrieveMethods.readCacheValue;
+import static com.doctorq.doctorservice.utils.RedisRetrieveMethods.setCacheValue;
 
 @Slf4j
 @Service
@@ -25,52 +34,54 @@ public class DoctorCategoryServiceImpl implements DoctorCategoryService {
 
     private final DoctorCategoryRepository doctorCategoryRepository;
     private final DoctorCategoryMapper doctorCategoryMapper;
+    private final RedisUtil redisUtil;
 
-    @CacheEvict(value = "allDoctorsCategory", allEntries = true)
+    @Transactional
     @Override
     public DoctorCategoryEntity addCategory(DoctorCategoryRequest request) {
 
+        redisUtil.delete(allDoctorsCategoryCache);
         if (doctorCategoryRepository.findByName(request.name()).isPresent())
             throw new ConflictException("Category already added");
 
         return doctorCategoryRepository.save(doctorCategoryMapper.toDoctorsCategoryEntity(request));
     }
 
-    @Cacheable(value = "allDoctorsCategory")
     @Override
-    public List<DoctorCategoryEntity> getAllCategories() {
-        return doctorCategoryRepository.findAll();
+    public List<DoctorCategoryEntity> getAllCategories() throws JsonProcessingException {
+        Object allDoctors = redisUtil.get(allDoctorsCategoryCache);
+        if (allDoctors == null) {
+            List<DoctorCategoryEntity> response = doctorCategoryRepository.findAll();
+            setCacheValue(redisUtil, allDoctorsCategoryCache, response);
+            return response;
+        }
 
-//        return allCategories.stream().map(doctorCategoryMapper::fromDoctorEntity)
-//                .toList();
+        return readCacheValue(allDoctors.toString(), new TypeReference<>() {
+        });
     }
 
-    @Cacheable(value = "doctorCategoryByIdCache", key = "#id")
     @Override
-    public DoctorCategoryResponse getCategoryById(Long id) {
+    public DoctorCategoryResponse getCategoryById(Long id) throws JsonProcessingException {
+
+        Object category = redisUtil.get(doctorCategoryByIdCache + id);
         DoctorCategoryEntity doctorCategory = doctorCategoryRepository.findById(id).orElseThrow(() ->
                 new ResourceNotFoundException("Category not found")
         );
 
-        List<DoctorDto> doctors = doctorCategory.getDoctors().stream()
-                .map(doctorCategoryMapper::fromEntity).toList();
+        if (category == null) {
 
-        return new DoctorCategoryResponse(
-                doctorCategory.getId(),
-                doctorCategory.getCategoryIcon(),
-                doctorCategory.getDescription(),
-                doctorCategory.getName(),
-                doctorCategory.getDoctorsCount(),
-                doctors
-        );
+            return getDoctorCategoryResponse(id, doctorCategory);
+        }
+
+        return readCacheValue(category.toString(), new TypeReference<>() {
+        });
+
     }
 
-    @Caching(
-            evict = {@CacheEvict(value = "allDoctorsCategory", allEntries = true)},
-            put = {@CachePut(value = "doctorCategoryByIdCache", key = "id"),}
-    )
     @Override
-    public DoctorCategoryResponse updateCategory(Long id, DoctorCategoryRequest request) {
+    public DoctorCategoryResponse updateCategory(Long id, DoctorCategoryRequest request) throws JsonProcessingException {
+        redisUtil.delete(allDoctorsCategoryCache);
+        redisUtil.delete(doctorCategoryByIdCache + id);
         DoctorCategoryEntity doctorCategoryEntity = doctorCategoryRepository.findById(id).orElseThrow(() ->
                 new ResourceNotFoundException("Category with id " + id + " not found")
         );
@@ -80,9 +91,13 @@ public class DoctorCategoryServiceImpl implements DoctorCategoryService {
 
         DoctorCategoryEntity doctorCategory = doctorCategoryRepository.save(doctorCategoryEntity);
 
+        return getDoctorCategoryResponse(id, doctorCategory);
+    }
+
+    private DoctorCategoryResponse getDoctorCategoryResponse(Long id, DoctorCategoryEntity doctorCategory) throws JsonProcessingException {
         List<DoctorDto> doctors = doctorCategory.getDoctors().stream()
                 .map(doctorCategoryMapper::fromEntity).toList();
-        return new DoctorCategoryResponse(
+        DoctorCategoryResponse response = new DoctorCategoryResponse(
                 doctorCategory.getId(),
                 doctorCategory.getCategoryIcon(),
                 doctorCategory.getDescription(),
@@ -90,16 +105,15 @@ public class DoctorCategoryServiceImpl implements DoctorCategoryService {
                 doctorCategory.getDoctorsCount(),
                 doctors
         );
+        setCacheValue(redisUtil, doctorCategoryByIdCache + id, response);
+        return response;
     }
 
-    @Caching(
-            evict = {
-                    @CacheEvict(value = "doctorCategoryByIdCache", key = "#id"),
-                    @CacheEvict(value = "doctorsCategory", allEntries = true)
-            }
-    )
+    @Transactional
     @Override
     public void deleteCategory(Long id) {
+        redisUtil.delete(doctorCategoryByIdCache);
+        redisUtil.delete(allDoctorsCategoryCache);
         doctorCategoryRepository.deleteById(id);
     }
 }

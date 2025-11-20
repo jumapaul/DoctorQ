@@ -1,6 +1,6 @@
 package com.doctorq.userservice.user_profile.services;
 
-import com.doctorq.userservice.user_profile.dtos.PaginatedResponse;
+import com.doctorq.userservice.response.PaginatedResponse;
 import com.doctorq.userservice.user_profile.dtos.UserProfileRequest;
 import com.doctorq.userservice.user_profile.dtos.UserResponseDto;
 import org.springframework.web.multipart.MultipartFile;

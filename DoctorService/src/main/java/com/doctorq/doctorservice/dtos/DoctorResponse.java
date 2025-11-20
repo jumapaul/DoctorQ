@@ -8,8 +8,10 @@ public record DoctorResponse(
         String email,
         String profilePictureUrl,
         String hospital,
-        List<String> specialization,
+        List<String> doctorCategory,
         Double rating,
-        Roles role
+        Roles role,
+        Integer ratingsCount,
+        Integer reviewsCount
 ) {
 }

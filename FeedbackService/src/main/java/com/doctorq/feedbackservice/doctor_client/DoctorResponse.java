@@ -1,14 +1,19 @@
 package com.doctorq.feedbackservice.doctor_client;
 
-import lombok.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
-public class DoctorResponse {
-    private Long id;
-    private String fullName;
-    private String email;
-    private String hospital;
+import java.util.List;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+public record DoctorResponse(
+        Long id,
+        String fullName,
+        String email,
+        String profilePictureUrl,
+        String hospital,
+        List<String> doctorCategory,
+        Double rating,
+        Integer ratingsCount,
+        Integer reviewsCount
+) {
 }

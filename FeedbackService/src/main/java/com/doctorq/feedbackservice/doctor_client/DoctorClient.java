@@ -8,7 +8,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 
 @FeignClient(
-        name = "DOCTOR-SERVICE",
+//        name = "DOCTOR-SERVICE",
+        name = "doctorService",
+        url = "http://localhost:8020",
         configuration = FeignClientConfiguration.class
 )
 public interface DoctorClient {

@@ -10,4 +10,6 @@ import java.util.List;
 public interface FeedbackRepository extends JpaRepository<FeedbackEntity, Long> {
 
     List<FeedbackEntity> findByDoctorId(Long doctorId);
+
+    Integer countByDoctorId(Long doctorId);
 }
