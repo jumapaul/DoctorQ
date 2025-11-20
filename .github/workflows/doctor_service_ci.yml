@@ -37,7 +37,7 @@ jobs:
       - name: Get latest version tag
         id: version
         run: |
-          REPO="${{ secrets.DOCKER_USERNAME }}/user-service"
+          REPO="${{ secrets.DOCKER_USERNAME }}/doctor-service"
 
           # Fetch tags from Docker Hub API
           TAGS=$(curl -s https://hub.docker.com/v2/repositories/$REPO/tags/?page_size=100 \
