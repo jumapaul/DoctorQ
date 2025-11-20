@@ -2,5 +2,6 @@ spring:
   application:
     name: user-service
 
+#We get config
   config:
     import: optional:configserver:http://52.43.55.176:8000
