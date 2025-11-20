@@ -4,7 +4,7 @@ on:
   push:
     branches: [feedbackService]
     paths:
-      - 'UserService'
+      - 'UserService/**'
 
 env:
   GIT_SHA: ${{ github.sha }}
