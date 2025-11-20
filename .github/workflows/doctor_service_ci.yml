@@ -57,7 +57,7 @@ jobs:
           echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_OUTPUT
 
       - name: Build Docker image
-        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/user-service:${{ steps.version.outputs.NEW_VERSION }} .
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/doctor-service:${{ steps.version.outputs.NEW_VERSION }} .
 
       - name: Push Docker image
-        run: docker push ${{ secrets.DOCKER_USERNAME }}/user-service:${{ steps.version.outputs.NEW_VERSION }}
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/doctor-service:${{ steps.version.outputs.NEW_VERSION }}
