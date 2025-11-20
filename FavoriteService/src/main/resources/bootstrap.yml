@@ -3,4 +3,4 @@ spring:
     name: favorite-service
 
   config:
-    import: optional:configserver:http://localhost:8000
+    import: optional:configserver:http://34.218.120.119:8000

@@ -1,0 +1,63 @@
+name: Build and test config service
+
+on:
+  push:
+    branches: [feedbackService]
+    paths:
+      - 'ConfigServer/**'
+
+jobs:
+  build:
+    name: Build and test config service
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ConfigServer
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'gradle'
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Build and run test
+        run: ./gradlew clean build -x test
+
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: Get latest version tag
+        id: version
+        run: |
+          REPO="${{ secrets.DOCKER_USERNAME }}/config-service"
+
+          # Fetch tags from Docker Hub API
+          TAGS=$(curl -s https://hub.docker.com/v2/repositories/$REPO/tags/?page_size=100 \
+            | jq -r '.results[].name' \
+            | grep -E '^[0-9]+\.[0-9]+$' | sort -V)
+
+          echo "Existing tags:"
+          echo "$TAGS"
+
+          if [ -z "$TAGS" ]; then
+            NEW_VERSION="0.1"
+          else
+            LAST_VERSION=$(echo "$TAGS" | tail -n 1)
+            NEW_VERSION=$(awk -v v="$LAST_VERSION" 'BEGIN {printf "%.1f", v + 0.1}')
+          fi
+
+          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Build Docker image
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/config-service:${{ steps.version.outputs.NEW_VERSION }} .
+
+      - name: Push Docker image
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/config-service:${{ steps.version.outputs.NEW_VERSION }}

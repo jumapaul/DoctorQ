@@ -2,4 +2,4 @@ spring:
   application:
     name: user-service
   config:
-    import: optional:configserver:http://52.43.55.176:8000
+    import: optional:configserver:http://34.218.120.119:8000
