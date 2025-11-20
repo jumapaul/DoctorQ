@@ -12,6 +12,7 @@ import java.time.Duration;
 @Configuration
 public class Resilience4jConfig {
 
+    //Circuit breaker registry
     @Bean
     public CircuitBreakerRegistry circuitBreakerRegistry() {
         CircuitBreakerConfig doctorCircuitBreaker = CircuitBreakerConfig.custom()
