@@ -1,6 +1,6 @@
 package com.doctorq.feedbackservice.outer_box;
 
-import com.doctorq.feedbackservice.kafka.FeedbackAvcEvent;
+import com.doctorq.feedbackservice.kafka.FeedbackEvent;
 import com.doctorq.feedbackservice.kafka.KafkaProducer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,10 +37,10 @@ public class FeedbackTransactionalOuterBoxImpl {
         });
     }
 
-    private CompletableFuture<SendResult<String, FeedbackAvcEvent>> publishFeedback(
+    private CompletableFuture<SendResult<String, FeedbackEvent>> publishFeedback(
             FeedbackOuterBoxEntity feedbackOuterBoxEntity
     ) {
-        FeedbackAvcEvent event = new FeedbackAvcEvent(
+        FeedbackEvent event = new FeedbackEvent(
                 feedbackOuterBoxEntity.getId(),
                 feedbackOuterBoxEntity.getDoctorId(),
                 feedbackOuterBoxEntity.getRating(),

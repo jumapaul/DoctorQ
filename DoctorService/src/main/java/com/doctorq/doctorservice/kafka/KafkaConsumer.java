@@ -1,13 +1,9 @@
 package com.doctorq.doctorservice.kafka;
 
-import com.doctorq.doctorservice.dtos.DoctorResponse;
 import com.doctorq.doctorservice.entities.DoctorEntity;
 import com.doctorq.doctorservice.exception.ResourceNotFoundException;
 import com.doctorq.doctorservice.repository.DoctorRepository;
-import com.doctorq.doctorservice.service.DoctorService;
 import com.doctorq.doctorservice.utils.RedisUtil;
-import com.doctorq.feedbackservice.kafka.FeedbackAvcEvent;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -27,12 +23,12 @@ public class KafkaConsumer {
     private static final String RatingGroup = "RATING_GROUP";
 
     @KafkaListener(topics = RatingTopic, groupId = RatingGroup)
-    public void listen(FeedbackAvcEvent event) {
+    public void listen(FeedbackEvent event) {
         log.info("-------------->Consuming: {}", event);
         updateDoctorFeeds(event);
     }
 
-    private void updateDoctorFeeds(FeedbackAvcEvent feedbackAvcEvent) {
+    private void updateDoctorFeeds(FeedbackEvent feedbackAvcEvent) {
         redisUtil.delete(allDoctorsCache);
         redisUtil.delete(topDoctorsCache);
         redisUtil.delete(doctorByIdCache + feedbackAvcEvent.getDoctorId());

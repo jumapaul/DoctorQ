@@ -29,7 +29,9 @@ public class DoctorCategoryMapper {
                 entity.getEmail(),
                 entity.getProfilePictureUrl(),
                 entity.getHospital(),
-                entity.getRating()
+                entity.getRating(),
+                entity.getRatingCount(),
+                entity.getReviewsCount()
         );
     }
 }

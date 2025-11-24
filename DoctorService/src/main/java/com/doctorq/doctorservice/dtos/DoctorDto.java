@@ -6,6 +6,8 @@ public record DoctorDto(
         String email,
         String profilePictureUrl,
         String hospital,
-        Double rating
+        Double rating,
+        Integer ratingCount,
+        Integer reviewsCount
 ) {
 }

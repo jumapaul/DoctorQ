@@ -17,19 +17,19 @@ import java.util.Map;
 @Configuration
 public class ProducerConfiguration {
 
-//    @Value("${spring.kafka.bootstrap-servers}")
+    @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapAddress="localhost:9092";
 
     @Value("${spring.kafka.producer.properties.schema.registry.url}")
     private String registryUrl;
 
     @Bean
-    public ProducerFactory<String, FeedbackAvcEvent> producerFactory() {
+    public ProducerFactory<String, FeedbackEvent> producerFactory() {
         Map<String, Object> configProps = new HashMap<>();
 
         configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
         configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class);
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
         configProps.put(ProducerConfig.ENABLE_METRICS_PUSH_CONFIG, false);
         configProps.put(ProducerConfig.RETRIES_CONFIG, 3);
         configProps.put(ProducerConfig.DELIVERY_TIMEOUT_MS_CONFIG, 60000);
@@ -37,13 +37,13 @@ public class ProducerConfiguration {
         configProps.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true);
         configProps.put(ProducerConfig.ACKS_CONFIG, "all");
         configProps.put(ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, 5);
-        configProps.put("schema.registry.url", registryUrl);
+//        configProps.put("schema.registry.url", registryUrl);
 
         return new DefaultKafkaProducerFactory<>(configProps);
     }
 
     @Bean
-    public KafkaTemplate<String, FeedbackAvcEvent> kafkaTemplate() {
+    public KafkaTemplate<String, FeedbackEvent> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
     }
 }

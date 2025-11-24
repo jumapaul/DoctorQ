@@ -15,9 +15,9 @@ public class KafkaProducer {
 
     public static final String TOPIC = "RATING_TOPIC";
 
-    private final KafkaTemplate<String, FeedbackAvcEvent> kafkaTemplate;
+    private final KafkaTemplate<String, FeedbackEvent> kafkaTemplate;
 
-    public CompletableFuture<SendResult<String, FeedbackAvcEvent>> publish(FeedbackAvcEvent event) {
+    public CompletableFuture<SendResult<String, FeedbackEvent>> publish(FeedbackEvent event) {
         log.info("------------->Publishing event: {}", event);
         return kafkaTemplate.send(TOPIC, event).whenComplete((result, ex) -> {
             if (ex != null) {
