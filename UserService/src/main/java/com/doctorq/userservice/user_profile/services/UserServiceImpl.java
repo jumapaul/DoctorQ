@@ -8,6 +8,9 @@ import com.doctorq.userservice.user_profile.dtos.UserProfile;
 import com.doctorq.userservice.user_profile.dtos.UserProfileRequest;
 import com.doctorq.userservice.user_profile.dtos.UserResponseDto;
 import com.doctorq.userservice.user_profile.mapper.UserMapper;
+import com.doctorq.userservice.util.RedisUtil;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
@@ -39,6 +42,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.List;
 
+import static com.doctorq.userservice.util.Constants.*;
+import static com.doctorq.userservice.util.RedisRetrieveMethods.readCacheValue;
+import static com.doctorq.userservice.util.RedisRetrieveMethods.setCacheValue;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -46,11 +53,13 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper mapper;
     private final Storage storage;
+    private final RedisUtil redisUtil;
 
-    @Cacheable(value = "getAllUsers")
     @Override
-    public PaginatedResponse getAllUsers(int page, int size) {
-        try {
+    public PaginatedResponse<UserResponseDto> getAllUsers(int page, int size) throws JsonProcessingException {
+        Object allUsersCache = redisUtil.get(getAllUsersCache + page + size);
+
+        if (allUsersCache == null) {
             Pageable pageable = PageRequest.of(page, size);
             Page<User> paginatedUsers = userRepository.findAll(pageable);
 
@@ -58,7 +67,7 @@ public class UserServiceImpl implements UserService {
                     .getContent()
                     .stream()
                     .map(mapper::fromUser).toList();
-            return new PaginatedResponse(
+            PaginatedResponse<UserResponseDto> users = new PaginatedResponse<UserResponseDto>(
                     response,
                     paginatedUsers.getNumber(),
                     paginatedUsers.getTotalPages(),
@@ -68,17 +77,19 @@ public class UserServiceImpl implements UserService {
                     paginatedUsers.isLast()
 
             );
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage());
+
+            setCacheValue(redisUtil, getAllUsersCache + page + size, users);
+
+            return users;
         }
+
+        return readCacheValue(allUsersCache.toString(), new TypeReference<>() {
+        });
     }
 
-    @Caching(
-            evict = {@CacheEvict(value = "getAllUsers", allEntries = true)},
-            put = {@CachePut(value = "getUserById", key = "#userId")}
-    )
     @Override
     public UserResponseDto addUserProfile(UserProfileRequest request, Long userId) {
+        redisUtil.delete(getAllUsersCache);
         User user = userRepository.findById(userId).orElseThrow(() ->
                 new UsernameNotFoundException("User not found")
         );
@@ -99,12 +110,10 @@ public class UserServiceImpl implements UserService {
         return mapper.fromUser(savedUser);
     }
 
-    @Caching(
-            evict = {@CacheEvict(value = "getAllUsers", allEntries = true)},
-            put = {@CachePut(value = "getUserById", key = "#userId")}
-    )
     @Override
     public UserResponseDto updateUserProfile(UserProfileRequest request, Long userId) {
+        redisUtil.delete(getAllUsersCache);
+        redisUtil.delete(getUserById + userId);
         User user = userRepository.findById(userId).orElseThrow(() ->
                 new UsernameNotFoundException("User not found")
         );
@@ -123,24 +132,30 @@ public class UserServiceImpl implements UserService {
         return mapper.fromUser(user);
     }
 
-    @Cacheable(value = "getUserById", key = "#userId")
     @Override
-    public UserResponseDto getUserById(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(() ->
-                new UsernameNotFoundException("User with id " + userId + " not found")
-        );
+    public UserResponseDto getUserById(Long userId) throws JsonProcessingException {
+        Object userCache = redisUtil.get(getUserById + userId);
 
-        return mapper.fromUser(user);
+        if (userCache == null) {
+            User user = userRepository.findById(userId).orElseThrow(() ->
+                    new UsernameNotFoundException("User with id " + userId + " not found")
+            );
+
+            UserResponseDto responseDto = mapper.fromUser(user);
+
+            setCacheValue(redisUtil, getUserById + userId, responseDto);
+
+            return responseDto;
+        }
+
+        return readCacheValue(userCache.toString(), new TypeReference<>() {
+        });
     }
 
-    @Caching(
-            evict = {
-                    @CacheEvict(value = "getAllUsers", allEntries = true),
-                    @CacheEvict(value = "getUserById", key = "#userId")
-            }
-    )
     @Override
     public void deleteUser(Long userId) {
+        redisUtil.delete(getAllUsersCache);
+        redisUtil.delete(getUserById + userId);
         User user = userRepository.findById(userId).orElseThrow(() ->
                 new UsernameNotFoundException("User with id " + userId + " not found")
         );

@@ -1,6 +1,0 @@
-spring:
-  application:
-    name: favorite-service
-
-  config:
-    import: optional:configserver:http://34.218.120.119:8000

@@ -28,14 +28,6 @@
         </option>
       </GradleProjectSettings>
       <GradleProjectSettings>
-        <option name="externalProjectPath" value="$PROJECT_DIR$/FavoriteService" />
-        <option name="modules">
-          <set>
-            <option value="$PROJECT_DIR$/FavoriteService" />
-          </set>
-        </option>
-      </GradleProjectSettings>
-      <GradleProjectSettings>
         <option name="externalProjectPath" value="$PROJECT_DIR$/FeedbackService" />
         <option name="modules">
           <set>

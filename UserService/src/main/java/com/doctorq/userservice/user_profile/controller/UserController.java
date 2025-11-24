@@ -5,6 +5,7 @@ import com.doctorq.userservice.response.PaginatedResponse;
 import com.doctorq.userservice.user_profile.dtos.UserProfileRequest;
 import com.doctorq.userservice.user_profile.dtos.UserResponseDto;
 import com.doctorq.userservice.user_profile.services.UserService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
@@ -26,7 +27,7 @@ public class UserController {
     public ResponseEntity<PaginatedResponse> getAllUsers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
-    ) {
+    ) throws JsonProcessingException {
 
         PaginatedResponse responseDtoList = userService.getAllUsers(page, size);
         return ResponseEntity.ok(responseDtoList);
@@ -35,7 +36,7 @@ public class UserController {
     @GetMapping("/{userId}")
     public ResponseEntity<ApiResponse<UserResponseDto>> getUserById(
             @PathVariable(name = "userId") Long userId
-    ) {
+    ) throws JsonProcessingException {
         UserResponseDto responseDto = userService.getUserById(userId);
         return ResponseEntity.ok(response(responseDto));
     }
