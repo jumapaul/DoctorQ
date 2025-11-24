@@ -12,3 +12,5 @@ public class FeedbackEvent {
     private int ratingCount;
     private int reviewsCount;
 }
+
+//Removed avro
