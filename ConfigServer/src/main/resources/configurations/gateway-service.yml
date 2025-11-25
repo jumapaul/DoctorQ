@@ -56,26 +56,15 @@ spring:
                     fallbackUri: forward:/fallback/doctorService
 
             - id: feedback-service
-              uri: lb://FEEDBACK-SERVICE
+              uri: lb://DOCTOR-SERVICE
               predicates:
                 - Path=/api/v1/feedbacks/**
               filters:
                 - AuthenticationFilter
                 - name: CircuitBreaker
                   args:
-                    name: feedbackServiceCircuitBreaker
-                    fallbackUri: forward:/fallback/feedbackService
-
-            - id: favorite-service
-              uri: lb://FAVORITE-SERVICE
-              predicates:
-                - Path=/api/v1/favorite/**
-              filters:
-                - AuthenticationFilter
-                - name: CircuitBreaker
-                  args:
-                    name: favoriteServiceCircuitBreaker
-                    fallbackUri: forward:/fallback/favoriteService
+                    name: doctorServiceCircuitBreaker
+                    fallbackUri: forward:/fallback/doctorService
 
 resilience4j:
   circuitbreaker:
