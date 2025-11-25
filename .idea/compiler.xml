@@ -16,6 +16,9 @@
       <module name="FavoriteService" target="17" />
       <module name="FavoriteService.main" target="17" />
       <module name="FavoriteService.test" target="17" />
+      <module name="FeedbackService" target="17" />
+      <module name="FeedbackService.main" target="17" />
+      <module name="FeedbackService.test" target="17" />
     </bytecodeTargetLevel>
   </component>
 </project>
