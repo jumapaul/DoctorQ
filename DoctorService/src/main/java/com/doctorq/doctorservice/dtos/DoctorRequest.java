@@ -7,6 +7,9 @@ public record DoctorRequest(
         String email,
         String profilePicUrl,
         String hospital,
-        List<Long> doctorCategory
+        List<Long> doctorCategory,
+        String aboutDoctor,
+        Integer yearsOfExperience,
+        String workingHours
 ) {
 }

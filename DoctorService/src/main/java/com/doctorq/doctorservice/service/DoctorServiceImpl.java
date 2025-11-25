@@ -122,6 +122,9 @@ public class DoctorServiceImpl implements DoctorService {
         doctor.setReviewsCount(doctor.getRatingCount());
         doctor.setRole(Roles.DOCTOR);
         doctor.setDoctorCategory(doctor.getDoctorCategory());
+        doctor.setAboutDoctor(request.aboutDoctor());
+        doctor.setWorkingHours(request.workingHours());
+        doctor.setYearsOfExperience(request.yearsOfExperience());
 
         DoctorEntity savedDoctor = doctorRepository.save(doctor);
         DoctorResponse response = doctorMapper.fromDoctorEntity(savedDoctor);

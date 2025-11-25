@@ -12,6 +12,10 @@ public record DoctorResponse(
         Double rating,
         Roles role,
         Integer ratingsCount,
-        Integer reviewsCount
+        Integer reviewsCount,
+        String aboutDoctor,
+        Integer yearsOfExperience,
+        Integer numberOfPatients,
+        String workingHours
 ) {
 }

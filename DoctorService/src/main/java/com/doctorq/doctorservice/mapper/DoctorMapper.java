@@ -9,7 +9,6 @@ import com.doctorq.doctorservice.exception.ResourceNotFoundException;
 import com.doctorq.doctorservice.repository.DoctorCategoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -37,6 +36,10 @@ public class DoctorMapper {
                 .role(Roles.DOCTOR)
                 .doctorCategory(categoryEntitySet)
                 .rating(0.0)
+                .aboutDoctor(request.aboutDoctor())
+                .numberOfPatients(0)
+                .yearsOfExperience(request.yearsOfExperience())
+                .workingHours(request.workingHours())
                 .build();
     }
 
@@ -52,7 +55,11 @@ public class DoctorMapper {
                 entity.getRating(),
                 entity.getRole(),
                 entity.getRatingCount(),
-                entity.getReviewsCount()
+                entity.getReviewsCount(),
+                entity.getAboutDoctor(),
+                entity.getYearsOfExperience(),
+                entity.getNumberOfPatients(),
+                entity.getWorkingHours()
         );
     }
 }

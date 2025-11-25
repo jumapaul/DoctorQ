@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -28,6 +29,10 @@ public class DoctorEntity {
     private Integer reviewsCount;
     @Enumerated(EnumType.STRING)
     private Roles role;
+    private String aboutDoctor;
+    private Integer yearsOfExperience;
+    private Integer numberOfPatients;
+    private String workingHours;
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "doctor_categories",

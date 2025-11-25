@@ -5,6 +5,7 @@ import com.doctorq.userservice.exception.ServiceUnavailableException;
 import com.doctorq.userservice.favorite.doctor_client.DoctorClient;
 import com.doctorq.userservice.favorite.dtos.FavoriteDoctorRequest;
 import com.doctorq.userservice.favorite.entity.FavoritesEntity;
+import com.doctorq.userservice.favorite.favorite_mapper.FavoriteMapper;
 import com.doctorq.userservice.favorite.repository.FavoriteDoctorRepository;
 import com.doctorq.userservice.favorite.response.DoctorResponse;
 import com.doctorq.userservice.response.ApiResponse;
@@ -15,7 +16,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -36,6 +36,7 @@ public class FavoriteDoctorServiceImpl implements FavoriteDoctorService {
     private final FavoriteDoctorRepository favoriteRepository;
     private final DoctorClient doctorClient;
     private final RedisUtil redisUtil;
+    private final FavoriteMapper favoriteMapper;
 
     @Override
     public DoctorResponse addDoctor(FavoriteDoctorRequest request) {
@@ -52,15 +53,8 @@ public class FavoriteDoctorServiceImpl implements FavoriteDoctorService {
 
         favoriteRepository.save(favoritesEntity);
 
-        return new DoctorResponse(
-                favoritesEntity.getId(),
-                doctorResponse.getData().getFullName(),
-                doctorResponse.getData().getEmail(),
-                doctorResponse.getData().getHospital(),
-                doctorResponse.getData().getProfilePictureUrl(),
-                doctorResponse.getData().getRating(),
-                doctorResponse.getData().getDoctorCategory()
-        );
+
+        return favoriteMapper.fromEntity(favoritesEntity.getId(), doctorResponse.getData());
     }
 
     @CircuitBreaker(name = "doctorCircuitBreaker", fallbackMethod = "doctorFallback")
@@ -86,15 +80,7 @@ public class FavoriteDoctorServiceImpl implements FavoriteDoctorService {
                     .map(favoriteDoctor -> {
                         DoctorResponse response = doctorClient.getDoctorById(favoriteDoctor.getDoctorId()).getData();
 
-                        return new DoctorResponse(
-                                favoriteDoctor.getId(),
-                                response.getFullName(),
-                                response.getEmail(),
-                                response.getHospital(),
-                                response.getProfilePictureUrl(),
-                                response.getRating(),
-                                response.getDoctorCategory()
-                        );
+                        return favoriteMapper.fromEntity(favoriteDoctor.getId(), response);
                     }).toList();
 
             PaginatedResponse<DoctorResponse> paginatedResponse = new PaginatedResponse<>(

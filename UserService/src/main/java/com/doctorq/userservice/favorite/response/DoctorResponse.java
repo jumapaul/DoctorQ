@@ -15,10 +15,15 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DoctorResponse {
     private Long id;
+    private Long doctorId;
     private String fullName;
     private String email;
     private String hospital;
     private String profilePictureUrl;
     private Double rating;
     private List<String> doctorCategory;
+    private String aboutDoctor;
+    private Integer yearsOfExperience;
+    private Integer numberOfPatients;
+    private String workingHours;
 }
