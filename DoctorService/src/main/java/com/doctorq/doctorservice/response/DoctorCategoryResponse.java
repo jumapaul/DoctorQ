@@ -1,7 +1,5 @@
 package com.doctorq.doctorservice.response;
 
-import com.doctorq.doctorservice.dtos.DoctorDto;
-
 import java.util.List;
 
 public record DoctorCategoryResponse(
