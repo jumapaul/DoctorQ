@@ -1,5 +1,6 @@
 package com.doctorq.userservice.favorite.favorite_mapper;
 
+import com.doctorq.userservice.favorite.entity.FavoritesEntity;
 import com.doctorq.userservice.favorite.response.DoctorOverview;
 import com.doctorq.userservice.favorite.response.DoctorResponse;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ public class FavoriteMapper {
                 response.getHospital(),
                 response.getProfilePictureUrl(),
                 response.getRating(),
+                response.getDoctorCategory(),
                 response.getReviewsCount()
         );
     }

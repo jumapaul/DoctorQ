@@ -10,6 +10,6 @@ public record DoctorCategoryResponse(
         String description,
         String categoryIcon,
         Integer doctorsCount,
-        List<DoctorDto> doctors
+        List<DoctorOverview> doctors
 ) {
 }

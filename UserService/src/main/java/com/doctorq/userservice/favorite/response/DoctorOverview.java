@@ -10,6 +10,7 @@ public record DoctorOverview(
         String hospital,
         String profilePictureUrl,
         Double rating,
+        List<String> doctorCategory,
         Integer reviewsCount
 ) {
 }
