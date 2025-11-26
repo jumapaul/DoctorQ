@@ -16,7 +16,6 @@ public class FavoriteMapper {
                 response.getHospital(),
                 response.getProfilePictureUrl(),
                 response.getRating(),
-                response.getDoctorCategory(),
                 response.getReviewsCount()
         );
     }
