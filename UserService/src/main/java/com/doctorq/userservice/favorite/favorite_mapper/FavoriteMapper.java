@@ -37,6 +37,6 @@ public class FavoriteMapper {
                 response.getRating(),
                 response.getDoctorCategory(),
                 response.getReviewsCount()
-        )
+        );
     }
 }
