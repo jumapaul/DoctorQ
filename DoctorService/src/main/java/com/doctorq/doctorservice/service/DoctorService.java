@@ -1,22 +1,19 @@
 package com.doctorq.doctorservice.service;
 
 import com.doctorq.doctorservice.dtos.DoctorRequest;
-import com.doctorq.doctorservice.dtos.DoctorResponse;
-import com.doctorq.doctorservice.entities.DoctorEntity;
-import com.doctorq.doctorservice.response.ApiResponse;
+import com.doctorq.doctorservice.response.DoctorOverview;
+import com.doctorq.doctorservice.response.DoctorResponse;
 import com.doctorq.doctorservice.response.PaginatedResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
-
-import java.util.List;
 
 public interface DoctorService {
     DoctorResponse addDoctor(DoctorRequest request);
 
-    PaginatedResponse<DoctorResponse> getAllDoctors(int page, int size) throws JsonProcessingException;
+    PaginatedResponse<DoctorOverview> getAllDoctors(int page, int size) throws JsonProcessingException;
 
-    PaginatedResponse<DoctorResponse> getTopDoctors(int page, int size) throws JsonProcessingException;
+    PaginatedResponse<DoctorOverview> getTopDoctors(int page, int size) throws JsonProcessingException;
 
-    PaginatedResponse<DoctorResponse> getCategoryTopDoctor(int page, int size, Long categoryId) throws JsonProcessingException;
+    PaginatedResponse<DoctorOverview> getCategoryTopDoctor(int page, int size, Long categoryId) throws JsonProcessingException;
 
     DoctorResponse getDoctorById(Long id) throws JsonProcessingException;
 
@@ -24,7 +21,7 @@ public interface DoctorService {
 
     void deleteDoctor(Long id);
 
-    PaginatedResponse<DoctorResponse> searchDoctorByName(String name, int page, int size) throws JsonProcessingException;
+    PaginatedResponse<DoctorOverview> searchDoctorByName(String name, int page, int size) throws JsonProcessingException;
 
     void updateRating(double rating, Long doctorId) throws JsonProcessingException;
 

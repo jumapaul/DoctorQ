@@ -7,6 +7,7 @@ import com.doctorq.userservice.favorite.dtos.FavoriteDoctorRequest;
 import com.doctorq.userservice.favorite.entity.FavoritesEntity;
 import com.doctorq.userservice.favorite.favorite_mapper.FavoriteMapper;
 import com.doctorq.userservice.favorite.repository.FavoriteDoctorRepository;
+import com.doctorq.userservice.favorite.response.DoctorOverview;
 import com.doctorq.userservice.favorite.response.DoctorResponse;
 import com.doctorq.userservice.response.ApiResponse;
 import com.doctorq.userservice.response.PaginatedResponse;
@@ -39,7 +40,7 @@ public class FavoriteDoctorServiceImpl implements FavoriteDoctorService {
     private final FavoriteMapper favoriteMapper;
 
     @Override
-    public DoctorResponse addDoctor(FavoriteDoctorRequest request) {
+    public DoctorOverview addDoctor(FavoriteDoctorRequest request) {
         redisUtil.delete(GetAllUserFavoriteDoctors);
         if (favoriteRepository.existsByUserIdAndDoctorId(request.userId(), request.doctorId()))
             throw new ConflictException("User already added to favorites");
@@ -54,7 +55,7 @@ public class FavoriteDoctorServiceImpl implements FavoriteDoctorService {
         favoriteRepository.save(favoritesEntity);
 
 
-        return favoriteMapper.fromEntity(favoritesEntity.getId(), doctorResponse.getData());
+        return favoriteMapper.toDoctorOverView(favoritesEntity.getId(), doctorResponse.getData());
     }
 
     @CircuitBreaker(name = "doctorCircuitBreaker", fallbackMethod = "doctorFallback")
@@ -69,21 +70,21 @@ public class FavoriteDoctorServiceImpl implements FavoriteDoctorService {
     }
 
     @Override
-    public PaginatedResponse<DoctorResponse> getAllUserFavoriteDoctors(Long id, int page, int size) throws JsonProcessingException {
+    public PaginatedResponse<DoctorOverview> getAllUserFavoriteDoctors(Long id, int page, int size) throws JsonProcessingException {
         Object favoriteDoctorCache = redisUtil.get(GetAllUserFavoriteDoctors + page + size);
 
         if (favoriteDoctorCache == null) {
             Pageable pageable = PageRequest.of(page, size);
             Page<FavoritesEntity> paginatedFavorites = favoriteRepository.findAllByUserId(id, pageable);
-            List<DoctorResponse> responseList = paginatedFavorites.getContent()
+            List<DoctorOverview> responseList = paginatedFavorites.getContent()
                     .stream()
                     .map(favoriteDoctor -> {
                         DoctorResponse response = doctorClient.getDoctorById(favoriteDoctor.getDoctorId()).getData();
 
-                        return favoriteMapper.fromEntity(favoriteDoctor.getId(), response);
+                        return favoriteMapper.toDoctorOverView(favoriteDoctor.getId(), response);
                     }).toList();
 
-            PaginatedResponse<DoctorResponse> paginatedResponse = new PaginatedResponse<>(
+            PaginatedResponse<DoctorOverview> paginatedResponse = new PaginatedResponse<>(
                     responseList,
                     paginatedFavorites.getNumber(),
                     paginatedFavorites.getTotalPages(),

@@ -1,4 +1,6 @@
-package com.doctorq.doctorservice.dtos;
+package com.doctorq.doctorservice.response;
+
+import com.doctorq.doctorservice.dtos.Roles;
 
 import java.util.List;
 

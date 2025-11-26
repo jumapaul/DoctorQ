@@ -1,8 +1,8 @@
 package com.doctorq.doctorservice.controllers;
 
 import com.doctorq.doctorservice.dtos.DoctorRequest;
-import com.doctorq.doctorservice.dtos.DoctorResponse;
-import com.doctorq.doctorservice.entities.DoctorEntity;
+import com.doctorq.doctorservice.response.DoctorOverview;
+import com.doctorq.doctorservice.response.DoctorResponse;
 import com.doctorq.doctorservice.response.ApiResponse;
 import com.doctorq.doctorservice.response.PaginatedResponse;
 import com.doctorq.doctorservice.service.DoctorService;
@@ -12,8 +12,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("api/v1/doctors")
@@ -32,7 +30,7 @@ public class DoctorsController {
     }
 
     @GetMapping
-    public ResponseEntity<PaginatedResponse<DoctorResponse>> getAllDoctors(
+    public ResponseEntity<PaginatedResponse<DoctorOverview>> getAllDoctors(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) throws JsonProcessingException {
@@ -68,7 +66,7 @@ public class DoctorsController {
     }
 
     @GetMapping("/topRated")
-    public ResponseEntity<PaginatedResponse<DoctorResponse>> getTopDoctorResponse(
+    public ResponseEntity<PaginatedResponse<DoctorOverview>> getTopDoctorResponse(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) throws JsonProcessingException {
@@ -76,7 +74,7 @@ public class DoctorsController {
     }
 
     @GetMapping("/findDoctor")
-    public ResponseEntity<PaginatedResponse<DoctorResponse>> findDoctorByName(
+    public ResponseEntity<PaginatedResponse<DoctorOverview>> findDoctorByName(
             @Param("name") String name,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
@@ -86,7 +84,7 @@ public class DoctorsController {
     }
 
     @GetMapping("/topRated/{categoryId}")
-    public ResponseEntity<PaginatedResponse<DoctorResponse>> getCategoryTopDoctor(
+    public ResponseEntity<PaginatedResponse<DoctorOverview>> getCategoryTopDoctor(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @PathVariable(name = "categoryId") Long categoryId

@@ -1,7 +1,8 @@
 package com.doctorq.doctorservice.mapper;
 
 import com.doctorq.doctorservice.dtos.DoctorRequest;
-import com.doctorq.doctorservice.dtos.DoctorResponse;
+import com.doctorq.doctorservice.response.DoctorOverview;
+import com.doctorq.doctorservice.response.DoctorResponse;
 import com.doctorq.doctorservice.dtos.Roles;
 import com.doctorq.doctorservice.entities.DoctorCategoryEntity;
 import com.doctorq.doctorservice.entities.DoctorEntity;
@@ -60,6 +61,20 @@ public class DoctorMapper {
                 entity.getYearsOfExperience(),
                 entity.getNumberOfPatients(),
                 entity.getWorkingHours()
+        );
+    }
+
+    public DoctorOverview fromDoctorEntityToOverview(DoctorEntity entity){
+        List<String> categories = entity.getDoctorCategory().stream().map(DoctorCategoryEntity::getName).toList();
+        return new DoctorOverview(
+                entity.getId(),
+                entity.getFullName(),
+                entity.getEmail(),
+                entity.getProfilePictureUrl(),
+                entity.getHospital(),
+                categories,
+                entity.getRating(),
+                entity.getReviewsCount()
         );
     }
 }

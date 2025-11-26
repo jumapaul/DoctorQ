@@ -1,7 +1,7 @@
 package com.doctorq.doctorservice.service;
 
 import com.doctorq.doctorservice.dtos.DoctorCategoryRequest;
-import com.doctorq.doctorservice.dtos.DoctorCategoryResponse;
+import com.doctorq.doctorservice.response.DoctorCategoryResponse;
 import com.doctorq.doctorservice.dtos.DoctorDto;
 import com.doctorq.doctorservice.entities.DoctorCategoryEntity;
 import com.doctorq.doctorservice.exception.ConflictException;

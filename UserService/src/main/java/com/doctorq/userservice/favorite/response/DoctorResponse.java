@@ -26,4 +26,5 @@ public class DoctorResponse {
     private Integer yearsOfExperience;
     private Integer numberOfPatients;
     private String workingHours;
+    private Integer reviewsCount;
 }

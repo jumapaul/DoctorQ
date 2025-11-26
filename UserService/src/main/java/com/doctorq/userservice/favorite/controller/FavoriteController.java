@@ -1,7 +1,7 @@
 package com.doctorq.userservice.favorite.controller;
 
 import com.doctorq.userservice.favorite.dtos.FavoriteDoctorRequest;
-import com.doctorq.userservice.favorite.response.DoctorResponse;
+import com.doctorq.userservice.favorite.response.DoctorOverview;
 import com.doctorq.userservice.favorite.service.FavoriteDoctorService;
 import com.doctorq.userservice.response.ApiResponse;
 import com.doctorq.userservice.response.PaginatedResponse;
@@ -19,10 +19,10 @@ public class FavoriteController {
     private final FavoriteDoctorService favoriteDoctorService;
 
     @PostMapping("/add")
-    public ResponseEntity<ApiResponse<DoctorResponse>> addToFavorite(
+    public ResponseEntity<ApiResponse<DoctorOverview>> addToFavorite(
             @RequestBody FavoriteDoctorRequest request
     ) {
-        DoctorResponse response = favoriteDoctorService.addDoctor(request);
+        DoctorOverview response = favoriteDoctorService.addDoctor(request);
         return ResponseEntity.ok(response(response, "Added to favorite successfully"));
     }
 
@@ -36,12 +36,12 @@ public class FavoriteController {
     }
 
     @GetMapping("/{userId}")
-    public ResponseEntity<PaginatedResponse<DoctorResponse>> getAllFavorites(
+    public ResponseEntity<PaginatedResponse<DoctorOverview>> getAllFavorites(
             @PathVariable(name = "userId") Long userId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) throws JsonProcessingException {
-        PaginatedResponse<DoctorResponse> response = favoriteDoctorService.getAllUserFavoriteDoctors(userId, page, size);
+        PaginatedResponse<DoctorOverview> response = favoriteDoctorService.getAllUserFavoriteDoctors(userId, page, size);
 
         return ResponseEntity.ok(response);
     }

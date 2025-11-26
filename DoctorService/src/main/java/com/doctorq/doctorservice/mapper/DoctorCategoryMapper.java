@@ -1,14 +1,10 @@
 package com.doctorq.doctorservice.mapper;
 
 import com.doctorq.doctorservice.dtos.DoctorCategoryRequest;
-import com.doctorq.doctorservice.dtos.DoctorCategoryResponse;
 import com.doctorq.doctorservice.dtos.DoctorDto;
-import com.doctorq.doctorservice.dtos.DoctorResponse;
 import com.doctorq.doctorservice.entities.DoctorCategoryEntity;
 import com.doctorq.doctorservice.entities.DoctorEntity;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class DoctorCategoryMapper {

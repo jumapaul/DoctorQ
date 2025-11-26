@@ -1,10 +1,11 @@
 package com.doctorq.doctorservice.service;
 
 import com.doctorq.doctorservice.dtos.Roles;
+import com.doctorq.doctorservice.response.DoctorOverview;
 import com.doctorq.doctorservice.response.PaginatedResponse;
 import com.doctorq.doctorservice.utils.RedisUtil;
 import com.doctorq.doctorservice.dtos.DoctorRequest;
-import com.doctorq.doctorservice.dtos.DoctorResponse;
+import com.doctorq.doctorservice.response.DoctorResponse;
 import com.doctorq.doctorservice.entities.DoctorCategoryEntity;
 import com.doctorq.doctorservice.entities.DoctorEntity;
 import com.doctorq.doctorservice.exception.ConflictException;
@@ -69,15 +70,15 @@ public class DoctorServiceImpl implements DoctorService {
     }
 
     @Override
-    public PaginatedResponse<DoctorResponse> getAllDoctors(int page, int size) throws JsonProcessingException {
+    public PaginatedResponse<DoctorOverview> getAllDoctors(int page, int size) throws JsonProcessingException {
         Object doctorsCache = redisUtil.get(allDoctorsCache + page + size);
 
         if (doctorsCache == null) {
             Pageable pageable = PageRequest.of(page, size);
             Page<DoctorEntity> doctors = doctorRepository.findAll(pageable);
-            List<DoctorResponse> response = doctors.stream().map(doctorMapper::fromDoctorEntity).toList();
+            List<DoctorOverview> response = doctors.stream().map(doctorMapper::fromDoctorEntityToOverview).toList();
 
-            PaginatedResponse<DoctorResponse> paginatedResponse = paginate(response, doctors);
+            PaginatedResponse<DoctorOverview> paginatedResponse = paginate(response, doctors);
             setCacheValue(redisUtil, allDoctorsCache + page + size, paginatedResponse);
 
             return paginatedResponse;
@@ -142,15 +143,15 @@ public class DoctorServiceImpl implements DoctorService {
     }
 
     @Override
-    public PaginatedResponse<DoctorResponse> getTopDoctors(int page, int size) throws JsonProcessingException {
+    public PaginatedResponse<DoctorOverview> getTopDoctors(int page, int size) throws JsonProcessingException {
         Object doctorsCache = redisUtil.get(topDoctorsCache + page + size);
 
         if (doctorsCache == null) {
             Pageable pageable = PageRequest.of(page, size);
             Page<DoctorEntity> topDoctors = doctorRepository.getTopDoctor(pageable);
-            List<DoctorResponse> response = topDoctors.stream().map(doctorMapper::fromDoctorEntity).toList();
+            List<DoctorOverview> response = topDoctors.stream().map(doctorMapper::fromDoctorEntityToOverview).toList();
 
-            PaginatedResponse<DoctorResponse> paginatedResponse = paginate(response, topDoctors);
+            PaginatedResponse<DoctorOverview> paginatedResponse = paginate(response, topDoctors);
             setCacheValue(redisUtil, topDoctorsCache + page + size, paginatedResponse);
             return paginatedResponse;
         }
@@ -159,15 +160,15 @@ public class DoctorServiceImpl implements DoctorService {
     }
 
     @Override
-    public PaginatedResponse<DoctorResponse> getCategoryTopDoctor(int page, int size, Long categoryId) throws JsonProcessingException {
+    public PaginatedResponse<DoctorOverview> getCategoryTopDoctor(int page, int size, Long categoryId) throws JsonProcessingException {
         Object topDoctorCache = redisUtil.get(topCategoryDoctorCache + page + size + categoryId);
 
         if (topDoctorCache == null) {
             Pageable pageable = PageRequest.of(page, size);
             Page<DoctorEntity> topDoctors = doctorRepository.getCategoryTopDoctor(categoryId, pageable);
-            List<DoctorResponse> response = topDoctors.stream().map(doctorMapper::fromDoctorEntity).toList();
+            List<DoctorOverview> response = topDoctors.stream().map(doctorMapper::fromDoctorEntityToOverview).toList();
 
-            PaginatedResponse<DoctorResponse> paginatedResponse = paginate(response, topDoctors);
+            PaginatedResponse<DoctorOverview> paginatedResponse = paginate(response, topDoctors);
 
             setCacheValue(redisUtil, topCategoryDoctorCache + page + size + categoryId, paginatedResponse);
 
@@ -178,15 +179,15 @@ public class DoctorServiceImpl implements DoctorService {
     }
 
     @Override
-    public PaginatedResponse<DoctorResponse> searchDoctorByName(String name, int page, int size) throws JsonProcessingException {
+    public PaginatedResponse<DoctorOverview> searchDoctorByName(String name, int page, int size) throws JsonProcessingException {
         Object searchedDoctor = redisUtil.get(searchedDoctorsCache + name + page + size);
 
         if (searchedDoctor == null) {
             Pageable pageable = PageRequest.of(page, size);
             Page<DoctorEntity> searchedDoctors = doctorRepository.findAllByFullName(name, pageable);
-            List<DoctorResponse> response = searchedDoctors.stream().map(doctorMapper::fromDoctorEntity).toList();
+            List<DoctorOverview> response = searchedDoctors.stream().map(doctorMapper::fromDoctorEntityToOverview).toList();
 
-            PaginatedResponse<DoctorResponse> paginatedResponse = paginate(response, searchedDoctors);
+            PaginatedResponse<DoctorOverview> paginatedResponse = paginate(response, searchedDoctors);
             setCacheValue(redisUtil, searchedDoctorsCache + name + page + size, paginatedResponse);
             return paginatedResponse;
         }

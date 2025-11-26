@@ -1,6 +1,5 @@
 package com.doctorq.doctorservice.feedback.service;
 
-import com.doctorq.doctorservice.dtos.DoctorResponse;
 import com.doctorq.doctorservice.entities.DoctorEntity;
 import com.doctorq.doctorservice.exception.ResourceNotFoundException;
 import com.doctorq.doctorservice.exception.ServiceUnavailableException;
@@ -13,7 +12,6 @@ import com.doctorq.doctorservice.feedback.repository.FeedbackRepository;
 import com.doctorq.doctorservice.repository.DoctorRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.retry.annotation.CircuitBreaker;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
