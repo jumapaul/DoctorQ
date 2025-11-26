@@ -15,7 +15,6 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DoctorResponse {
     private Long id;
-    private Long doctorId;
     private String fullName;
     private String email;
     private String hospital;
