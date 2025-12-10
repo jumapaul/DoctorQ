@@ -1,0 +1,28 @@
+spring:
+  cloud:
+    config:
+      enabled: false
+      fail-fast: true
+  application:
+    name: appointment-service
+  datasource:
+    password: postgres
+    username: postgres
+    url: jdbc:postgresql://34.218.120.119:5432/appointments
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+  mail:
+    properties:
+      mail:
+        smtp:
+          starttls:
+            enable: false
+          auth: false
+    username: noreply@gmail.com
+    host: localhost
+    port: 1025
+server:
+  port: 8040

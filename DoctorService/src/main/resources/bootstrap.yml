@@ -2,7 +2,8 @@ spring:
   application:
     name: doctor-service
   config:
-    import: optional:configserver:http://34.218.120.119:8000
+    import: optional:configserver:localhost:8000
+#    import: optional:configserver:http://34.218.120.119:8000
 
 #  kafka:
 #    consumer:

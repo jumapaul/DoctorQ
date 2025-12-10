@@ -1,0 +1,10 @@
+spring:
+  cloud:
+    config:
+      fail-fast: true
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+server:
+  port: 8040
