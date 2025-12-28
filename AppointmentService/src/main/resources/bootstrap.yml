@@ -1,5 +1,5 @@
 spring:
-  application:
-    name: appointment-service
   config:
     import: optional:configserver:http://34.218.120.119:8000
+  application:
+    name: appointment-service

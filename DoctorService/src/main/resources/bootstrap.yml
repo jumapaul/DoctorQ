@@ -4,11 +4,3 @@ spring:
   config:
 #    import: optional:configserver:localhost:8000
     import: optional:configserver:http://34.218.120.119:8000
-
-#  kafka:
-#    consumer:
-#      bootstrap-servers: localhost:9092
-#      properties:
-#        schema:
-#          registry:
-#            url: "http://127.0.0.1:8081"
