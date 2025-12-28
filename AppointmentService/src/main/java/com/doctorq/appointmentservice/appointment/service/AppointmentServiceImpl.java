@@ -61,6 +61,10 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final NotificationService notificationService;
     private final RedisUtil redisUtil;
 
+    /**
+     * Appointment service
+     */
+
     @Transactional
     @Override
     public AppointmentResponse addAppointment(AddAppointmentRequest request, String authToken) throws MessagingException {

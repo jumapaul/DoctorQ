@@ -2,7 +2,9 @@ name: Build and test gateway service
 
 on:
   push:
-    branches: [feedbackService]
+    branches:
+      - feedbackService
+      - appointment
     paths:
       - 'GatewayService/**'
 

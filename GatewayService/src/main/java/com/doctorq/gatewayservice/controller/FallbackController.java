@@ -23,6 +23,7 @@ public class FallbackController {
                 .body(success("Doctor Service is currently unavailable. Please try again later."));
     }
 
+    //For appointment
     @GetMapping("/fallback/appointmentService")
     public ResponseEntity<ApiResponse<String>> appointmentFallback() {
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)

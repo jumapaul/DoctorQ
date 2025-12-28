@@ -2,7 +2,9 @@ name: Build and test config service
 
 on:
   push:
-    branches: [feedbackService]
+    branches:
+      - feedbackService
+      - appointment
     paths:
       - 'ConfigServer/**'
 
