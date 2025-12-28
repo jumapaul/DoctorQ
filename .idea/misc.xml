@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ExternalStorageConfigurationManager" enabled="true" />
   <component name="FrameworkDetectionExcludesConfiguration">
+    <file type="web" url="file://$PROJECT_DIR$/AppointmentService" />
     <file type="web" url="file://$PROJECT_DIR$/ConfigServer" />
     <file type="web" url="file://$PROJECT_DIR$/DoctorService" />
     <file type="web" url="file://$PROJECT_DIR$/EurekaDiscoveryService" />

@@ -43,11 +43,12 @@
 
 <div class="container">
 
-    <h2>Appointment Confirmation</h2>
+    <h2 th:text="${title}"></h2>
 
     <p>Hello <span th:text="${appointment.patientName}"></span>,</p>
 
-    <p>Your appointment has been successfully scheduled. Here are the details:</p>
+    <p th:text="${description + ' Here are the details:'}"></p>
+<!--    <p>Your appointment has been successfully approved. Here are the details:</p>-->
 
     <div class="appointment-details">
         <p><b>Patient Name:</b> <span th:text="${appointment.patientName}"></span></p>
@@ -56,7 +57,7 @@
         <p><b>Gender:</b> <span th:text="${appointment.patientGender}"></span></p>
         <p><b>Description of Problem:</b> <span th:text="${appointment.patientDescription}"></span></p>
         <p><b>Appointment Date:</b> <span th:text="${appointment.date}"></span></p>
-        <p><b>Appointment Time:</b> <span th:text="${appointment.time}"></span></p>
+        <p><b>Appointment Time:</b> <span th:text="${appointment.startTime + 'hrs' + ' - ' + appointment.endTime + 'hrs'}"></span></p>
         <p><b>Doctor Name:</b> <span th:text="${doctorName}"></span></p>
     </div>
     <p>If you need to make changes or cancel the appointment, please contact us.</p>

@@ -18,7 +18,7 @@ import java.util.Map;
 public class ProducerConfiguration {
 
     @Value("${spring.kafka.bootstrap-servers}")
-    private String bootstrapAddress="localhost:9092";
+    private String bootstrapAddress;
 
 //    @Value("${spring.kafka.producer.properties.schema.registry.url}")
 //    private String registryUrl;

@@ -19,7 +19,6 @@ public class KafkaProducer {
     private final KafkaTemplate<String, FeedbackEvent> kafkaTemplate;
 
     public CompletableFuture<SendResult<String, FeedbackEvent>> publish(FeedbackEvent event) {
-        log.info("------------->Publishing event: {}", event);
         return kafkaTemplate.send(TOPIC, event).whenComplete((result, ex) -> {
             if (ex != null) {
                 log.error("---------->Failed to send event={} due to {}", event, ex.getMessage(), ex);

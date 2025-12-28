@@ -2,11 +2,9 @@ package com.doctorq.doctorservice.entities;
 
 import com.doctorq.doctorservice.dtos.Roles;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -32,7 +30,9 @@ public class DoctorEntity {
     private String aboutDoctor;
     private Integer yearsOfExperience;
     private Integer numberOfPatients;
-    private String workingHours;
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinColumn(name = "working_hours_id", referencedColumnName = "id")
+    private WorkingHours schedule;
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "doctor_categories",

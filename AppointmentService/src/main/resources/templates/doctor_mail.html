@@ -105,17 +105,18 @@
 <body>
 <div class="email-container">
     <div class="header">
-        <h1>New Appointment Scheduled</h1>
+        <h2 th:text="${title}"></h2>
     </div>
 
     <div class="greeting">
         <p>Dear Dr. <span th:text="${doctorName}"></span>,</p>
-        <p>You have a new appointment scheduled. Please review the details below:</p>
+        <p th:text="${description + ' Please review the details below:'}"></p>
+<!--        <p>You have a new appointment scheduled. Please review the details below:</p>-->
     </div>
 
     <div class="alert-box">
         <strong>⏰ Appointment Date & Time:</strong><br>
-        <span th:text="${appointment.date}"></span> at <span th:text="${appointment.time}"></span>
+        <span th:text="${appointment.date}"></span> at <span th:text="${appointment.startTime + 'hrs' + ' - ' + appointment.endTime + 'hrs'}"></span>
     </div>
 
     <div class="appointment-details">

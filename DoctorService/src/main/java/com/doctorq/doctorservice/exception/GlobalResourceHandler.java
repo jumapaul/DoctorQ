@@ -1,6 +1,6 @@
 package com.doctorq.doctorservice.exception;
 
-import com.doctorq.doctorservice.response.ApiResponse;
+import com.doctorq.doctorservice.dtos.response.ApiResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

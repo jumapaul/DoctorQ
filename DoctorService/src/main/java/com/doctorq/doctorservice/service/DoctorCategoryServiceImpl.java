@@ -1,13 +1,13 @@
 package com.doctorq.doctorservice.service;
 
 import com.doctorq.doctorservice.dtos.DoctorCategoryRequest;
-import com.doctorq.doctorservice.response.DoctorCategoryResponse;
+import com.doctorq.doctorservice.dtos.response.DoctorCategoryResponse;
 import com.doctorq.doctorservice.entities.DoctorCategoryEntity;
 import com.doctorq.doctorservice.exception.ConflictException;
 import com.doctorq.doctorservice.exception.ResourceNotFoundException;
 import com.doctorq.doctorservice.mapper.DoctorCategoryMapper;
 import com.doctorq.doctorservice.repository.DoctorCategoryRepository;
-import com.doctorq.doctorservice.response.DoctorOverview;
+import com.doctorq.doctorservice.dtos.response.DoctorOverview;
 import com.doctorq.doctorservice.utils.RedisUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;

@@ -1,11 +1,13 @@
 package com.doctorq.doctorservice.service;
 
 import com.doctorq.doctorservice.dtos.Roles;
-import com.doctorq.doctorservice.response.DoctorOverview;
-import com.doctorq.doctorservice.response.PaginatedResponse;
+import com.doctorq.doctorservice.entities.WorkingHours;
+import com.doctorq.doctorservice.repository.WorkingHoursRepository;
+import com.doctorq.doctorservice.dtos.response.DoctorOverview;
+import com.doctorq.doctorservice.dtos.response.PaginatedResponse;
 import com.doctorq.doctorservice.utils.RedisUtil;
 import com.doctorq.doctorservice.dtos.DoctorRequest;
-import com.doctorq.doctorservice.response.DoctorResponse;
+import com.doctorq.doctorservice.dtos.response.DoctorResponse;
 import com.doctorq.doctorservice.entities.DoctorCategoryEntity;
 import com.doctorq.doctorservice.entities.DoctorEntity;
 import com.doctorq.doctorservice.exception.ConflictException;
@@ -39,6 +41,7 @@ public class DoctorServiceImpl implements DoctorService {
     private final RedisUtil redisUtil;
     private final DoctorRepository doctorRepository;
     private final DoctorCategoryRepository doctorCategoryRepository;
+    private final WorkingHoursRepository workingHoursRepository;
     private final DoctorMapper doctorMapper;
 
     @Transactional
@@ -57,9 +60,11 @@ public class DoctorServiceImpl implements DoctorService {
                 )
         ).collect(Collectors.toSet());
 
-        DoctorEntity doctor = doctorMapper.toDoctorEntity(request);
+        WorkingHours workingHours = workingHoursRepository.save(doctorMapper.toWorkingHours(request));
+        workingHoursRepository.save(workingHours);
+        DoctorEntity doctor = doctorMapper.toDoctorEntity(request, workingHours);
         doctor.setDoctorCategory(categoryEntities);
-
+//        workingHoursRepository.save(workingHours);
         doctor = doctorRepository.save(doctor);
 
         categoryEntities.forEach(category ->
@@ -124,7 +129,7 @@ public class DoctorServiceImpl implements DoctorService {
         doctor.setRole(Roles.DOCTOR);
         doctor.setDoctorCategory(doctor.getDoctorCategory());
         doctor.setAboutDoctor(request.aboutDoctor());
-        doctor.setWorkingHours(request.workingHours());
+//        doctor.setWorkingHours(request.schedule());
         doctor.setYearsOfExperience(request.yearsOfExperience());
 
         DoctorEntity savedDoctor = doctorRepository.save(doctor);
@@ -197,19 +202,17 @@ public class DoctorServiceImpl implements DoctorService {
     }
 
     @Override
-    public void updateRating(double rating, Long doctorId) throws JsonProcessingException {
-        redisUtil.delete(allDoctorsCache);
-        redisUtil.delete(topDoctorsCache);
-        redisUtil.delete(doctorByIdCache + doctorId);
-
-        DoctorEntity doctor = doctorRepository.findById(doctorId).orElseThrow(() ->
-                new ResourceNotFoundException("Doctor not found")
+    public DoctorResponse updateSchedule(WorkingHours workingHours) {
+        WorkingHours workTime = workingHoursRepository.findById(workingHours.getId()).orElseThrow(() ->
+                new ResourceNotFoundException("")
         );
 
-        doctor.setRating(rating);
-        doctorRepository.save(doctor);
-        DoctorResponse response = doctorMapper.fromDoctorEntity(doctor);
-        setCacheValue(redisUtil, doctorByIdCache + doctorId, response);
+        workTime.setDate(workingHours.getDate());
+        workTime.setStartTime(workingHours.getStartTime());
+        workTime.setEndTime(workTime.getEndTime());
+        workingHoursRepository.save(workingHours);
+
+        return doctorMapper.fromDoctorEntity(workTime.getDoctor());
     }
 
     //    @Override

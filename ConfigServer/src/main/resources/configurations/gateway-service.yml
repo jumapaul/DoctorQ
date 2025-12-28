@@ -66,6 +66,28 @@ spring:
                     name: doctorServiceCircuitBreaker
                     fallbackUri: forward:/fallback/doctorService
 
+            - id: appointment-service
+              uri: lb://APPOINTMENT-SERVICE
+              predicates:
+                - Path=/api/v1/appointment/**
+              filters:
+                - AuthenticationFilter
+                - name: CircuitBreaker
+                  args:
+                    name: appointmentServiceCircuitBreaker
+                    fallbackUri: forward:/fallback/appointmentService
+
+            - id: history-service
+              uri: lb://APPOINTMENT-SERVICE
+              predicates:
+                - Path=/api/v1/history/**
+              filters:
+                - AuthenticationFilter
+                - name: CircuitBreaker
+                  args:
+                    name: appointmentServiceCircuitBreaker
+                    fallbackUri: forward:/fallback/appointmentService
+
 resilience4j:
   circuitbreaker:
     configs:

@@ -1,10 +1,11 @@
 package com.doctorq.doctorservice.controllers;
 
 import com.doctorq.doctorservice.dtos.DoctorRequest;
-import com.doctorq.doctorservice.response.DoctorOverview;
-import com.doctorq.doctorservice.response.DoctorResponse;
-import com.doctorq.doctorservice.response.ApiResponse;
-import com.doctorq.doctorservice.response.PaginatedResponse;
+import com.doctorq.doctorservice.entities.WorkingHours;
+import com.doctorq.doctorservice.dtos.response.DoctorOverview;
+import com.doctorq.doctorservice.dtos.response.DoctorResponse;
+import com.doctorq.doctorservice.dtos.response.ApiResponse;
+import com.doctorq.doctorservice.dtos.response.PaginatedResponse;
 import com.doctorq.doctorservice.service.DoctorService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
@@ -90,6 +91,15 @@ public class DoctorsController {
             @PathVariable(name = "categoryId") Long categoryId
     ) throws JsonProcessingException {
         return ResponseEntity.ok(doctorService.getCategoryTopDoctor(page, size, categoryId));
+    }
+
+    @PostMapping("updateSchedule")
+    public ResponseEntity<ApiResponse<DoctorResponse>> updateSchedule(
+            @RequestBody WorkingHours workingHours
+    ) {
+        DoctorResponse response = doctorService.updateSchedule(workingHours);
+
+        return ResponseEntity.ok(success(response, "Schedule update successfully"));
     }
 //
 //    @GetMapping("/recommendation")

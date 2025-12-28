@@ -10,6 +10,6 @@ public record DoctorRequest(
         List<Long> doctorCategory,
         String aboutDoctor,
         Integer yearsOfExperience,
-        String workingHours
+        WorkingHoursRequest schedule
 ) {
 }

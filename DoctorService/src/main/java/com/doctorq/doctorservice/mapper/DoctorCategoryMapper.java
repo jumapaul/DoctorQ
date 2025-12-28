@@ -3,7 +3,7 @@ package com.doctorq.doctorservice.mapper;
 import com.doctorq.doctorservice.dtos.DoctorCategoryRequest;
 import com.doctorq.doctorservice.entities.DoctorCategoryEntity;
 import com.doctorq.doctorservice.entities.DoctorEntity;
-import com.doctorq.doctorservice.response.DoctorOverview;
+import com.doctorq.doctorservice.dtos.response.DoctorOverview;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

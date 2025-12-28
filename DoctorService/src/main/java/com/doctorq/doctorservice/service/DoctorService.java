@@ -1,9 +1,10 @@
 package com.doctorq.doctorservice.service;
 
 import com.doctorq.doctorservice.dtos.DoctorRequest;
-import com.doctorq.doctorservice.response.DoctorOverview;
-import com.doctorq.doctorservice.response.DoctorResponse;
-import com.doctorq.doctorservice.response.PaginatedResponse;
+import com.doctorq.doctorservice.entities.WorkingHours;
+import com.doctorq.doctorservice.dtos.response.DoctorOverview;
+import com.doctorq.doctorservice.dtos.response.DoctorResponse;
+import com.doctorq.doctorservice.dtos.response.PaginatedResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 public interface DoctorService {
@@ -23,8 +24,7 @@ public interface DoctorService {
 
     PaginatedResponse<DoctorOverview> searchDoctorByName(String name, int page, int size) throws JsonProcessingException;
 
-    void updateRating(double rating, Long doctorId) throws JsonProcessingException;
-
+    DoctorResponse updateSchedule(WorkingHours workingHours);
 //    PaginatedResponse<DoctorResponse> getRecommendedDoctors(int page, int size) throws JsonProcessingException;
 
 }

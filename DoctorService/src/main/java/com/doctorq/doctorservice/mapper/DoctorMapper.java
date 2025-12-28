@@ -1,8 +1,10 @@
 package com.doctorq.doctorservice.mapper;
 
 import com.doctorq.doctorservice.dtos.DoctorRequest;
-import com.doctorq.doctorservice.response.DoctorOverview;
-import com.doctorq.doctorservice.response.DoctorResponse;
+import com.doctorq.doctorservice.dtos.response.WorkingHoursResponse;
+import com.doctorq.doctorservice.entities.WorkingHours;
+import com.doctorq.doctorservice.dtos.response.DoctorOverview;
+import com.doctorq.doctorservice.dtos.response.DoctorResponse;
 import com.doctorq.doctorservice.dtos.Roles;
 import com.doctorq.doctorservice.entities.DoctorCategoryEntity;
 import com.doctorq.doctorservice.entities.DoctorEntity;
@@ -10,6 +12,7 @@ import com.doctorq.doctorservice.exception.ResourceNotFoundException;
 import com.doctorq.doctorservice.repository.DoctorCategoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -19,7 +22,7 @@ import java.util.stream.Collectors;
 public class DoctorMapper {
     private final DoctorCategoryRepository doctorCategoryRepository;
 
-    public DoctorEntity toDoctorEntity(DoctorRequest request) {
+    public DoctorEntity toDoctorEntity(DoctorRequest request, WorkingHours workingHours) {
 
         Set<DoctorCategoryEntity> categoryEntitySet = request.doctorCategory()
                 .stream()
@@ -40,12 +43,13 @@ public class DoctorMapper {
                 .aboutDoctor(request.aboutDoctor())
                 .numberOfPatients(0)
                 .yearsOfExperience(request.yearsOfExperience())
-                .workingHours(request.workingHours())
+                .schedule(workingHours)
                 .build();
     }
 
     public DoctorResponse fromDoctorEntity(DoctorEntity entity) {
         List<String> categories = entity.getDoctorCategory().stream().map(DoctorCategoryEntity::getName).toList();
+        WorkingHoursResponse workingHoursResponse = fromWorkingHours(entity.getSchedule());
         return new DoctorResponse(
                 entity.getId(),
                 entity.getFullName(),
@@ -60,11 +64,20 @@ public class DoctorMapper {
                 entity.getAboutDoctor(),
                 entity.getYearsOfExperience(),
                 entity.getNumberOfPatients(),
-                entity.getWorkingHours()
+                workingHoursResponse
         );
     }
 
-    public DoctorOverview fromDoctorEntityToOverview(DoctorEntity entity){
+    public WorkingHoursResponse fromWorkingHours(WorkingHours workingHours) {
+        return new WorkingHoursResponse(
+                workingHours.getId(),
+                workingHours.getDate().toString(),
+                workingHours.getStartTime().toString(),
+                workingHours.getEndTime().toString()
+        );
+    }
+
+    public DoctorOverview fromDoctorEntityToOverview(DoctorEntity entity) {
         List<String> categories = entity.getDoctorCategory().stream().map(DoctorCategoryEntity::getName).toList();
         return new DoctorOverview(
                 entity.getId(),
@@ -76,5 +89,13 @@ public class DoctorMapper {
                 entity.getRating(),
                 entity.getReviewsCount()
         );
+    }
+
+    public WorkingHours toWorkingHours(DoctorRequest request) {
+        return WorkingHours.builder()
+                .date(request.schedule().date())
+                .startTime(request.schedule().startTime())
+                .endTime(request.schedule().endTime())
+                .build();
     }
 }
