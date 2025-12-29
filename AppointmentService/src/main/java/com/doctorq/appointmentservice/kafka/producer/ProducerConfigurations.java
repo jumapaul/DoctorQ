@@ -1,8 +1,10 @@
 package com.doctorq.appointmentservice.kafka.producer;
 
+import com.doctorq.appointmentservice.kafka.event.CompletionEvent;
 import com.doctorq.appointmentservice.kafka.event.HistoryEvent;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,8 +22,33 @@ public class ProducerConfigurations {
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapAddress;
 
+    @Bean(name = "historyKafkaTemplate")
+    public KafkaTemplate<String, HistoryEvent> historyKafkaTemplate(
+            @Qualifier("historyProducerFactory") ProducerFactory<String, HistoryEvent> producerFactory
+    ) {
+
+        return new KafkaTemplate<>(producerFactory);
+    }
+
+    @Bean(name = "completionKafkaTemplate")
+    public KafkaTemplate<String, CompletionEvent> completionKafkaTemplate(
+            @Qualifier("completionProducerFactory") ProducerFactory<String, CompletionEvent> producerFactory
+    ) {
+        return new KafkaTemplate<>(producerFactory);
+    }
+
+    @Bean(name = "historyProducerFactory")
+    public ProducerFactory<String, HistoryEvent> historyProducerFactory() {
+        return new DefaultKafkaProducerFactory<>(producerConfigs());
+    }
+
+    @Bean(name = "completionProducerFactory")
+    public ProducerFactory<String, CompletionEvent> completionProducerFactory() {
+        return new DefaultKafkaProducerFactory<>(producerConfigs());
+    }
+
     @Bean
-    public ProducerFactory<String, HistoryEvent> producerFactory() {
+    public Map<String, Object> producerConfigs() {
         Map<String, Object> configProps = new HashMap<>();
 
         configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
@@ -34,12 +61,6 @@ public class ProducerConfigurations {
         configProps.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true);
         configProps.put(ProducerConfig.ACKS_CONFIG, "all");
         configProps.put(ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, 5);
-
-        return new DefaultKafkaProducerFactory<>(configProps);
-    }
-
-    @Bean
-    public KafkaTemplate<String, HistoryEvent> kafkaTemplate() {
-        return new KafkaTemplate<>(producerFactory());
+        return configProps;
     }
 }

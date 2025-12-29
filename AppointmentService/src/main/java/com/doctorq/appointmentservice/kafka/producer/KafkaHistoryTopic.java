@@ -17,4 +17,14 @@ public class KafkaHistoryTopic {
                 .replicas(1)
                 .build();
     }
+
+    @Bean
+    public NewTopic completionTopic() {
+
+        return TopicBuilder
+                .name("COMPLETE_TOPIC")
+                .partitions(3)
+                .replicas(1)
+                .build();
+    }
 }

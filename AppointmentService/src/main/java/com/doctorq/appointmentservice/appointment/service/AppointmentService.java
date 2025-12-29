@@ -12,13 +12,16 @@ public interface AppointmentService {
 
     AppointmentResponse addAppointment(AddAppointmentRequest request, String authToken) throws MessagingException;
 
-    AppointmentResponse approveAppointment(Long id, UpdateAppointmentRequest request) throws MessagingException;
+    AppointmentResponse approveAppointment(Long id) throws MessagingException;
 
-    AppointmentResponse cancelAppointment(Long id, UpdateAppointmentRequest request) throws MessagingException;
+    AppointmentResponse cancelAppointment(Long id);
+    AppointmentResponse completeAppointment(Long id);
 
-    PaginatedResponse<AppointmentEntity> getAllAppointment(int page, int size) throws JsonProcessingException;
+    List<AppointmentEntity> getUserAppointmentByStatus(Long userId, AppointmentStatus status) throws JsonProcessingException;
 
-    List<AppointmentEntity> getAppointmentByStatus(AppointmentStatus status) throws JsonProcessingException;
+//    List<AppointmentEntity> getAppointmentsByDate(LocalDate date) throws JsonProcessingException;
 
-    List<AppointmentEntity> getAppointmentsByDate(LocalDate date) throws JsonProcessingException;
+    List<AppointmentEntity> getDoctorAppointmentByStatus(Long doctorId, AppointmentStatus status) throws JsonProcessingException;
+
+//    void updateAppointmentStatus(Long id);
 }

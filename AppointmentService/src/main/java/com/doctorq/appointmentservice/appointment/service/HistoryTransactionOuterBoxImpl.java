@@ -1,7 +1,10 @@
 package com.doctorq.appointmentservice.appointment.service;
 
+import com.doctorq.appointmentservice.appointment.entity.CompletionOuterBoxEntity;
 import com.doctorq.appointmentservice.appointment.entity.HistoryOuterBoxEntity;
+import com.doctorq.appointmentservice.appointment.repository.CompletionOuterBoxRepository;
 import com.doctorq.appointmentservice.appointment.repository.HistoryOuterBoxRepository;
+import com.doctorq.appointmentservice.kafka.event.CompletionEvent;
 import com.doctorq.appointmentservice.kafka.event.HistoryEvent;
 import com.doctorq.appointmentservice.kafka.producer.KafkaProducer;
 import lombok.RequiredArgsConstructor;
@@ -22,13 +25,14 @@ public class HistoryTransactionOuterBoxImpl {
 
     private final KafkaProducer producer;
     private final HistoryOuterBoxRepository outerBoxRepository;
+    private final CompletionOuterBoxRepository completionOuterBoxRepository;
 
     @Scheduled(fixedRate = 10000)
     public void pullAndPublish() {
         List<HistoryOuterBoxEntity> unprocessedRequests = outerBoxRepository.findAll();
 
         unprocessedRequests.forEach(history ->
-                publishFeedback(history).whenComplete((result, ex) -> {
+                publishHistoryEvent(history).whenComplete((result, ex) -> {
                     if (ex == null) {
                         log.info("Kafka ack received for event {}", history);
                         outerBoxRepository.delete(history);
@@ -39,7 +43,23 @@ public class HistoryTransactionOuterBoxImpl {
         );
     }
 
-    private CompletableFuture<SendResult<String, HistoryEvent>> publishFeedback(
+    @Scheduled(fixedRate = 10000)
+    public void pullAndPublishCompletionEvent() {
+        List<CompletionOuterBoxEntity> unprocessedRequests = completionOuterBoxRepository.findAll();
+
+        unprocessedRequests.forEach(complete ->
+                publishCompletionEvent(complete).whenComplete((result, ex) -> {
+                    if (ex == null) {
+                        log.info("Kafka ack received for event {}", result);
+                        completionOuterBoxRepository.delete(complete);
+                    } else {
+                        log.error("Kafka send failed for event {}", complete);
+                    }
+                })
+        );
+    }
+
+    private CompletableFuture<SendResult<String, HistoryEvent>> publishHistoryEvent(
             HistoryOuterBoxEntity historyOuterBoxEntity
     ) {
         HistoryEvent event = new HistoryEvent(
@@ -52,6 +72,18 @@ public class HistoryTransactionOuterBoxImpl {
                 historyOuterBoxEntity.getProcessedStatus()
         );
 
-        return producer.publish(event);
+        return producer.publishHistoryEvent(event);
+    }
+
+    private CompletableFuture<SendResult<String, CompletionEvent>> publishCompletionEvent(
+            CompletionOuterBoxEntity completionOuterBoxEntity
+    ) {
+        CompletionEvent event = new CompletionEvent(
+                completionOuterBoxEntity.getId(),
+                completionOuterBoxEntity.getDoctorId(),
+                "Appointment complete"
+        );
+
+        return producer.publishCompletionEvent(event);
     }
 }

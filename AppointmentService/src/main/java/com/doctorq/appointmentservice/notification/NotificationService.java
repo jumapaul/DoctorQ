@@ -31,6 +31,7 @@ public class NotificationService {
                     "/queue/notifications",
                     notification
             );
+            log.info("-----------Notification sent: {}", notification.getType());
         } catch (RuntimeException exception) {
             log.error("----------------> {}", exception.getMessage());
         }

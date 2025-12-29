@@ -2,6 +2,7 @@ package com.doctorq.doctorservice.kafka.consumer;
 
 import com.doctorq.doctorservice.entities.DoctorEntity;
 import com.doctorq.doctorservice.exception.ResourceNotFoundException;
+import com.doctorq.doctorservice.kafka.event.CompletionEvent;
 import com.doctorq.doctorservice.kafka.event.FeedbackEvent;
 import com.doctorq.doctorservice.repository.DoctorRepository;
 import com.doctorq.doctorservice.utils.RedisUtil;
@@ -23,10 +24,35 @@ public class KafkaConsumer {
     private static final String RatingTopic = "RATING_TOPIC";
     private static final String RatingGroup = "RATING_GROUP";
 
-    @KafkaListener(topics = RatingTopic, groupId = RatingGroup)
-    public void listen(FeedbackEvent event) {
-        log.info("-------------->Consuming: {}", event);
+    private static final String PatientCountTopic = "COMPLETE_TOPIC";
+    private static final String PatientCountGroup = "COMPLETE_TOPIC_GROUP";
+
+    @KafkaListener(
+            topics = RatingTopic,
+            groupId = RatingGroup,
+            containerFactory = "feedbackKafkaListenerContainerFactory"
+    )
+    public void listenToFeedbackEvent(FeedbackEvent event) {
+        log.info("-------------->Consuming feedback event: {}", event);
         updateDoctorFeeds(event);
+    }
+
+    @KafkaListener(
+            topics = PatientCountTopic,
+            groupId = PatientCountGroup,
+            containerFactory = "patientCountKafkaListenerContainerFactory"
+    )
+    public void listenToCompletionEvent(CompletionEvent event) {
+        log.info("------------>Consuming completion event: {}", event);
+        redisUtil.delete(allDoctorsCache);
+        redisUtil.delete(topDoctorsCache);
+        redisUtil.delete(doctorByIdCache + event.getDoctorId());
+        DoctorEntity doctor = doctorRepository.findById(event.getDoctorId()).orElseThrow(() ->
+                new ResourceNotFoundException("Doctor with id " + event.getDoctorId() + " not found")
+        );
+
+        doctor.setNumberOfPatients(doctor.getNumberOfPatients() + 1);
+        doctorRepository.save(doctor);
     }
 
     private void updateDoctorFeeds(FeedbackEvent feedbackAvcEvent) {
@@ -42,7 +68,5 @@ public class KafkaConsumer {
         doctor.setRatingCount(feedbackAvcEvent.getRatingCount());
 
         doctorRepository.save(doctor);
-
-        log.info("------------->Updated doctor is: {}", doctor);
     }
 }

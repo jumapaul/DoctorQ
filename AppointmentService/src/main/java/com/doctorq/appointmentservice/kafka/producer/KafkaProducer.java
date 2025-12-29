@@ -1,5 +1,6 @@
 package com.doctorq.appointmentservice.kafka.producer;
 
+import com.doctorq.appointmentservice.kafka.event.CompletionEvent;
 import com.doctorq.appointmentservice.kafka.event.HistoryEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,18 +16,29 @@ import java.util.concurrent.CompletableFuture;
 public class KafkaProducer {
     public static final String TOPIC = "HISTORY_TOPIC";
 
-    private final KafkaTemplate<String, HistoryEvent> kafkaTemplate;
+    public static final String PATIENT_COUNT_TOPIC = "COMPLETE_TOPIC";
 
-    public CompletableFuture<SendResult<String, HistoryEvent>> publish(HistoryEvent event) {
-        return kafkaTemplate.send(TOPIC, event).whenComplete((result, ex) -> {
-            if (ex != null) {
-                log.error("Failed to send event={} due to: {}", event, ex.getMessage());
-            } else {
-                log.info("--------->Event sent to topic={}, partition={}, offset={}",
-                        result.getRecordMetadata().topic(), result.getRecordMetadata().partition(),
-                        result.getRecordMetadata().offset());
-            }
-        });
+    private final KafkaTemplate<String, HistoryEvent> kafkaHistoryTemplate;
+    private final KafkaTemplate<String, CompletionEvent> kafkaCompletionTemplate;
+
+    public CompletableFuture<SendResult<String, HistoryEvent>> publishHistoryEvent(HistoryEvent event) {
+        log.info("-------------Publishing history event: {}", event);
+
+        return kafkaHistoryTemplate.send(TOPIC, event).whenComplete(this::logResults);
     }
 
+    public CompletableFuture<SendResult<String, CompletionEvent>> publishCompletionEvent(CompletionEvent event) {
+        log.info("-------------Publishing completion event: {}", event);
+        return kafkaCompletionTemplate.send(PATIENT_COUNT_TOPIC, event).whenComplete(this::logResults);
+    }
+
+    private <T> void logResults(SendResult<String, T> result, Throwable ex) {
+        if (ex != null) {
+            log.error("Failed to send event due to: {}", ex.getMessage());
+        } else {
+            log.info("--------->Event sent to topic={}, partition={}, offset={}",
+                    result.getRecordMetadata().topic(), result.getRecordMetadata().partition(),
+                    result.getRecordMetadata().offset());
+        }
+    }
 }

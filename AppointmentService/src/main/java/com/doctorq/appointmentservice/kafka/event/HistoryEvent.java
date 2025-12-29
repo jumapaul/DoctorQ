@@ -1,6 +1,5 @@
 package com.doctorq.appointmentservice.kafka.event;
 
-import com.doctorq.appointmentservice.appointment.dtos.HistoryStatus;
 import com.doctorq.appointmentservice.appointment.dtos.ProcessedStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;

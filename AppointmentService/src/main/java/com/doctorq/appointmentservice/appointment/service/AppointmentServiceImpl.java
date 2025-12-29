@@ -1,6 +1,7 @@
 package com.doctorq.appointmentservice.appointment.service;
 
 import com.doctorq.appointmentservice.appointment.dtos.*;
+import com.doctorq.appointmentservice.appointment.entity.CompletionOuterBoxEntity;
 import com.doctorq.appointmentservice.appointment.entity.HistoryOuterBoxEntity;
 import com.doctorq.appointmentservice.appointment.exception.BadRequestException;
 import com.doctorq.appointmentservice.appointment.exception.ResourceNotFoundException;
@@ -11,6 +12,7 @@ import com.doctorq.appointmentservice.appointment.mappers.AppointmentMapper;
 import com.doctorq.appointmentservice.appointment.entity.AppointmentEntity;
 import com.doctorq.appointmentservice.appointment.mail.EmailService;
 import com.doctorq.appointmentservice.appointment.repository.AppointmentRepository;
+import com.doctorq.appointmentservice.appointment.repository.CompletionOuterBoxRepository;
 import com.doctorq.appointmentservice.appointment.repository.HistoryOuterBoxRepository;
 import com.doctorq.appointmentservice.notification.Notification;
 import com.doctorq.appointmentservice.notification.NotificationService;
@@ -40,8 +42,7 @@ import java.util.Optional;
 
 import static com.doctorq.appointmentservice.appointment.mail.EmailTemplate.APPOINTMENT_APPROVAL_TEMPLATE;
 import static com.doctorq.appointmentservice.appointment.mail.EmailTemplate.DOCTOR_MAIL;
-import static com.doctorq.appointmentservice.notification.NotificationType.APPROVED;
-import static com.doctorq.appointmentservice.notification.NotificationType.CREATED;
+import static com.doctorq.appointmentservice.notification.NotificationType.*;
 import static com.doctorq.appointmentservice.util.Constants.*;
 import static com.doctorq.appointmentservice.util.RedisRetrieveMethods.readCacheValue;
 import static com.doctorq.appointmentservice.util.RedisRetrieveMethods.setCacheValue;
@@ -58,21 +59,17 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final DoctorClient doctorClient;
     private final UserClient userClient;
     private final HistoryOuterBoxRepository historyOuterBoxRepository;
+    private final CompletionOuterBoxRepository completionOuterBoxRepository;
     private final NotificationService notificationService;
     private final RedisUtil redisUtil;
-
-    /**
-     * Appointment service
-     */
 
     @Transactional
     @Override
     public AppointmentResponse addAppointment(AddAppointmentRequest request, String authToken) throws MessagingException {
 
-        redisUtil.deleteByPrefix(allAppointmentCache);
-        redisUtil.delete(appointmentByStatusCache);
-        redisUtil.delete(appointmentByDateCache);
-        DoctorResponse doctorResponse = getDoctorById(request).getData();
+        redisUtil.deleteByPrefix(userAppointmentByStatusCache);
+        redisUtil.deleteByPrefix(doctorAppointmentByStatusCache);
+        DoctorResponse doctorResponse = getDoctorById(request.doctorId()).getData();
 
         if (request.date().isBefore(LocalDate.now()))
             throw new BadRequestException("Cannot make appointment for past date");
@@ -111,13 +108,17 @@ public class AppointmentServiceImpl implements AppointmentService {
         return response;
     }
 
+    @Transactional
     @Override
-    public AppointmentResponse approveAppointment(Long id, UpdateAppointmentRequest request) throws MessagingException {
-        redisUtil.delete(appointmentByStatusCache);
+    public AppointmentResponse approveAppointment(Long id) throws MessagingException {
+        redisUtil.deleteByPrefix(userAppointmentByStatusCache);
+        redisUtil.deleteByPrefix(doctorAppointmentByStatusCache);
 
         AppointmentEntity appointment = appointmentRepository.findById(id).orElseThrow(() ->
                 new ResourceNotFoundException("Appointment not found")
         );
+
+        DoctorResponse doctorResponse = getDoctorById(appointment.getDoctorId()).getData();
 
         appointment.setAppointmentStatus(AppointmentStatus.APPROVED);
         appointmentRepository.save(appointment);
@@ -127,10 +128,10 @@ public class AppointmentServiceImpl implements AppointmentService {
         saveToOuterBox(response.userId(), response.doctorId(), "Approve appointment",
                 HistoryStatus.APPROVED.name(), ProcessedStatus.UNPROCESSED);
 
-        sendMail(request.userMail(), request.doctorName(), response,
-                "Your appointment has been successfully approved.", APPOINTMENT_APPROVAL_TEMPLATE.getTemplate());
+//        sendMail(request.userMail(), doctorResponse.getFullName(), response,
+//                "Your appointment has been successfully approved.", APPOINTMENT_APPROVAL_TEMPLATE.getTemplate());
         Notification notification = Notification.builder()
-                .message("Appointment with doctor " + request.doctorName() + " at " + appointment.getStarTime())
+                .message("Appointment with doctor " + doctorResponse.getFullName() + " at " + appointment.getStarTime())
                 .title("Appointment confirmed")
                 .type(APPROVED)
                 .timestamp(LocalDateTime.now())
@@ -139,14 +140,18 @@ public class AppointmentServiceImpl implements AppointmentService {
         return response;
     }
 
+    @Transactional
     @Override
-    public AppointmentResponse cancelAppointment(Long id, UpdateAppointmentRequest request) throws MessagingException {
+    public AppointmentResponse cancelAppointment(Long id) {
 
-        redisUtil.delete(appointmentByStatusCache);
+        redisUtil.deleteByPrefix(userAppointmentByStatusCache);
+        redisUtil.deleteByPrefix(doctorAppointmentByStatusCache);
 
         AppointmentEntity appointment = appointmentRepository.findById(id).orElseThrow(() ->
                 new ResourceNotFoundException("Appointment not found")
         );
+
+        DoctorResponse doctorResponse = getDoctorById(appointment.getDoctorId()).getData();
 
         appointment.setAppointmentStatus(AppointmentStatus.CANCELLED);
         appointmentRepository.save(appointment);
@@ -157,51 +162,91 @@ public class AppointmentServiceImpl implements AppointmentService {
                 HistoryStatus.CANCEL.name(), ProcessedStatus.UNPROCESSED
         );
 
-        sendMail(request.userMail(), request.doctorName(), response,
-                "Appointment cancelled", APPOINTMENT_APPROVAL_TEMPLATE.getTemplate());
-
-        sendMail(request.doctorMail(), request.doctorName(), response,
-                "Appointment cancelled", DOCTOR_MAIL.getTemplate());
+//        sendMail(request.userMail(), request.doctorName(), response,
+//                "Appointment cancelled", APPOINTMENT_APPROVAL_TEMPLATE.getTemplate());
+//
+//        sendMail(request.doctorMail(), request.doctorName(), response,
+//                "Appointment cancelled", DOCTOR_MAIL.getTemplate());
 
         Notification notification = Notification.builder()
-                .message("Appointment successfully cancelled")
+                .message("Appointment with " + doctorResponse.getFullName() + " successfully cancelled")
                 .title("Appointment cancellation")
-                .type(CREATED)
+                .type(CANCELLED)
                 .timestamp(LocalDateTime.now())
                 .build();
         notificationService.sendNotification(response.userId(), notification);
+
         return response;
     }
 
+    @Transactional
     @Override
-    public PaginatedResponse<AppointmentEntity> getAllAppointment(int page, int size) throws JsonProcessingException {
-        Object appointmentCache = redisUtil.get(allAppointmentCache + page + size);
+    public AppointmentResponse completeAppointment(Long id) {
 
-        if (appointmentCache == null) {
-            Pageable pageable = PageRequest.of(page, size);
+        redisUtil.deleteByPrefix(userAppointmentByStatusCache);
+        redisUtil.deleteByPrefix(doctorAppointmentByStatusCache);
 
-            Page<AppointmentEntity> appointments = appointmentRepository.findAll(pageable);
+        AppointmentEntity appointment = appointmentRepository.findById(id).orElseThrow(() ->
+                new ResourceNotFoundException("Appointment not found")
+        );
 
-            List<AppointmentEntity> appointmentEntityList = appointments.stream().toList();
+//        DoctorResponse doctorResponse = getDoctorById(appointment.getDoctorId()).getData();
 
-            PaginatedResponse<AppointmentEntity> paginatedResponse = paginate(appointmentEntityList, appointments);
+        appointment.setAppointmentStatus(AppointmentStatus.COMPLETED);
+        appointmentRepository.save(appointment);
 
-            setCacheValue(redisUtil, allAppointmentCache + page + size, paginatedResponse);
-            return paginatedResponse;
-        }
+        AppointmentResponse response = appointmentMapper.fromAppointmentEntity(appointment);
 
-        return readCacheValue(appointmentCache.toString(), new TypeReference<>() {
-        });
+        saveToOuterBox(response.userId(), response.doctorId(), "Appointment completed",
+                HistoryStatus.COMPLETE.name(), ProcessedStatus.UNPROCESSED
+        );
+
+        CompletionOuterBoxEntity entity = CompletionOuterBoxEntity.builder()
+                .doctorId(appointment.getDoctorId())
+                .build();
+
+        completionOuterBoxRepository.save(entity);
+
+        Notification notification = Notification.builder()
+                .message("Appointment successfully completed")
+                .title("Appointment completion")
+                .type(COMPLETED)
+                .timestamp(LocalDateTime.now())
+                .build();
+        notificationService.sendNotification(response.userId(), notification);
+
+        return response;
     }
 
+    //    @Override
+//    public PaginatedResponse<AppointmentEntity> getAllAppointment(int page, int size) throws JsonProcessingException {
+//        Object appointmentCache = redisUtil.get(allAppointmentCache + page + size);
+//
+//        if (appointmentCache == null) {
+//            Pageable pageable = PageRequest.of(page, size);
+//
+//            Page<AppointmentEntity> appointments = appointmentRepository.findAll(pageable);
+//
+//            List<AppointmentEntity> appointmentEntityList = appointments.stream().toList();
+//
+//            PaginatedResponse<AppointmentEntity> paginatedResponse = paginate(appointmentEntityList, appointments);
+//
+//            setCacheValue(redisUtil, allAppointmentCache + page + size, paginatedResponse);
+//            return paginatedResponse;
+//        }
+//
+//        return readCacheValue(appointmentCache.toString(), new TypeReference<>() {
+//        });
+//    }
+
     @Override
-    public List<AppointmentEntity> getAppointmentByStatus(AppointmentStatus status) throws JsonProcessingException {
+    public List<AppointmentEntity> getUserAppointmentByStatus(Long userId, AppointmentStatus status) throws JsonProcessingException {
 //        Pageable pageable = PageRequest.of(page, size);
-        Object appointmentByStatusCache = redisUtil.get(Constants.appointmentByStatusCache);
+        Object appointmentByStatusCache = redisUtil.get(userAppointmentByStatusCache + status);
 
         if (appointmentByStatusCache == null) {
-            List<AppointmentEntity> appointment = appointmentRepository.findAllByAppointmentStatus(status);
-            setCacheValue(redisUtil, Constants.appointmentByStatusCache, appointment);
+            List<AppointmentEntity> appointment = appointmentRepository.findAllByUserIdAndAppointmentStatus(userId, status);
+            setCacheValue(redisUtil, userAppointmentByStatusCache + status, appointment);
             return appointment;
         }
 
@@ -209,20 +254,53 @@ public class AppointmentServiceImpl implements AppointmentService {
         });
     }
 
+//    @Override
+//    public List<AppointmentEntity> getAppointmentsByDate(LocalDate date) throws JsonProcessingException {
+//        Object appointmentByDateCache = redisUtil.get(Constants.appointmentByDateCache);
+//
+//        if (appointmentByDateCache == null) {
+//            List<AppointmentEntity> appointments = appointmentRepository.findAllByDate(date);
+//
+//            setCacheValue(redisUtil, Constants.appointmentByDateCache, appointments);
+//            return appointments;
+//        }
+//
+//        return readCacheValue(appointmentByDateCache.toString(), new TypeReference<>() {
+//        });
+//    }
+
     @Override
-    public List<AppointmentEntity> getAppointmentsByDate(LocalDate date) throws JsonProcessingException {
-        Object appointmentByDateCache = redisUtil.get(Constants.appointmentByDateCache);
+    public List<AppointmentEntity> getDoctorAppointmentByStatus(Long doctorId, AppointmentStatus status) throws JsonProcessingException {
+        Object appointmentByStatusCache = redisUtil.get(doctorAppointmentByStatusCache + status);
 
-        if (appointmentByDateCache == null) {
-            List<AppointmentEntity> appointments = appointmentRepository.findAllByDate(date);
+        if (appointmentByStatusCache == null) {
+            List<AppointmentEntity> appointment = appointmentRepository.findAllByDoctorIdAndAppointmentStatus(doctorId, status);
+            setCacheValue(redisUtil, doctorAppointmentByStatusCache + status, appointment);
 
-            setCacheValue(redisUtil, Constants.appointmentByDateCache, appointments);
-            return appointments;
+            return appointment;
         }
-
-        return readCacheValue(appointmentByDateCache.toString(), new TypeReference<>() {
+        return readCacheValue(appointmentByStatusCache.toString(), new TypeReference<>() {
         });
     }
+
+//    @Override
+//    public void updateAppointmentStatus(Long id) {
+//        AppointmentEntity appointment = appointmentRepository.findById(id).orElseThrow(() ->
+//                new ResourceNotFoundException("Appointment not found")
+//        );
+//
+//        appointment.setAppointmentStatus(AppointmentStatus.CANCELLED);
+//
+//        appointmentRepository.save(appointment);
+//
+//        Notification notification = Notification.builder()
+//                .message("Appointment with doctor " + request.doctorName() + " at " + appointment.getStarTime())
+//                .title("Appointment confirmed")
+//                .type(APPROVED)
+//                .timestamp(LocalDateTime.now())
+//                .build();
+//        notificationService.sendNotification(response.userId(), notification);
+//    }
 
     private void sendMail(String mail, String fullName, Object response,
                           String title, String template) throws MessagingException {
@@ -251,12 +329,12 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @CircuitBreaker(name = "doctorCircuitBreaker", fallbackMethod = "doctorFallback")
-    private ApiResponse<DoctorResponse> getDoctorById(AddAppointmentRequest request) {
+    private ApiResponse<DoctorResponse> getDoctorById(Long doctorId) {
         try {
-            return doctorClient.getDoctorById(request.doctorId());
+            return doctorClient.getDoctorById(doctorId);
         } catch (Exception exception) {
             log.error("------------>Error: {}", exception.getMessage());
-            throw new RuntimeException(exception.getMessage());
+            throw new ResourceNotFoundException(exception.getMessage());
         }
     }
 
