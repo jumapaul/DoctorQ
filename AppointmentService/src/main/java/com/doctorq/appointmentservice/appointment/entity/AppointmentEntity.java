@@ -19,7 +19,7 @@ import java.time.LocalTime;
         indexes = {
                 @Index(
                         name = "idx_appointment_date_time",
-                        columnList = "date,start_time,end_time"
+                        columnList = "date,star_time,end_time,doctor_id,user_id"
                 )
         }
 )
