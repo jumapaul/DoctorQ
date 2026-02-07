@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -19,6 +20,7 @@ public class FavoriteController {
     private final FavoriteDoctorService favoriteDoctorService;
 
     @PostMapping("/add")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<ApiResponse<DoctorOverview>> addToFavorite(
             @RequestBody FavoriteDoctorRequest request
     ) {
@@ -27,6 +29,7 @@ public class FavoriteController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<ApiResponse<Void>> deleteFromFavoritesById(
             @PathVariable(name = "id") Long id
     ) {
@@ -36,6 +39,7 @@ public class FavoriteController {
     }
 
     @GetMapping("/{userId}")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<PaginatedResponse<DoctorOverview>> getAllFavorites(
             @PathVariable(name = "userId") Long userId,
             @RequestParam(defaultValue = "0") int page,

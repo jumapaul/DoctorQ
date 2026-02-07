@@ -1,14 +1,12 @@
 package com.doctorq.appointmentservice.history;
 
 import com.doctorq.appointmentservice.appointment.dtos.HistoryStatus;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
 
@@ -23,7 +21,8 @@ public class HistoryEntity {
     private Long id;
     private Long userId;
     private Long doctorId;
-    private String activityName;
-    private String historyStatus;
+    @Enumerated(EnumType.STRING)
+    private HistoryStatus historyStatus;
+    @CreatedDate
     private LocalDateTime timestamp;
 }

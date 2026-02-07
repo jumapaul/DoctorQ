@@ -7,6 +7,7 @@ import com.doctorq.doctorservice.feedback.service.FeedbackService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,6 +20,7 @@ public class FeedbackController {
     private final FeedbackService feedbackService;
 
     @PostMapping
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<ApiResponse<FeedbackEntity>> addFeedback(
             @RequestBody FeedbackRequest request,
             @RequestHeader("Authorization") String token
@@ -28,6 +30,7 @@ public class FeedbackController {
     }
 
     @GetMapping("/{doctorId}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'DOCTOR')")
     public ResponseEntity<ApiResponse<List<FeedbackEntity>>> getAllFeedbacks(
             @PathVariable(name = "doctorId") Long doctorId
     ) {
@@ -36,6 +39,7 @@ public class FeedbackController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<ApiResponse<Void>> deleteFeedback(
             @PathVariable(name = "id") Long id
     ) {
@@ -44,6 +48,7 @@ public class FeedbackController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<ApiResponse<FeedbackEntity>> updateFeedback(
             @PathVariable(name = "id") Long id,
             @RequestBody FeedbackRequest request

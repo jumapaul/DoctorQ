@@ -11,12 +11,14 @@ import com.doctorq.doctorservice.entities.DoctorEntity;
 import com.doctorq.doctorservice.exception.ResourceNotFoundException;
 import com.doctorq.doctorservice.repository.DoctorCategoryRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class DoctorMapper {
@@ -49,8 +51,9 @@ public class DoctorMapper {
 
     public DoctorResponse fromDoctorEntity(DoctorEntity entity) {
         List<String> categories = entity.getDoctorCategory().stream().map(DoctorCategoryEntity::getName).toList();
+        log.info("------------>entity: {}", categories.get(0));
         WorkingHoursResponse workingHoursResponse = fromWorkingHours(entity.getSchedule());
-        return new DoctorResponse(
+        DoctorResponse response = new DoctorResponse(
                 entity.getId(),
                 entity.getFullName(),
                 entity.getEmail(),
@@ -66,6 +69,8 @@ public class DoctorMapper {
                 entity.getNumberOfPatients(),
                 workingHoursResponse
         );
+
+        return response;
     }
 
     public WorkingHoursResponse fromWorkingHours(WorkingHours workingHours) {
@@ -75,6 +80,14 @@ public class DoctorMapper {
                 workingHours.getStartTime().toString(),
                 workingHours.getEndTime().toString()
         );
+    }
+
+    public WorkingHours toWorkingHours(DoctorRequest request) {
+        return WorkingHours.builder()
+                .date(request.schedule().date())
+                .startTime(request.schedule().startTime())
+                .endTime(request.schedule().endTime())
+                .build();
     }
 
     public DoctorOverview fromDoctorEntityToOverview(DoctorEntity entity) {
@@ -89,13 +102,5 @@ public class DoctorMapper {
                 entity.getRating(),
                 entity.getReviewsCount()
         );
-    }
-
-    public WorkingHours toWorkingHours(DoctorRequest request) {
-        return WorkingHours.builder()
-                .date(request.schedule().date())
-                .startTime(request.schedule().startTime())
-                .endTime(request.schedule().endTime())
-                .build();
     }
 }

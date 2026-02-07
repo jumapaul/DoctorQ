@@ -21,7 +21,7 @@ public class CustomFeignDecoder implements ErrorDecoder {
         String responseBody = extractResponseBody(response);
         return switch (status) {
             case BAD_REQUEST -> new IllegalArgumentException("Invalid request: " + responseBody);
-            case NOT_FOUND -> new ResourceNotFoundException("Resource not found");
+            case NOT_FOUND -> new ResourceNotFoundException("Doctor not found");
             case SERVICE_UNAVAILABLE -> new ServiceUnavailableException("Service not available");
             case UNAUTHORIZED -> new SecurityException("Unauthorized accessed");
             case FORBIDDEN -> new AccessDeniedException("Access Forbidden");

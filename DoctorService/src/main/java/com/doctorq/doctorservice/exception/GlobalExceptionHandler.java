@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
-public class GlobalResourceHandler {
+public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ApiResponse<Object>> handleNotFoundException(ResourceNotFoundException exception) {
@@ -49,6 +49,17 @@ public class GlobalResourceHandler {
                         exception.getMessage(), null
                 ),
                 HttpStatus.CONFLICT
+        );
+    }
+
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<ApiResponse<Object>> handleForbiddenException(ForbiddenException exception) {
+        return new ResponseEntity<>(
+                new ApiResponse<>(
+                        HttpStatus.FORBIDDEN.value(),
+                        exception.getMessage(), null
+                ),
+                HttpStatus.FORBIDDEN
         );
     }
 }

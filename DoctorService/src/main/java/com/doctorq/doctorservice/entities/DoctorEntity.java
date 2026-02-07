@@ -1,6 +1,7 @@
 package com.doctorq.doctorservice.entities;
 
 import com.doctorq.doctorservice.dtos.Roles;
+import com.doctorq.doctorservice.feedback.entity.FeedbackEntity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
@@ -41,4 +42,7 @@ public class DoctorEntity {
     )
     @JsonIgnore
     private Set<DoctorCategoryEntity> doctorCategory = new HashSet<>();
+    @OneToMany(mappedBy = "doctor", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private Set<FeedbackEntity> feedback;
 }

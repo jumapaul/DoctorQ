@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,6 +22,7 @@ public class DoctorsCategoryController {
     private final DoctorCategoryService doctorCategoryService;
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<DoctorCategoryEntity>> addCategory(
             @RequestBody DoctorCategoryRequest request) {
 
@@ -29,6 +31,7 @@ public class DoctorsCategoryController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'DOCTOR')")
     public ResponseEntity<ApiResponse<List<DoctorCategoryEntity>>> getAllCategories() throws JsonProcessingException {
 
         List<DoctorCategoryEntity> categoryResponseList = doctorCategoryService.getAllCategories();
@@ -36,6 +39,7 @@ public class DoctorsCategoryController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'DOCTOR')")
     public ResponseEntity<ApiResponse<DoctorCategoryResponse>> getCategoryById(
             @PathVariable(name = "id") Long id) throws JsonProcessingException {
         DoctorCategoryResponse doctorCategory = doctorCategoryService.getCategoryById(id);
@@ -43,6 +47,7 @@ public class DoctorsCategoryController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ApiResponse<DoctorCategoryResponse>> updateCategory(
             @PathVariable(name = "id") Long id,
             @RequestBody DoctorCategoryRequest request
@@ -52,6 +57,7 @@ public class DoctorsCategoryController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ApiResponse<Void>> deleteCategory(
             @PathVariable(name = "id") Long id
     ) {

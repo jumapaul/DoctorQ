@@ -7,7 +7,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface UserService {
-    PaginatedResponse getAllUsers(int page, int size) throws JsonProcessingException;
+    PaginatedResponse<UserResponseDto> getAllUsers(int page, int size) throws JsonProcessingException;
 
     UserResponseDto getUserById(Long userId) throws JsonProcessingException;
 

@@ -33,7 +33,6 @@ public class RedisUtil {
 
     public void delete(String key) {
         try {
-            log.info("------------>deleting: {}", key);
             redisTemplate.delete(key);
         } catch (Exception e) {
             log.error("--------------->redis delete error: {}", e.getMessage());

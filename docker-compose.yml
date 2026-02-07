@@ -111,82 +111,34 @@ services:
   #    environment:
   #      - GF_SECURITY_ADMIN_USER=admin
   #      - GF_SECURITY_ADMIN_PASSWORD=password
-
-  zookeeper:
-    container_name: zookeeper
-    image: confluentinc/cp-zookeeper:latest
-    hostname: zookeeper
-    ports:
-      - "2181:2181"
-    environment:
-      ZOOKEEPER_SERVER_ID: 1
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
-    networks:
-      - doctorq-net
-
   kafka:
     container_name: kafka
-    image: confluentinc/cp-kafka:7.2.1
+    image: confluentinc/cp-kafka:latest
     hostname: broker
     ports:
-      - "9092:9092"
+      - "9092:9092" # Maps Container Port 9092, default for Kafka client communication, to Host Port 9092
+      - "9093:9093" # Maps Container Port 9093, used for advertised listeners for external clients, to Host Port 9093
     environment:
-      KAFKA_BROKER_ID: 1
+      KAFKA_KRAFT_MODE: "true"
+      KAFKA_PROCESS_ROLES: controller,broker
+      KAFKA_NODE_ID: 1
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@localhost:9093" # Defines who can vote in the controller quorum; part of KRaft. Format nodeId@host:controllerPort
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093 # PLAINTEXT is for client communication. CONTROLLER is for internal controller communication
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_LOG_DIRS: /var/lib/kafka/data  # Path where Kafka stores its logs.
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_LOG_RETENTION_HOURS: 48 #Keep logs for 2 days
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092,PLAINTEXT_HOST://localhost:9092
-    depends_on:
-      - zookeeper
+      CLUSTER_ID: "d9FdnCKjS6yCth0ZKzZIdg"  # A unique ID for the Kafka cluster.
+
+    volumes:
+      - kafka-data:/var/lib/kafka/data  # Store Kafka logs on your local machine.
     networks:
       - doctorq-net
-#  kafka-tools:
-#    image: confluentinc/cp-kafka:7.2.1
-#    container_name: kafka-tools
-#    hostname: kafka-tools
-#    command: [ "tail", "-f", "/dev/null" ]
-#    network_mode: "host"
-
-#  schema-registry:
-#    image: confluentinc/cp-schema-registry:7.2.1
-#    hostname: schema-registry
-#    container_name: schema-registry
-#    depends_on:
-#      - broker
-#    ports:
-#      - "8081:8081"
-#    environment:
-#      SCHEMA_REGISTRY_HOST_NAME: schema-registry
-#      SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
-#      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://broker:29092
-#      SCHEMA_REGISTRY_KAFKASTORE_TOPIC_REPLICATION_FACTOR: 1
-#    networks:
-#      doctorq-net:
-
-#  control-center:
-#    image: confluentinc/cp-enterprise-control-center:7.2.1
-#    container_name: control-center
-#    hostname: control-center
-#    depends_on:
-#      - broker
-#      - schema-registry
-#    ports:
-#      - "9021:9021"
-#    environment:
-#      CONTROL_CENTER_BOOTSTRAP_SERVERS: 'broker:29092'
-#      CONTROL_CENTER_ZOOKEEPER_CONNECT: 'zookeeper:2181'
-#      CONTROL_CENTER_SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
-#      CONTROL_CENTER_REPLICATION_FACTOR: 1
-#      CONTROL_CENTER_INTERNAL_TOPICS_PARTITIONS: 1
-#      CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_PARTITIONS: 1
-#      CONFLUENT_METRICS_TOPIC_REPLICATION: 1
-#      PORT: 9021
-#    networks:
-#      doctorq-net:
 networks:
   doctorq-net:
     driver: bridge

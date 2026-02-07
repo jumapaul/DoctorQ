@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -22,6 +23,7 @@ public class DoctorsController {
     private final DoctorService doctorService;
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<DoctorResponse>> addDoctor(@RequestBody DoctorRequest request) {
         DoctorResponse doctor = doctorService.addDoctor(request);
 
@@ -31,6 +33,7 @@ public class DoctorsController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'DOCTOR')")
     public ResponseEntity<PaginatedResponse<DoctorOverview>> getAllDoctors(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
@@ -39,6 +42,7 @@ public class DoctorsController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'DOCTOR')")
     public ResponseEntity<ApiResponse<DoctorResponse>> getDoctorById(@PathVariable Long id) throws JsonProcessingException {
         DoctorResponse doctor = doctorService.getDoctorById(id);
         return ResponseEntity.ok(
@@ -47,6 +51,7 @@ public class DoctorsController {
     }
 
     @PutMapping("/{doctorId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR')")
     public ResponseEntity<ApiResponse<DoctorResponse>> updateDoctor(
             @PathVariable Long doctorId, @RequestBody DoctorRequest request) throws JsonProcessingException {
 
@@ -57,6 +62,7 @@ public class DoctorsController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR')")
     public ResponseEntity<ApiResponse<String>> deleteDoctor(
             @PathVariable Long id
     ) {
@@ -67,6 +73,7 @@ public class DoctorsController {
     }
 
     @GetMapping("/topRated")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'DOCTOR')")
     public ResponseEntity<PaginatedResponse<DoctorOverview>> getTopDoctorResponse(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
@@ -75,6 +82,7 @@ public class DoctorsController {
     }
 
     @GetMapping("/findDoctor")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'DOCTOR')")
     public ResponseEntity<PaginatedResponse<DoctorOverview>> findDoctorByName(
             @Param("name") String name,
             @RequestParam(defaultValue = "0") int page,
@@ -85,6 +93,7 @@ public class DoctorsController {
     }
 
     @GetMapping("/topRated/{categoryId}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'DOCTOR')")
     public ResponseEntity<PaginatedResponse<DoctorOverview>> getCategoryTopDoctor(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -94,6 +103,7 @@ public class DoctorsController {
     }
 
     @PostMapping("updateSchedule")
+    @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR')")
     public ResponseEntity<ApiResponse<DoctorResponse>> updateSchedule(
             @RequestBody WorkingHours workingHours
     ) {

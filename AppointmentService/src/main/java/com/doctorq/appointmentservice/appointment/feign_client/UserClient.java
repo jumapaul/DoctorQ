@@ -9,8 +9,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 
 @FeignClient(
-        name = "USER-SERVICE",
-//        url = "http://34.218.120.119:8010",
+//        name = "USER-SERVICE",
+        name = "user-service",
+        url = "localhost:8010",
         configuration = FeignClientConfiguration.class
 )
 public interface UserClient {

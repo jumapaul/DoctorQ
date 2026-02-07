@@ -24,10 +24,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+
 import static com.doctorq.doctorservice.utils.Constants.*;
 import static com.doctorq.doctorservice.utils.RedisRetrieveMethods.readCacheValue;
 import static com.doctorq.doctorservice.utils.RedisRetrieveMethods.setCacheValue;
@@ -66,7 +68,6 @@ public class DoctorServiceImpl implements DoctorService {
         workingHoursRepository.save(workingHours);
         DoctorEntity doctor = doctorMapper.toDoctorEntity(request, workingHours);
         doctor.setDoctorCategory(categoryEntities);
-//        workingHoursRepository.save(workingHours);
         doctor = doctorRepository.save(doctor);
 
         categoryEntities.forEach(category ->
@@ -123,6 +124,13 @@ public class DoctorServiceImpl implements DoctorService {
                 new ResourceNotFoundException("Doctor with id " + id + " not found")
         );
 
+        DoctorResponse response = updateDoctor(request, doctor);
+
+        setCacheValue(redisUtil, doctorByIdCache + id, response);
+        return response;
+    }
+
+    private DoctorResponse updateDoctor(DoctorRequest request, DoctorEntity doctor) {
         doctor.setFullName(request.fullName());
         doctor.setEmail(request.email());
         doctor.setHospital(request.hospital());
@@ -131,14 +139,10 @@ public class DoctorServiceImpl implements DoctorService {
         doctor.setRole(Roles.DOCTOR);
         doctor.setDoctorCategory(doctor.getDoctorCategory());
         doctor.setAboutDoctor(request.aboutDoctor());
-//        doctor.setWorkingHours(request.schedule());
         doctor.setYearsOfExperience(request.yearsOfExperience());
 
         DoctorEntity savedDoctor = doctorRepository.save(doctor);
-        DoctorResponse response = doctorMapper.fromDoctorEntity(savedDoctor);
-
-        setCacheValue(redisUtil, doctorByIdCache + id, response);
-        return response;
+        return doctorMapper.fromDoctorEntity(savedDoctor);
     }
 
     @Transactional
@@ -216,22 +220,6 @@ public class DoctorServiceImpl implements DoctorService {
 
         return doctorMapper.fromDoctorEntity(workTime.getDoctor());
     }
-
-    //    @Override
-//    public PaginatedResponse<DoctorResponse> getRecommendedDoctors(int page, int size) throws JsonProcessingException {
-//        Object doctorsCache = redisUtil.get(recommendedDoctorCache);
-//
-//        if (doctorsCache == null) {
-//            List<DoctorEntity> topDoctors = doctorRepository.getTopDoctor();
-//            List<DoctorResponse> response = topDoctors.stream().map(doctorMapper::fromDoctorEntity).toList();
-//            setCacheValue(redisUtil, topDoctorsCache, response);
-//            return response;
-//        }
-//        return readCacheValue(doctorsCache.toString(), new TypeReference<>() {
-//        });
-//    }
-//    public <T> PaginatedResponse<T> paginate(int page, int size, List<T> data) {
-
 
     private <T> PaginatedResponse<T> paginate(List<T> data, Page<?> paginatedData) {
         return new PaginatedResponse<>(

@@ -84,15 +84,8 @@ public class FavoriteDoctorServiceImpl implements FavoriteDoctorService {
                         return favoriteMapper.toDoctorOverView(favoriteDoctor.getId(), response);
                     }).toList();
 
-            PaginatedResponse<DoctorOverview> paginatedResponse = new PaginatedResponse<>(
-                    responseList,
-                    paginatedFavorites.getNumber(),
-                    paginatedFavorites.getTotalPages(),
-                    paginatedFavorites.getSize(),
-                    paginatedFavorites.getNumberOfElements(),
-                    paginatedFavorites.getSort().isSorted(),
-                    paginatedFavorites.isLast()
-            );
+            PaginatedResponse<DoctorOverview> paginatedResponse =
+                    getDoctorOverviewPaginatedResponse(responseList, paginatedFavorites);
 
             if (!paginatedResponse.data().isEmpty()) {
                 setCacheValue(redisUtil, GetAllUserFavoriteDoctors + page + size, paginatedResponse);
@@ -103,6 +96,18 @@ public class FavoriteDoctorServiceImpl implements FavoriteDoctorService {
 
         return readCacheValue(favoriteDoctorCache.toString(), new TypeReference<>() {
         });
+    }
+
+    private static PaginatedResponse<DoctorOverview> getDoctorOverviewPaginatedResponse(List<DoctorOverview> responseList, Page<FavoritesEntity> paginatedFavorites) {
+        return new PaginatedResponse<>(
+                responseList,
+                paginatedFavorites.getNumber(),
+                paginatedFavorites.getTotalPages(),
+                paginatedFavorites.getSize(),
+                paginatedFavorites.getNumberOfElements(),
+                paginatedFavorites.getSort().isSorted(),
+                paginatedFavorites.isLast()
+        );
     }
 
     private DoctorResponse doctorFallback(FavoriteDoctorRequest request, Exception ex) {

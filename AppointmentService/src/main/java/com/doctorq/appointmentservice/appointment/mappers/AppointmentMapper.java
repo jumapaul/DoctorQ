@@ -2,10 +2,8 @@ package com.doctorq.appointmentservice.appointment.mappers;
 
 import com.doctorq.appointmentservice.appointment.dtos.*;
 import com.doctorq.appointmentservice.appointment.entity.AppointmentEntity;
-import com.doctorq.appointmentservice.appointment.entity.HistoryOuterBoxEntity;
+import com.doctorq.appointmentservice.history.HistoryEntity;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
 
 @Service
 public class AppointmentMapper {
@@ -41,5 +39,13 @@ public class AppointmentMapper {
                 appointmentEntity.getStarTime(),
                 appointmentEntity.getEndTime()
         );
+    }
+
+    public HistoryEntity toHistoryEntity(Long userId, Long doctorId, HistoryStatus status) {
+        return HistoryEntity.builder()
+                .userId(userId)
+                .doctorId(doctorId)
+                .historyStatus(status)
+                .build();
     }
 }

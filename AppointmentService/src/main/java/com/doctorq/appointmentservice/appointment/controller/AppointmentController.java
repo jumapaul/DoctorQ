@@ -8,7 +8,10 @@ import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -19,6 +22,7 @@ public class AppointmentController {
     private final AppointmentService appointmentService;
 
     @PostMapping("/add")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'DOCTOR')")
     public ResponseEntity<ApiResponse<AppointmentResponse>> addAppointment(
             @RequestBody AddAppointmentRequest request,
             @RequestHeader("Authorization") String authToken
@@ -30,10 +34,12 @@ public class AppointmentController {
     }
 
     @PostMapping("/approve/{id}")
+    @PreAuthorize("hasRole('DOCTOR')")
     public ResponseEntity<ApiResponse<AppointmentResponse>> approveAppointment(
-            @PathVariable Long id
+            @PathVariable Long id,
+            @RequestHeader("Authorization") String token
     ) throws MessagingException {
-        AppointmentResponse appointment = appointmentService.approveAppointment(id);
+        AppointmentResponse appointment = appointmentService.approveAppointment(id, token);
 
         return ResponseEntity.ok(
                 success(appointment, "Appointment approved successfully")
@@ -41,9 +47,10 @@ public class AppointmentController {
     }
 
     @PostMapping("/cancel/{id}")
+    @PreAuthorize("hasAnyRole('USER', 'DOCTOR')")
     public ResponseEntity<ApiResponse<AppointmentResponse>> cancelAppointment(
             @PathVariable Long id
-    ) throws MessagingException {
+    ) {
         AppointmentResponse appointment = appointmentService.cancelAppointment(id);
 
         return ResponseEntity.ok(
@@ -52,6 +59,7 @@ public class AppointmentController {
     }
 
     @GetMapping("/complete/{id}")
+    @PreAuthorize("hasRole('DOCTOR')")
     public ResponseEntity<ApiResponse<AppointmentResponse>> completeAppointment(
             @PathVariable Long id
     ) {
@@ -62,17 +70,8 @@ public class AppointmentController {
         );
     }
 
-//    @GetMapping
-//    public ResponseEntity<PaginatedResponse<AppointmentEntity>> getAllAppointment(
-//            @RequestParam(defaultValue = "10") int size,
-//            @RequestParam(defaultValue = "0") int page
-//    ) throws JsonProcessingException {
-//        PaginatedResponse<AppointmentEntity> allAppointments = appointmentService.getAllAppointment(page, size);
-//
-//        return ResponseEntity.ok(allAppointments);
-//    }
-
     @GetMapping("user/{userId}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'DOCTOR')")
     public ResponseEntity<ApiResponse<List<AppointmentEntity>>> getUserAppointmentByStatus(
             @PathVariable Long userId,
             @RequestParam AppointmentStatus status
@@ -84,6 +83,7 @@ public class AppointmentController {
     }
 
     @GetMapping("doctor/{doctorId}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'DOCTOR')")
     public ResponseEntity<ApiResponse<List<AppointmentEntity>>> getDoctorAppointmentByStatus(
             @PathVariable Long doctorId,
             @RequestParam AppointmentStatus status
@@ -94,12 +94,14 @@ public class AppointmentController {
         return ResponseEntity.ok(success(allAppointments, "Appointments retrieved"));
     }
 
-//    @GetMapping("/date")
-//    public ResponseEntity<ApiResponse<List<AppointmentEntity>>> getAppointmentByDate(
-//            @RequestParam(name = "date") LocalDate date) throws JsonProcessingException {
-//        List<AppointmentEntity> appointments = appointmentService.getAppointmentsByDate(date);
-//        return ResponseEntity.ok(success(appointments, "Appointments retrieved"));
-//    }
+    @GetMapping("/date")
+    public ResponseEntity<ApiResponse<List<AppointmentEntity>>> getAppointmentByDate(
+            @RequestParam(name = "date") LocalDate date,
+            @RequestParam(name = "status") AppointmentStatus status
+    ) throws JsonProcessingException {
+        List<AppointmentEntity> appointments = appointmentService.getAppointmentsByDateAndStatus(date, status);
+        return ResponseEntity.ok(success(appointments, "Appointments retrieved"));
+    }
 
 
     private <T> ApiResponse<T> success(T data, String message) {

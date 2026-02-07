@@ -1,6 +1,5 @@
-package com.doctorq.doctorservice.kafka.producer;
+package com.doctorq.appointmentservice.kafka;
 
-import com.doctorq.doctorservice.kafka.event.FeedbackEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -13,20 +12,20 @@ import java.util.concurrent.CompletableFuture;
 @Component
 @RequiredArgsConstructor
 public class KafkaProducer {
+    private final KafkaTemplate<String, AppointmentCompletionEvent> kafkaTemplate;
+    public static final String TOPIC = "COMPLETION_TOPIC";
 
-    public static final String TOPIC = "RATING_TOPIC";
-
-    private final KafkaTemplate<String, FeedbackEvent> kafkaTemplate;
-
-    public CompletableFuture<SendResult<String, FeedbackEvent>> publish(FeedbackEvent event) {
+    public CompletableFuture<SendResult<String, AppointmentCompletionEvent>> publish(AppointmentCompletionEvent event) {
         return kafkaTemplate.send(TOPIC, event).whenComplete((result, ex) -> {
             if (ex != null) {
-                log.error("---------->Failed to send event={} due to {}", event, ex.getMessage(), ex);
+                log.error("------>Failed to send event={} due to {}", event, ex.getMessage());
             } else {
-                log.info("--------->Event sent to topic={}, partition={}, offset={}",
+                log.info("------->Event sent to topic={}, partition={}, offset={}",
                         result.getRecordMetadata().topic(), result.getRecordMetadata().partition(),
-                        result.getRecordMetadata().offset());
+                        result.getRecordMetadata().offset()
+                );
             }
         });
     }
+
 }

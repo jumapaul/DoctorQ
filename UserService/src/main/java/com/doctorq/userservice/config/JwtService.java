@@ -1,5 +1,6 @@
 package com.doctorq.userservice.config;
 
+import com.doctorq.userservice.user.entities.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -27,6 +28,9 @@ public class JwtService {
     @Value("${security.jwt.refresh-token.expiration}")
     private Long REFRESH_TOKEN_EXPIRATION;
 
+    public String extractRoles(String token) {
+        return extractAllClaims(token).get("role", String.class);
+    }
     public String extractUsername(String jwtToken) {
         return extractClaim(jwtToken, Claims::getSubject);
     }
@@ -49,7 +53,10 @@ public class JwtService {
     }
 
     public String generateToken(UserDetails userDetails) {
-        return generateToken(new HashMap<>(), userDetails);
+        Map<String, Object> claims = new HashMap<>();
+        User user = (User) userDetails;
+        claims.put("role", user.getRole().name());
+        return generateToken(claims, userDetails);
     }
 
     private String generateToken(

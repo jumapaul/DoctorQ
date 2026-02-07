@@ -14,11 +14,15 @@ spring:
           search-locations: classpath:/configurations
 
   datasource:
-    url: jdbc:postgresql://34.218.120.119:5432/config
-    username: ${SPRING_DATASOURCE_USERNAME}
-    password: ${SPRING_DATASOURCE_PASSWORD}
+    url: jdbc:postgresql://localhost:5432/config
+    username: postgres
+    password: postgres
+
   jpa:
     hibernate:
       ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
 server:
   port: 8000

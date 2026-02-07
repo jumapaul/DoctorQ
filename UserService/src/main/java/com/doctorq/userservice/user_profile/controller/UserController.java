@@ -22,18 +22,19 @@ public class UserController {
     private final UserService userService;
     private final Environment environment;
 
-    //    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
-    public ResponseEntity<PaginatedResponse> getAllUsers(
+    public ResponseEntity<PaginatedResponse<UserResponseDto>> getAllUsers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) throws JsonProcessingException {
 
-        PaginatedResponse responseDtoList = userService.getAllUsers(page, size);
+        PaginatedResponse<UserResponseDto> responseDtoList = userService.getAllUsers(page, size);
         return ResponseEntity.ok(responseDtoList);
     }
 
     @GetMapping("/{userId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER', 'DOCTOR')")
     public ResponseEntity<ApiResponse<UserResponseDto>> getUserById(
             @PathVariable(name = "userId") Long userId
     ) throws JsonProcessingException {
@@ -53,7 +54,7 @@ public class UserController {
     }
 
     @PostMapping("/userProfile/{userId}")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<ApiResponse<UserResponseDto>> addUserProfile(
             @RequestBody UserProfileRequest request,
             @PathVariable(name = "userId") Long userId
@@ -63,7 +64,7 @@ public class UserController {
     }
 
     @PutMapping("/updateProfile/{userId}")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<ApiResponse<UserResponseDto>> updateUserProfile(
             @RequestBody UserProfileRequest request,
             @PathVariable(name = "userId") Long userId
@@ -73,6 +74,7 @@ public class UserController {
     }
 
     @PostMapping("/uploadProfileImage/{userId}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<ApiResponse<String>> upload(
             @RequestParam("file") MultipartFile multipartFile,
             @PathVariable(name = "userId") Long userId

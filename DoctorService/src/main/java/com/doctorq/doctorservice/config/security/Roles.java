@@ -1,4 +1,4 @@
-package com.doctorq.userservice.user;
+package com.doctorq.doctorservice.config.security;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Getter
-public enum  Roles {
+public enum Roles {
     ADMIN(
             Set.of(
                     Permissions.ADMIN_READ,
