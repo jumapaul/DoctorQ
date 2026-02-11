@@ -69,10 +69,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
         } catch (MalformedJwtException | ExpiredJwtException exception) {
+            log.error(exception.getMessage());
             writeErrorResponse(response, HttpServletResponse.SC_FORBIDDEN, exception.getMessage());
-            return;
-        } catch (Exception e) {
-            writeErrorResponse(response, HttpServletResponse.SC_FORBIDDEN, e.getMessage());
             return;
         }
 

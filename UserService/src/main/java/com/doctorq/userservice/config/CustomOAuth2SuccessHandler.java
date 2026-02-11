@@ -1,5 +1,6 @@
 package com.doctorq.userservice.config;
 
+import com.doctorq.userservice.exception.ForbiddenException;
 import com.doctorq.userservice.user.Roles;
 import com.doctorq.userservice.user.entities.User;
 import com.doctorq.userservice.user.repository.UserRepository;
@@ -16,6 +17,7 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -53,9 +55,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
                 email = (String) principal.getAttributes().get("email");
                 firstname = (String) principal.getAttributes().get("given_name");
                 lastname = (String) principal.getAttributes().get("family_name");
-            }
-
-            else if ("github".equals(registrationId)) {
+            } else if ("github".equals(registrationId)) {
                 email = (String) principal.getAttributes().get("email");
                 firstname = (String) principal.getAttributes().get("name");
                 lastname = "";
@@ -82,7 +82,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
                     }
                 }
             } else {
-                throw new RuntimeException("Failed to retrieve user email from " + registrationId);
+                throw new ForbiddenException("Failed to retrieve user email from " + registrationId);
             }
 
             String finalEmail = email;
@@ -113,7 +113,8 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
             response.getWriter().flush();
 
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            log.error(e.getMessage());
+            throw new ForbiddenException(e.getMessage());
         }
     }
 }

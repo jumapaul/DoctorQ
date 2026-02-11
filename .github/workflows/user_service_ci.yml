@@ -2,7 +2,7 @@ name: Build and test user service
 
 on:
   push:
-    branches: [feedbackService]
+    branches: [appointment]
     paths:
       - 'UserService/**'
 
