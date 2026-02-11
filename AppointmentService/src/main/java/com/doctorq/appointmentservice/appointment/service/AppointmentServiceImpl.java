@@ -264,13 +264,13 @@ public class AppointmentServiceImpl implements AppointmentService {
                 "Doctor service temporarily unavailable please try again later"
         );
     }
-
-    private UserResponse userServiceFallback(AddAppointmentRequest request, Exception exception) {
-        log.error("Circuit breaker activated: {}", exception.getMessage());
-        throw new ServiceUnavailableException(
-                "User service temporarily unavailable please try again later"
-        );
-    }
+//
+//    private UserResponse userServiceFallback(AddAppointmentRequest request, Exception exception) {
+//        log.error("Circuit breaker activated: {}", exception.getMessage());
+//        throw new ServiceUnavailableException(
+//                "User service temporarily unavailable please try again later"
+//        );
+//    }
 
     private <T> PaginatedResponse<T> paginate(List<T> data, Page<?> paginatedData) {
         return new PaginatedResponse<>(
