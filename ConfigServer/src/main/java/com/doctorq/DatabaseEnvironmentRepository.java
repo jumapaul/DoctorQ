@@ -1,12 +1,11 @@
 package com.doctorq;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cloud.config.environment.Environment;
 import org.springframework.cloud.config.environment.PropertySource;
 import org.springframework.cloud.config.server.environment.EnvironmentRepository;
 import org.springframework.stereotype.Component;
-
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,8 +13,12 @@ import java.util.Map;
 @Component
 public class DatabaseEnvironmentRepository implements EnvironmentRepository {
 
-    @Autowired
-    private ConfigRepository configRepository;
+    private static final Logger log = LoggerFactory.getLogger(DatabaseEnvironmentRepository.class);
+    private final ConfigRepository configRepository;
+
+    public DatabaseEnvironmentRepository(ConfigRepository configRepository) {
+        this.configRepository = configRepository;
+    }
 
     @Override
     public Environment findOne(String application, String profile, String label) {
@@ -39,15 +42,12 @@ public class DatabaseEnvironmentRepository implements EnvironmentRepository {
             configs.stream()
                     .filter(config -> config.getServiceName().equals(application))
                     .forEach(config -> properties.put(config.getConfigName(), config.getConfigValue()));
-//            for (ConfigEntity config : configs) {
-//                properties.put(config.getConfigName(), config.getConfigValue());
-//            }
 
             PropertySource propertySource = new PropertySource("databaseConfig", properties);
             environment.add(propertySource);
 
         } else {
-            System.out.println("No database properties found for: " + application);
+            log.info("No database properties found for: {}", application);
         }
         return environment;
     }
