@@ -2,4 +2,5 @@ spring:
   application:
     name: eureka-service
   config:
+#    Provide the url as environment file
     import: optional:configserver:${CONFIG_URL}
