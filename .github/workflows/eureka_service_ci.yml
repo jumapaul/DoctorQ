@@ -2,7 +2,7 @@ name: Build and test eureka service
 
 on:
   push:
-    branches: [feedbackService]
+    branches: [appointment]
     paths:
       - 'EurekaDiscoveryService/**'
 
