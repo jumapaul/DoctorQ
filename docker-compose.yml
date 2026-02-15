@@ -84,6 +84,7 @@ services:
     networks:
       - doctorq-net
 
+# Use redis free tier.
   redis:
     image: redis:7.4.2
     container_name: redis
@@ -111,6 +112,8 @@ services:
   #    environment:
   #      - GF_SECURITY_ADMIN_USER=admin
   #      - GF_SECURITY_ADMIN_PASSWORD=password
+
+  #We use upstash
   kafka:
     container_name: kafka
     image: confluentinc/cp-kafka:latest

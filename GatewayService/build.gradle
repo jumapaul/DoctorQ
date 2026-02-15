@@ -33,9 +33,9 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-	implementation("io.jsonwebtoken:jjwt-api:0.12.6")
-	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
-	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
+//	implementation("io.jsonwebtoken:jjwt-api:0.12.6")
+//	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
+//	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 	implementation 'net.ttddyy.observation:datasource-micrometer-spring-boot:1.1.1'

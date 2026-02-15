@@ -18,7 +18,6 @@ public class GlobalErrorAttributes extends DefaultErrorAttributes {
     public Map<String, Object> getErrorAttributes(ServerRequest request, ErrorAttributeOptions options) {
         Map<String, Object> errorResponse = super.getErrorAttributes(request, options);
 
-        log.info("----------->: {}", errorResponse);
         HttpStatus status = HttpStatus.valueOf((Integer) errorResponse.get("status"));
 
         switch (status) {

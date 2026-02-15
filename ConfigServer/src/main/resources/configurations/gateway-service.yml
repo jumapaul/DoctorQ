@@ -26,7 +26,6 @@ spring:
               predicates:
                 - Path=/api/v1/users/**
               filters:
-                - AuthenticationFilter
                 - name: CircuitBreaker
                   args:
                     name: userServiceCircuitBreaker
@@ -36,7 +35,6 @@ spring:
               predicates:
                 - Path=/api/v1/favorite/**
               filters:
-                - AuthenticationFilter
                 - name: CircuitBreaker
                   args:
                     name: userServiceCircuitBreaker
@@ -47,7 +45,6 @@ spring:
               predicates:
                 - Path=/api/v1/doctors/**
               filters:
-                - AuthenticationFilter
                 - name: CircuitBreaker
                   args:
                     name: doctorServiceCircuitBreaker
@@ -58,7 +55,6 @@ spring:
               predicates:
                 - Path=/api/v1/feedbacks/**
               filters:
-                - AuthenticationFilter
                 - name: CircuitBreaker
                   args:
                     name: doctorServiceCircuitBreaker
@@ -69,7 +65,6 @@ spring:
               predicates:
                 - Path=/api/v1/appointment/**
               filters:
-                - AuthenticationFilter
                 - name: CircuitBreaker
                   args:
                     name: appointmentServiceCircuitBreaker
@@ -80,7 +75,6 @@ spring:
               predicates:
                 - Path=/api/v1/history/**
               filters:
-                - AuthenticationFilter
                 - name: CircuitBreaker
                   args:
                     name: appointmentServiceCircuitBreaker
