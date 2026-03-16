@@ -31,6 +31,7 @@ public class JwtService {
     public String extractRoles(String token) {
         return extractAllClaims(token).get("role", String.class);
     }
+
     public String extractUsername(String jwtToken) {
         return extractClaim(jwtToken, Claims::getSubject);
     }
@@ -52,32 +53,27 @@ public class JwtService {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String generateToken(UserDetails userDetails) {
-        Map<String, Object> claims = new HashMap<>();
-        User user = (User) userDetails;
-        claims.put("role", user.getRole().name());
-        return generateToken(claims, userDetails);
-    }
-
-    private String generateToken(
-            Map<String, Object> extraClaims,
+    public String generateToken(
             UserDetails userDetails
     ) {
-        return buildToken(extraClaims, userDetails, JWT_EXPIRATION_TIME);
+        return buildToken(userDetails, JWT_EXPIRATION_TIME);
     }
 
     public String generateRefreshToken(UserDetails userDetails) {
-        return buildToken(new HashMap<>(), userDetails, REFRESH_TOKEN_EXPIRATION);
+
+        return buildToken(userDetails, REFRESH_TOKEN_EXPIRATION);
     }
 
     private String buildToken(
-            Map<String, Object> extractClaims,
             UserDetails userDetails,
             long expiration
     ) {
+        Map<String, Object> claims = new HashMap<>();
+        User user = (User) userDetails;
+        claims.put("role", user.getRole().name());
         return Jwts
                 .builder()
-                .claims(extractClaims)
+                .claims(claims)
                 .subject(userDetails.getUsername())
                 .issuedAt(Date.from(Instant.now()))
                 .expiration(Date.from(Instant.now().plusMillis(expiration)))

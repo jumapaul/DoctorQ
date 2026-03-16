@@ -8,13 +8,13 @@ import java.util.List;
 
 public record DoctorResponse(
         Long id,
+        Long userId,
         String fullName,
         String email,
         String profilePictureUrl,
         String hospital,
         List<String> doctorCategory,
         Double rating,
-        Roles role,
         Integer ratingsCount,
         Integer reviewsCount,
         String aboutDoctor,

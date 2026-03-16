@@ -1,0 +1,20 @@
+package com.doctorq.doctorservice.kafka.event;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.List;
+
+public record UserToDoctorRequestEvent(
+        Long userId,
+        String fullName,
+        String email,
+        String profileUrl,
+        String hospital,
+        String about,
+        Integer yearsOfExperience,
+        List<Long> categories,
+        LocalDate date,
+        LocalTime startTime,
+        LocalTime endTime
+) {
+}

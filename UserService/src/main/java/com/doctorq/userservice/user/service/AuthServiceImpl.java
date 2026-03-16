@@ -181,11 +181,8 @@ public class AuthServiceImpl implements AuthService {
                 var accessToken = jwtService.generateToken(userDetails);
 
                 refreshTokenResponse = new RefreshTokenResponse(
-                        accessToken,
-                        refreshToken
+                        accessToken
                 );
-
-//                new ObjectMapper().writeValue(response.getOutputStream(), authResponse);
             }
         }
 

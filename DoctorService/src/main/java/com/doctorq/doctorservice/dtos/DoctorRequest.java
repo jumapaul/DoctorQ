@@ -3,6 +3,7 @@ package com.doctorq.doctorservice.dtos;
 import java.util.List;
 
 public record DoctorRequest(
+        Long userId,
         String fullName,
         String email,
         String profilePicUrl,

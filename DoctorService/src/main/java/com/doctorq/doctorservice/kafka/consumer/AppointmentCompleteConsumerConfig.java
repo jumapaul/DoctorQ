@@ -3,7 +3,6 @@ package com.doctorq.doctorservice.kafka.consumer;
 import com.doctorq.doctorservice.kafka.event.AppointmentCompletionEvent;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafka;
@@ -17,9 +16,9 @@ import java.util.Map;
 
 @Configuration
 @EnableKafka
-public class ConsumerConfiguration {
-    @Value("${spring.kafka.consumer.bootstrap-servers}")
-    private String bootstrapServer;
+public class AppointmentCompleteConsumerConfig {
+    //    @Value("${spring.kafka.consumer.bootstrap-servers}")
+    private String bootstrapServer = "pkc-921jm.us-east-2.aws.confluent.cloud:9092";
 
     private static final String completionConsumerGroup = "APPOINTMENT_COMPLETION_GROUP";
 
@@ -36,6 +35,13 @@ public class ConsumerConfiguration {
 
         deserializer.addTrustedPackages("*");
         deserializer.ignoreTypeHeaders();
+        props.put("security.protocol", "SASL_SSL");
+        props.put("sasl.mechanism", "PLAIN");
+        props.put("sasl.jaas.config",
+                "org.apache.kafka.common.security.plain.PlainLoginModule required username='OVBDOZSLI5NB57JW' password='cfltoq42UfI0G86K8hgvSDiQ3qJrrkSNPvrUwOWG0pyal4USpjvJiKS3eqR/n3wA';");
+
+        props.put("client.dns.lookup", "use_all_dns_ips");
+        props.put("session.timeout.ms", 45000);
         return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), deserializer);
     }
 

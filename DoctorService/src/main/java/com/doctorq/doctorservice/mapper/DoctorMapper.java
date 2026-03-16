@@ -33,6 +33,7 @@ public class DoctorMapper {
                 )).collect(Collectors.toSet());
 
         return DoctorEntity.builder()
+                .userId(request.userId())
                 .fullName(request.fullName())
                 .email(request.email())
                 .profilePictureUrl(request.profilePicUrl())
@@ -51,17 +52,16 @@ public class DoctorMapper {
 
     public DoctorResponse fromDoctorEntity(DoctorEntity entity) {
         List<String> categories = entity.getDoctorCategory().stream().map(DoctorCategoryEntity::getName).toList();
-        log.info("------------>entity: {}", categories.get(0));
         WorkingHoursResponse workingHoursResponse = fromWorkingHours(entity.getSchedule());
-        DoctorResponse response = new DoctorResponse(
+        return new DoctorResponse(
                 entity.getId(),
+                entity.getUserId(),
                 entity.getFullName(),
                 entity.getEmail(),
                 entity.getProfilePictureUrl(),
                 entity.getHospital(),
                 categories,
                 entity.getRating(),
-                entity.getRole(),
                 entity.getRatingCount(),
                 entity.getReviewsCount(),
                 entity.getAboutDoctor(),
@@ -69,8 +69,6 @@ public class DoctorMapper {
                 entity.getNumberOfPatients(),
                 workingHoursResponse
         );
-
-        return response;
     }
 
     public WorkingHoursResponse fromWorkingHours(WorkingHours workingHours) {

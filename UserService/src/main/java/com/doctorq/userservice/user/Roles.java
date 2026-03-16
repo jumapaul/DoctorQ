@@ -11,6 +11,16 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Getter
 public enum  Roles {
+    SUPER_ADMNIN(
+            Set.of(
+                    Permissions.ADMIN_READ,
+                    Permissions.ADMIN_CREATE,
+                    Permissions.ADMIN_DELETE,
+                    Permissions.ADMIN_UPDATE,
+                    Permissions.USER_READ,
+                    Permissions.DOCTOR_READ
+            )
+    ),
     ADMIN(
             Set.of(
                     Permissions.ADMIN_READ,
