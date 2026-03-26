@@ -22,4 +22,8 @@ public class RedisRetrieveMethods {
     public static <T> void setCacheValue(RedisUtil redisUtil, String key, T value) throws JsonProcessingException {
         redisUtil.set(key, objectMapper.writeValueAsString(value), timeToLive);
     }
+
+    public static <T> void setGroupCacheValue(RedisUtil redisUtil, String key, T value) throws JsonProcessingException {
+        redisUtil.setGroup(key, objectMapper.writeValueAsString(value));
+    }
 }
