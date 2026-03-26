@@ -10,4 +10,5 @@ public final class Constants {
     public static final String doctorCategoryByIdCache = "doctorCategoryByIdCache::";
     public static final String recommendedDoctorCache = "doctorRecommendationCache::";
     public static final String categoryTopDoctorCache = "categoryTopDoctorCache::";
+    public static final String userFavoriteDoctors = "userFavoriteDoctors::";
 }

@@ -10,7 +10,6 @@ import com.doctorq.appointmentservice.appointment.mappers.AppointmentMapper;
 import com.doctorq.appointmentservice.appointment.entity.AppointmentEntity;
 import com.doctorq.appointmentservice.appointment.mail.EmailService;
 import com.doctorq.appointmentservice.appointment.repository.AppointmentRepository;
-import com.doctorq.appointmentservice.history.HistoryEntity;
 import com.doctorq.appointmentservice.history.HistoryRepository;
 import com.doctorq.appointmentservice.kafka.AppointmentCompletionEvent;
 import com.doctorq.appointmentservice.kafka.KafkaProducer;
@@ -27,7 +26,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -35,7 +33,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
 import static com.doctorq.appointmentservice.appointment.mail.EmailTemplate.DOCTOR_MAIL;
 import static com.doctorq.appointmentservice.notification.NotificationType.*;
 import static com.doctorq.appointmentservice.util.Constants.*;

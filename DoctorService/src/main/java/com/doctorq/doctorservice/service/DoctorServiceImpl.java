@@ -124,6 +124,7 @@ public class DoctorServiceImpl implements DoctorService {
         redisUtil.deleteGroup(allDoctorsCache);
         redisUtil.deleteGroup(topDoctorsCache);
         redisUtil.delete(doctorByIdCache + id);
+        redisUtil.deleteGroup(userFavoriteDoctors);
         DoctorEntity doctor = doctorRepository.findById(id).orElseThrow(() ->
                 new ResourceNotFoundException("Doctor with id " + id + " not found")
         );
@@ -152,6 +153,7 @@ public class DoctorServiceImpl implements DoctorService {
         redisUtil.delete(doctorByIdCache + id);
         redisUtil.deleteGroup(allDoctorsCache);
         redisUtil.deleteGroup(topDoctorsCache);
+        redisUtil.deleteGroup(userFavoriteDoctors);
         redisUtil.delete(categoryTopDoctorCache + "*");
         DoctorEntity doctor = doctorRepository.findById(id).orElseThrow(() ->
                 new ResourceNotFoundException("Doctor not found")

@@ -2,6 +2,7 @@ package com.doctorq.doctorservice.favorite;
 
 import com.doctorq.doctorservice.dtos.response.ApiResponse;
 import com.doctorq.doctorservice.dtos.response.DoctorResponse;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -40,7 +41,7 @@ public class FavoriteController {
 //    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'DOCTOR')")
     public ResponseEntity<ApiResponse<List<DoctorResponse>>> removeFromFavorite(
             @PathVariable Long id
-    ) {
+    ) throws JsonProcessingException {
         List<DoctorResponse> doctors = favoriteService.getUserFavorites(id);
         return ResponseEntity.ok(response(doctors, "User favorite retrieved"));
     }

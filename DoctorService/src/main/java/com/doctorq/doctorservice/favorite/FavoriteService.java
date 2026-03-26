@@ -5,11 +5,17 @@ import com.doctorq.doctorservice.entities.DoctorEntity;
 import com.doctorq.doctorservice.exception.ResourceNotFoundException;
 import com.doctorq.doctorservice.mapper.DoctorMapper;
 import com.doctorq.doctorservice.repository.DoctorRepository;
+import com.doctorq.doctorservice.utils.RedisUtil;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 import java.util.List;
+
+import static com.doctorq.doctorservice.utils.Constants.userFavoriteDoctors;
+import static com.doctorq.doctorservice.utils.RedisReadWriteMethods.*;
 
 @Service
 @RequiredArgsConstructor
@@ -18,8 +24,11 @@ public class FavoriteService {
     private final FavoriteRepository favoriteRepository;
     private final DoctorRepository doctorRepository;
     private final DoctorMapper doctorMapper;
+    private final RedisUtil redisUtil;
 
     public String addToFavorite(FavoriteRequest request) {
+        String cacheKey = userFavoriteDoctors + request.userId();
+        redisUtil.delete(cacheKey);
         DoctorEntity doctor = doctorRepository.findById(request.doctorId()).orElseThrow(() ->
                 new ResourceNotFoundException("Doctor not found")
         );
@@ -38,6 +47,8 @@ public class FavoriteService {
     }
 
     public String removeFromFavorite(FavoriteRequest request) {
+        String cacheKey = userFavoriteDoctors + request.userId();
+        redisUtil.delete(cacheKey);
         UserFavoritesEntity entity = favoriteRepository.findByUserId(request.userId()).orElseThrow(() ->
                 new ResourceNotFoundException("Doctor not found")
         );
@@ -53,11 +64,20 @@ public class FavoriteService {
         return "Doctor successfully removed from favorite";
     }
 
-    public List<DoctorResponse> getUserFavorites(Long userId) {
+    public List<DoctorResponse> getUserFavorites(Long userId) throws JsonProcessingException {
+        String cacheKey = userFavoriteDoctors + userId;
+        Object cachedData = redisUtil.get(cacheKey);
+
+        if (cachedData != null) return readCacheValue(cachedData, new TypeReference<>() {
+        });
+
         UserFavoritesEntity entity = favoriteRepository.findByUserId(userId).orElseThrow(() ->
                 new ResourceNotFoundException("No favorites found")
         );
 
-        return entity.getFavoriteDoctors().stream().map(doctorMapper::fromDoctorEntity).toList();
+        List<DoctorResponse> doctorResponses = entity.getFavoriteDoctors().stream().map(doctorMapper::fromDoctorEntity).toList();
+
+        setGroupCacheValue(redisUtil, cacheKey, doctorResponses);
+        return doctorResponses;
     }
 }
