@@ -25,6 +25,7 @@ public class DoctorCategoryMapper {
 
         return new DoctorOverview(
                 entity.getId(),
+                entity.getUserId(),
                 entity.getFullName(),
                 entity.getEmail(),
                 entity.getProfilePictureUrl(),

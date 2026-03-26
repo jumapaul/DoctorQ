@@ -92,6 +92,7 @@ public class DoctorMapper {
         List<String> categories = entity.getDoctorCategory().stream().map(DoctorCategoryEntity::getName).toList();
         return new DoctorOverview(
                 entity.getId(),
+                entity.getUserId(),
                 entity.getFullName(),
                 entity.getEmail(),
                 entity.getProfilePictureUrl(),

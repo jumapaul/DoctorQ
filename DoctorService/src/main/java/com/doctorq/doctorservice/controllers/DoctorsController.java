@@ -22,23 +22,24 @@ public class DoctorsController {
 
     private final DoctorService doctorService;
 
-    @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<DoctorResponse>> addDoctor(@RequestBody DoctorRequest request) {
-        DoctorResponse doctor = doctorService.addDoctor(request);
-
-        return ResponseEntity.ok(
-                success(doctor, "Doctor added successfully")
-        );
-    }
+//    @PostMapping
+//    @PreAuthorize("hasRole('ADMIN')")
+//    public ResponseEntity<ApiResponse<DoctorResponse>> addDoctor(@RequestBody DoctorRequest request) {
+//        DoctorResponse doctor = doctorService.addDoctor(request);
+//
+//        return ResponseEntity.ok(
+//                success(doctor, "Doctor added successfully")
+//        );
+//    }
 
     @GetMapping
     @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'DOCTOR')")
     public ResponseEntity<PaginatedResponse<DoctorOverview>> getAllDoctors(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(name = "rate", defaultValue = "false") boolean sortByRating
     ) throws JsonProcessingException {
-        return ResponseEntity.ok(doctorService.getAllDoctors(page, size));
+        return ResponseEntity.ok(doctorService.getAllDoctors(page, size, sortByRating));
     }
 
     @GetMapping("/{id}")
@@ -64,9 +65,10 @@ public class DoctorsController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR')")
     public ResponseEntity<ApiResponse<String>> deleteDoctor(
-            @PathVariable Long id
+            @PathVariable Long id,
+            @RequestHeader("Authorization") String token
     ) {
-        doctorService.deleteDoctor(id);
+        doctorService.deleteDoctor(id, token);
         return ResponseEntity.ok(
                 success(null, "Doctor deleted successfully")
         );

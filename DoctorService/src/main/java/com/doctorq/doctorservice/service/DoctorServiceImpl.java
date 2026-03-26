@@ -2,6 +2,7 @@ package com.doctorq.doctorservice.service;
 
 import com.doctorq.doctorservice.dtos.Roles;
 import com.doctorq.doctorservice.entities.WorkingHours;
+import com.doctorq.doctorservice.feign_client.UserClient;
 import com.doctorq.doctorservice.repository.WorkingHoursRepository;
 import com.doctorq.doctorservice.dtos.response.DoctorOverview;
 import com.doctorq.doctorservice.dtos.response.PaginatedResponse;
@@ -22,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,8 +33,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.doctorq.doctorservice.utils.Constants.*;
-import static com.doctorq.doctorservice.utils.RedisRetrieveMethods.readCacheValue;
-import static com.doctorq.doctorservice.utils.RedisRetrieveMethods.setCacheValue;
+import static com.doctorq.doctorservice.utils.RedisReadWriteMethods.*;
 
 /**
  * DoctorService
@@ -47,12 +48,12 @@ public class DoctorServiceImpl implements DoctorService {
     private final DoctorCategoryRepository doctorCategoryRepository;
     private final WorkingHoursRepository workingHoursRepository;
     private final DoctorMapper doctorMapper;
+    private final UserClient userClient;
 
     @Transactional
     @Override
     public DoctorResponse addDoctor(DoctorRequest request) {
-        redisUtil.delete(allDoctorsCache);
-        redisUtil.delete(topDoctorsCache);
+        redisUtil.deleteGroup(allDoctorsCache);
         Optional<DoctorEntity> existingDoctor = doctorRepository.findByEmail(request.email());
 
         if (existingDoctor.isPresent()) throw new ConflictException("Doctor already exists");
@@ -78,56 +79,56 @@ public class DoctorServiceImpl implements DoctorService {
     }
 
     @Override
-    public PaginatedResponse<DoctorOverview> getAllDoctors(int page, int size) throws JsonProcessingException {
-        Object doctorsCache = redisUtil.get(allDoctorsCache + page + size);
+    public PaginatedResponse<DoctorOverview> getAllDoctors(int page, int size, boolean sortByRating) throws JsonProcessingException {
+        String cacheKey = allDoctorsCache + "::" + page + size;
+        Object doctorsCache = redisUtil.get(cacheKey);
 
-        if (doctorsCache == null) {
-            Pageable pageable = PageRequest.of(page, size);
-            Page<DoctorEntity> doctors = doctorRepository.findAll(pageable);
-            List<DoctorOverview> response = doctors.stream().map(doctorMapper::fromDoctorEntityToOverview).toList();
-
-            PaginatedResponse<DoctorOverview> paginatedResponse = paginate(response, doctors);
-            setCacheValue(redisUtil, allDoctorsCache + page + size, paginatedResponse);
-
-            return paginatedResponse;
-        }
-
-        return readCacheValue(doctorsCache.toString(), new TypeReference<>() {
+        if (doctorsCache != null) return readCacheValue(doctorsCache, new TypeReference<>() {
         });
+
+        Sort sort = sortByRating ? Sort.by(Sort.Direction.DESC, "rating") : Sort.unsorted();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<DoctorEntity> doctors = doctorRepository.findAll(pageable);
+        List<DoctorOverview> response = doctors.stream()
+                .map(doctorMapper::fromDoctorEntityToOverview)
+                .toList();
+        PaginatedResponse<DoctorOverview> paginatedResponse = paginate(response, doctors);
+
+        setGroupCacheValue(redisUtil, cacheKey, paginatedResponse);
+
+        return paginatedResponse;
     }
 
     @Override
     public DoctorResponse getDoctorById(Long id) throws JsonProcessingException {
-        Object doctorCache = redisUtil.get(doctorByIdCache + id);
+        String cacheKey = doctorByIdCache + id;
+        Object doctorCache = redisUtil.get(cacheKey);
 
-        if (doctorCache == null) {
-            DoctorEntity doctor = doctorRepository.findById(id).orElseThrow(() ->
-                    new ResourceNotFoundException("Doctor with id " + id + " not found")
-            );
-
-            DoctorResponse response = doctorMapper.fromDoctorEntity(doctor);
-
-            setCacheValue(redisUtil, doctorByIdCache + id, response);
-            return response;
-        }
-        return readCacheValue(doctorCache.toString(), new TypeReference<>() {
+        if (doctorCache != null) return readCacheValue(doctorCache, new TypeReference<>() {
         });
+
+        DoctorEntity doctor = doctorRepository.findById(id).orElseThrow(() ->
+                new ResourceNotFoundException("Doctor with id " + id + " not found")
+        );
+
+        DoctorResponse response = doctorMapper.fromDoctorEntity(doctor);
+
+        setCacheValue(redisUtil, cacheKey, response);
+        return response;
     }
 
     @Override
     @Transactional
     public DoctorResponse updateDoctor(Long id, DoctorRequest request) throws JsonProcessingException {
-        redisUtil.delete(allDoctorsCache);
-        redisUtil.delete(topDoctorsCache);
+        redisUtil.deleteGroup(allDoctorsCache);
+        redisUtil.deleteGroup(topDoctorsCache);
         redisUtil.delete(doctorByIdCache + id);
         DoctorEntity doctor = doctorRepository.findById(id).orElseThrow(() ->
                 new ResourceNotFoundException("Doctor with id " + id + " not found")
         );
 
-        DoctorResponse response = updateDoctor(request, doctor);
-
-        setCacheValue(redisUtil, doctorByIdCache + id, response);
-        return response;
+        return updateDoctor(request, doctor);
     }
 
     private DoctorResponse updateDoctor(DoctorRequest request, DoctorEntity doctor) {
@@ -147,64 +148,75 @@ public class DoctorServiceImpl implements DoctorService {
 
     @Transactional
     @Override
-    public void deleteDoctor(Long id) {
+    public void deleteDoctor(Long id, String token) {
         redisUtil.delete(doctorByIdCache + id);
-        redisUtil.delete(allDoctorsCache);
-        doctorRepository.deleteById(id);
+        redisUtil.deleteGroup(allDoctorsCache);
+        redisUtil.deleteGroup(topDoctorsCache);
+        redisUtil.delete(categoryTopDoctorCache + "*");
+        DoctorEntity doctor = doctorRepository.findById(id).orElseThrow(() ->
+                new ResourceNotFoundException("Doctor not found")
+        );
+        userClient.assignUserRole(doctor.getUserId(), token);
+        doctorRepository.delete(doctor);
     }
 
     @Override
     public PaginatedResponse<DoctorOverview> getTopDoctors(int page, int size) throws JsonProcessingException {
-        Object doctorsCache = redisUtil.get(topDoctorsCache + page + size);
+        String cacheKey = topDoctorsCache + page + size;
+        Object topDoctorsCache = redisUtil.get(cacheKey);
 
-        if (doctorsCache == null) {
-            Pageable pageable = PageRequest.of(page, size);
-            Page<DoctorEntity> topDoctors = doctorRepository.getTopDoctor(pageable);
-            List<DoctorOverview> response = topDoctors.stream().map(doctorMapper::fromDoctorEntityToOverview).toList();
-
-            PaginatedResponse<DoctorOverview> paginatedResponse = paginate(response, topDoctors);
-            setCacheValue(redisUtil, topDoctorsCache + page + size, paginatedResponse);
-            return paginatedResponse;
-        }
-        return readCacheValue(doctorsCache.toString(), new TypeReference<>() {
+        if (topDoctorsCache != null) return readCacheValue(topDoctorsCache, new TypeReference<>() {
         });
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<DoctorEntity> topDoctors = doctorRepository.getTopDoctor(pageable);
+        List<DoctorOverview> response = topDoctors.stream().map(doctorMapper::fromDoctorEntityToOverview).toList();
+
+        PaginatedResponse<DoctorOverview> paginatedResponse = paginate(response, topDoctors);
+        setGroupCacheValue(redisUtil, cacheKey, paginatedResponse);
+        return paginatedResponse;
     }
 
     @Override
     public PaginatedResponse<DoctorOverview> getCategoryTopDoctor(int page, int size, Long categoryId) throws JsonProcessingException {
-        Object topDoctorCache = redisUtil.get(topCategoryDoctorCache + page + size + categoryId);
 
-        if (topDoctorCache == null) {
-            Pageable pageable = PageRequest.of(page, size);
-            Page<DoctorEntity> topDoctors = doctorRepository.getCategoryTopDoctor(categoryId, pageable);
-            List<DoctorOverview> response = topDoctors.stream().map(doctorMapper::fromDoctorEntityToOverview).toList();
+        log.info("----------->Category top doctor method is called");
+        String cacheKey = categoryTopDoctorCache + page + size + categoryId;
 
-            PaginatedResponse<DoctorOverview> paginatedResponse = paginate(response, topDoctors);
+        Object categoriesTopDoctorCache = redisUtil.get(cacheKey);
 
-            setCacheValue(redisUtil, topCategoryDoctorCache + page + size + categoryId, paginatedResponse);
+        log.info("--------> {}", categoriesTopDoctorCache);
 
-            return paginatedResponse;
-        }
-        return readCacheValue(topDoctorCache.toString(), new TypeReference<>() {
+        if (categoriesTopDoctorCache != null) return readCacheValue(categoriesTopDoctorCache, new TypeReference<>() {
         });
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<DoctorEntity> topDoctors = doctorRepository.getCategoryTopDoctor(categoryId, pageable);
+        List<DoctorOverview> response = topDoctors.stream().map(doctorMapper::fromDoctorEntityToOverview).toList();
+
+        PaginatedResponse<DoctorOverview> paginatedResponse = paginate(response, topDoctors);
+        log.info("------------>Paginated response is: {}", paginatedResponse);
+
+        setGroupCacheValue(redisUtil, cacheKey, paginatedResponse);
+        return paginatedResponse;
     }
 
     @Override
     public PaginatedResponse<DoctorOverview> searchDoctorByName(String name, int page, int size) throws JsonProcessingException {
-        Object searchedDoctor = redisUtil.get(searchedDoctorsCache + name + page + size);
-
-        if (searchedDoctor == null) {
-            Pageable pageable = PageRequest.of(page, size);
-            Page<DoctorEntity> searchedDoctors = doctorRepository.findAllByFullName(name, pageable);
-            List<DoctorOverview> response = searchedDoctors.stream().map(doctorMapper::fromDoctorEntityToOverview).toList();
-
-            PaginatedResponse<DoctorOverview> paginatedResponse = paginate(response, searchedDoctors);
-            setCacheValue(redisUtil, searchedDoctorsCache + name + page + size, paginatedResponse);
-            return paginatedResponse;
-        }
-
-        return readCacheValue(searchedDoctor.toString(), new TypeReference<>() {
+        String cacheKey = searchedDoctorsCache + name + page + size;
+        PaginatedResponse<DoctorOverview> searchedDoctor = readCacheValue(cacheKey, new TypeReference<>() {
         });
+
+        if (searchedDoctor != null) return searchedDoctor;
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<DoctorEntity> searchedDoctors = doctorRepository.findAllByFullName(name, pageable);
+        List<DoctorOverview> response = searchedDoctors.stream().map(doctorMapper::fromDoctorEntityToOverview).toList();
+
+        PaginatedResponse<DoctorOverview> paginatedResponse = paginate(response, searchedDoctors);
+        redisUtil.setGroup(cacheKey, paginatedResponse.data());
+//            setGroupCacheValue(redisUtil, searchedDoctorsCache + name + page + size, paginatedResponse.data());
+        return paginatedResponse;
     }
 
     @Override

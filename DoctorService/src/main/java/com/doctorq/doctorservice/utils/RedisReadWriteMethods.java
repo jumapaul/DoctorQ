@@ -10,7 +10,9 @@ import static com.doctorq.doctorservice.utils.Constants.timeToLive;
 
 @Service
 @RequiredArgsConstructor
-public class RedisRetrieveMethods {
+public class RedisReadWriteMethods {
+
+    //Mapping json objects to string and vice versa
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 

@@ -18,10 +18,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-import static com.doctorq.doctorservice.utils.Constants.allDoctorsCategoryCache;
-import static com.doctorq.doctorservice.utils.Constants.doctorCategoryByIdCache;
-import static com.doctorq.doctorservice.utils.RedisRetrieveMethods.readCacheValue;
-import static com.doctorq.doctorservice.utils.RedisRetrieveMethods.setCacheValue;
+import static com.doctorq.doctorservice.utils.Constants.*;
+import static com.doctorq.doctorservice.utils.RedisReadWriteMethods.readCacheValue;
+import static com.doctorq.doctorservice.utils.RedisReadWriteMethods.setCacheValue;
 
 @Slf4j
 @Service
@@ -45,39 +44,38 @@ public class DoctorCategoryServiceImpl implements DoctorCategoryService {
 
     @Override
     public List<DoctorCategoryEntity> getAllCategories() throws JsonProcessingException {
-        Object allDoctors = redisUtil.get(allDoctorsCategoryCache);
-        if (allDoctors == null) {
-            List<DoctorCategoryEntity> response = doctorCategoryRepository.findAll();
-            setCacheValue(redisUtil, allDoctorsCategoryCache, response);
-            return response;
-        }
+        Object cachedAllCategories = redisUtil.get(allDoctorsCategoryCache);
 
-        return readCacheValue(allDoctors.toString(), new TypeReference<>() {
+        if (cachedAllCategories != null) return readCacheValue(cachedAllCategories, new TypeReference<>() {
         });
+
+        List<DoctorCategoryEntity> response = doctorCategoryRepository.findAll();
+        setCacheValue(redisUtil, allDoctorsCategoryCache, response);
+        return response;
     }
 
     @Override
     public DoctorCategoryResponse getCategoryById(Long id) throws JsonProcessingException {
 
-        Object category = redisUtil.get(doctorCategoryByIdCache + id);
+        String cacheKey = doctorCategoryByIdCache + id;
+        Object cachedCategoryById = redisUtil.get(cacheKey);
+
+        if (cachedCategoryById != null) return readCacheValue(cachedCategoryById, new TypeReference<>() {
+        });
+
         DoctorCategoryEntity doctorCategory = doctorCategoryRepository.findById(id).orElseThrow(() ->
                 new ResourceNotFoundException("Category not found")
         );
 
-        if (category == null) {
-
-            return getDoctorCategoryResponse(id, doctorCategory);
-        }
-
-        return readCacheValue(category.toString(), new TypeReference<>() {
-        });
-
+        setCacheValue(redisUtil, cacheKey, doctorCategory);
+        return getDoctorCategoryResponse(id, doctorCategory);
     }
 
     @Override
     public DoctorCategoryResponse updateCategory(Long id, DoctorCategoryRequest request) throws JsonProcessingException {
+        String cacheKey = doctorCategoryByIdCache + id;
         redisUtil.delete(allDoctorsCategoryCache);
-        redisUtil.delete(doctorCategoryByIdCache + id);
+        redisUtil.delete(cacheKey);
         DoctorCategoryEntity doctorCategoryEntity = doctorCategoryRepository.findById(id).orElseThrow(() ->
                 new ResourceNotFoundException("Category with id " + id + " not found")
         );
@@ -91,6 +89,11 @@ public class DoctorCategoryServiceImpl implements DoctorCategoryService {
     }
 
     private DoctorCategoryResponse getDoctorCategoryResponse(Long id, DoctorCategoryEntity doctorCategory) throws JsonProcessingException {
+        String cacheKey = doctorCategoryByIdCache + id;
+        DoctorCategoryResponse doctorCategoryResponse = readCacheValue(cacheKey, new TypeReference<>() {
+        });
+
+        if (doctorCategoryResponse != null) return doctorCategoryResponse;
         List<DoctorOverview> doctors = doctorCategory.getDoctors().stream()
                 .map(doctorCategoryMapper::fromEntity).toList();
         DoctorCategoryResponse response = new DoctorCategoryResponse(
@@ -101,7 +104,7 @@ public class DoctorCategoryServiceImpl implements DoctorCategoryService {
                 doctorCategory.getDoctorsCount(),
                 doctors
         );
-        setCacheValue(redisUtil, doctorCategoryByIdCache + id, response);
+        setCacheValue(redisUtil, cacheKey, response);
         return response;
     }
 

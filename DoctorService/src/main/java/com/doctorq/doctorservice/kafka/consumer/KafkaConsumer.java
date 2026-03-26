@@ -50,7 +50,7 @@ public class KafkaConsumer {
     )
     public void listenToAssignDoctorEvent(UserToDoctorRequestEvent event) {
 
-        log.info("------------>Consuming assign to doctor event: {}", event);
+        log.info("------------>Consuming assign to doctor event: {}", event.about());
         WorkingHoursRequest schedule = new WorkingHoursRequest(
                 event.date(),
                 event.startTime(),

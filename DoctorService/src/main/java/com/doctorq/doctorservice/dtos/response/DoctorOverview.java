@@ -4,6 +4,7 @@ import java.util.List;
 
 public record DoctorOverview(
         Long id,
+        Long userId,
         String fullName,
         String email,
         String profilePictureUrl,

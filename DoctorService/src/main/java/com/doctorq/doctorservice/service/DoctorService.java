@@ -10,7 +10,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 public interface DoctorService {
     DoctorResponse addDoctor(DoctorRequest request);
 
-    PaginatedResponse<DoctorOverview> getAllDoctors(int page, int size) throws JsonProcessingException;
+    PaginatedResponse<DoctorOverview> getAllDoctors(int page, int size, boolean sortByRating) throws JsonProcessingException;
 
     PaginatedResponse<DoctorOverview> getTopDoctors(int page, int size) throws JsonProcessingException;
 
@@ -20,7 +20,7 @@ public interface DoctorService {
 
     DoctorResponse updateDoctor(Long id, DoctorRequest request) throws JsonProcessingException;
 
-    void deleteDoctor(Long id);
+    void deleteDoctor(Long id, String token);
 
     PaginatedResponse<DoctorOverview> searchDoctorByName(String name, int page, int size) throws JsonProcessingException;
 
