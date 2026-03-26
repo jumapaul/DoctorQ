@@ -10,7 +10,8 @@ import static com.doctorq.userservice.util.Constants.timeToLive;
 
 @Service
 @RequiredArgsConstructor
-public class RedisRetrieveMethods {
+public class RedisReadWriteMethods {
+    //Mapping json objects to string and vice versa
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -21,5 +22,9 @@ public class RedisRetrieveMethods {
 
     public static <T> void setCacheValue(RedisUtil redisUtil, String key, T value) throws JsonProcessingException {
         redisUtil.set(key, objectMapper.writeValueAsString(value), timeToLive);
+    }
+
+    public static <T> void setGroupCacheValue(RedisUtil redisUtil, String key, T value) throws JsonProcessingException {
+        redisUtil.setGroup(key, objectMapper.writeValueAsString(value));
     }
 }

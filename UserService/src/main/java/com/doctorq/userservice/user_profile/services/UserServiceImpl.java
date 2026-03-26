@@ -16,10 +16,6 @@ import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -43,8 +39,7 @@ import java.nio.file.Files;
 import java.util.List;
 
 import static com.doctorq.userservice.util.Constants.*;
-import static com.doctorq.userservice.util.RedisRetrieveMethods.readCacheValue;
-import static com.doctorq.userservice.util.RedisRetrieveMethods.setCacheValue;
+import static com.doctorq.userservice.util.RedisReadWriteMethods.*;
 
 @Slf4j
 @Service
@@ -57,7 +52,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public PaginatedResponse<UserResponseDto> getAllUsers(int page, int size) throws JsonProcessingException {
-        Object allUsersCache = redisUtil.get(getAllUsersCache + page + size);
+        Object allUsersCache = redisUtil.get(getAllUsersCache + "::" + page + size);
 
         if (allUsersCache == null) {
             Pageable pageable = PageRequest.of(page, size);
@@ -67,7 +62,7 @@ public class UserServiceImpl implements UserService {
                     .getContent()
                     .stream()
                     .map(mapper::fromUser).toList();
-            PaginatedResponse<UserResponseDto> users = new PaginatedResponse<UserResponseDto>(
+            PaginatedResponse<UserResponseDto> users = new PaginatedResponse<>(
                     response,
                     paginatedUsers.getNumber(),
                     paginatedUsers.getTotalPages(),
@@ -78,7 +73,7 @@ public class UserServiceImpl implements UserService {
 
             );
 
-            setCacheValue(redisUtil, getAllUsersCache + page + size, users);
+            setGroupCacheValue(redisUtil, getAllUsersCache + "::" + page + size, users);
 
             return users;
         }
@@ -89,7 +84,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponseDto addUserProfile(UserProfileRequest request, Long userId) {
-        redisUtil.delete(getAllUsersCache);
+        redisUtil.deleteGroup(getAllUsersCache);
         User user = userRepository.findById(userId).orElseThrow(() ->
                 new UsernameNotFoundException("User not found")
         );
@@ -112,7 +107,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponseDto updateUserProfile(UserProfileRequest request, Long userId) {
-        redisUtil.delete(getAllUsersCache);
+        redisUtil.deleteGroup(getAllUsersCache);
         redisUtil.delete(getUserById + userId);
         User user = userRepository.findById(userId).orElseThrow(() ->
                 new UsernameNotFoundException("User not found")
@@ -154,7 +149,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteUser(Long userId) {
-        redisUtil.delete(getAllUsersCache);
+        redisUtil.deleteGroup(getAllUsersCache);
         redisUtil.delete(getUserById + userId);
         User user = userRepository.findById(userId).orElseThrow(() ->
                 new UsernameNotFoundException("User with id " + userId + " not found")

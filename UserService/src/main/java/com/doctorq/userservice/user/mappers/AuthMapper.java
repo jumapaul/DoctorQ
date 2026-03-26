@@ -33,7 +33,6 @@ public class AuthMapper {
                 user.getFirstname(),
                 user.getLastname(),
                 user.getEmail(),
-                user.getVerificationCode(),
                 user.getRole().name()
         );
     }

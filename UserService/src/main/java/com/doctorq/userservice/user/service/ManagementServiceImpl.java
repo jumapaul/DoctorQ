@@ -1,5 +1,6 @@
 package com.doctorq.userservice.user.service;
 
+import com.doctorq.userservice.exception.BadRequestException;
 import com.doctorq.userservice.exception.ResourceNotFoundException;
 import com.doctorq.userservice.kafka.AssignToDoctorDto;
 import com.doctorq.userservice.kafka.KafkaProducer;
@@ -12,6 +13,7 @@ import com.doctorq.userservice.user_profile.dtos.UserResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -20,15 +22,15 @@ public class ManagementServiceImpl {
     private final UserRepository userRepository;
     private final KafkaProducer kafkaProducer;
 
-    public UserResponseDto changeRoleToAdmin(Long userId) {
-        User user = changeRole(userId, Roles.ADMIN);
+    public UserResponseDto changeUserRole(Long userId, Roles role) {
+        User user = changeRole(userId, role);
 
         return buildResponse(user);
     }
 
+    @Transactional
     public UserResponseDto changeRoleToDoctor(AssignToDoctorDto assignToDoctorDto) {
 
-        log.info("-------------->Method is called");
         User user = changeRole(assignToDoctorDto.userId(), Roles.DOCTOR);
 
         String fullName = user.getFirstname() + " " + user.getLastname();
@@ -56,6 +58,10 @@ public class ManagementServiceImpl {
         User user = userRepository.findById(userId).orElseThrow(() ->
                 new ResourceNotFoundException("User not found")
         );
+
+        if (user.getUserProfile() == null){
+            throw new BadRequestException("Add user profile");
+        }
 
         user.setRole(roles);
 
