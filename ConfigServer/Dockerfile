@@ -5,10 +5,10 @@
 #ENTRYPOINT ["java", "-jar", "/DoctorQBackend/ConfigServer/ConfigServer-0.0.1-SNAPSHOT.jar"]
 
 #Build stage
-FROM gradle:8.5-jdk17-alpine AS builder
+FROM gradle:8.5-jdk17 AS builder
 WORKDIR /DoctorQBackend/ConfigServer
 COPY . .
-RUN gradle build -x test
+RUN gradle build -x test --no-daemon
 
 #Run stage
 FROM eclipse-temurin:17-jdk-alpine
