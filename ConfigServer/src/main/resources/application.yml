@@ -14,7 +14,8 @@ spring:
           search-locations: classpath:/configurations
 
   datasource:
-    url: jdbc:postgresql://${DATABASE_URL}/config
+    url: ${DATABASE_URL}/config
+#    url: jdbc:postgresql://${DATABASE_URL}/config
     username: postgres
     password: postgres
 
