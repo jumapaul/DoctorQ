@@ -15,9 +15,9 @@ spring:
 
   datasource:
     url: ${DATABASE_URL}
-#    url: jdbc:postgresql://${DATABASE_URL}/config
-    username: postgres
-    password: postgres
+#    url: jdbc:postgresql://${DATABASE_URL}/config ${dev-db-014405.DATABASE_URL}
+#    username: postgres
+#    password: postgres
 
   jpa:
     hibernate:
