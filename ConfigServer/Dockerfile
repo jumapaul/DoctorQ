@@ -13,5 +13,5 @@ RUN gradle build -x test
 #Run stage
 FROM eclipse-temurin:17-jdk-alpine
 WORKDIR /DoctorQBackend/ConfigServer
-COPY --from=builder /DoctorQBackend/ConfigServer/build/libs/*.jar ConfigServer-0.0.1.jar
-ENTRYPOINT ["java", "-jar", "ConfigServer-0.0.1.jar"]
+COPY --from=builder /DoctorQBackend/ConfigServer/build/libs/*.jar app.jar
+ENTRYPOINT ["java", "-jar", "app.jar"]
