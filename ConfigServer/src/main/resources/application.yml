@@ -14,7 +14,7 @@ spring:
           search-locations: classpath:/configurations
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/config
+    url: jdbc:postgresql://${DATABASE_URL}/config
     username: postgres
     password: postgres
 
@@ -26,5 +26,3 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 server:
   port: 8000
-
-  #    url: ${TEST_DATASOURCE_URL}    #${DATASOURCE_URL} jdbc:postgresql://doctorq.postgres.database.azure.com:5432/config
