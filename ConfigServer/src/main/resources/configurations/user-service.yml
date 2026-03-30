@@ -10,26 +10,6 @@ spring:
     enabled: true
     locations: classpath:db/migrations
     baselineOnMigrate: true
-
-#  ('user-service', 'spring.mail.port', '587'),
-#  ('user-service', 'spring.mail.password', 'yknqamfcszrsjetm'),
-#  ('user-service', 'spring.mail.properties.mail.smtp.starttls.enable', 'true'),
-#  ('user-service', 'spring.mail.properties.mail.smtp.auth', 'true');
-#  mail:
-#    host: smtp.gmail.com
-#    port: 587
-#    username: noreply@gmail.com
-#    password: yknqamfcszrsjetm
-#    properties:
-#      mail:
-#        smtp:
-#          trust: "*"
-#        auth: true
-#        starttls:
-#          enabled: true
-#        connectiontimeout: 5000
-#        timeout: 3000
-#        writetimeout: 5000
   security:
     oauth2:
       client:
@@ -50,12 +30,5 @@ spring:
             token-uri: https://www.googleapis.com/oauth2/v4/token
             user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
             user-name-attribute: sub
-
-#security:
-#  jwt:
-#    expiration-time: 1800000
-#    refresh-token:
-#      expiration: 604800000
-
 server:
   port: 8010
