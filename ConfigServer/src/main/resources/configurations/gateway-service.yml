@@ -39,6 +39,15 @@ spring:
                   args:
                     name: userServiceCircuitBreaker
                     fallbackUri: forward:/fallback/userService
+            - id: management-service
+              uri: lb://USER-SERVICE
+              predicates:
+                - Path=/api/v1/manage/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: userServiceCircuitBreaker
+                    fallbackUri: forward:/fallback/userService
 
             - id: doctor-service
               uri: lb://DOCTOR-SERVICE
