@@ -66,8 +66,7 @@ public class DoctorsCategoryController {
     }
 
     private <T> ApiResponse<T> response(T data) {
-        return new ApiResponse<T>(
-                HttpStatus.OK.value(),
+        return new ApiResponse<>(
                 "Success",
                 data
         );

@@ -124,8 +124,7 @@ public class DoctorsController {
 //    }
 
     private <T> ApiResponse<T> success(T data, String message) {
-        return new ApiResponse<T>(
-                HttpStatus.OK.value(),
+        return new ApiResponse<>(
                 message,
                 data
         );

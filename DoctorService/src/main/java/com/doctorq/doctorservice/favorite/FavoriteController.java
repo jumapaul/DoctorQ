@@ -48,7 +48,6 @@ public class FavoriteController {
 
     private <T> ApiResponse<T> response(T data, String message) {
         return new ApiResponse<>(
-                HttpStatus.OK.value(),
                 message,
                 data
         );

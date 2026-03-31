@@ -67,12 +67,13 @@ public class DoctorCategoryServiceImpl implements DoctorCategoryService {
                 new ResourceNotFoundException("Category not found")
         );
 
-        setCacheValue(redisUtil, cacheKey, doctorCategory);
-        return getDoctorCategoryResponse(id, doctorCategory);
+        DoctorCategoryResponse response = getDoctorCategoryResponse(doctorCategory);
+        setCacheValue(redisUtil, cacheKey, response);
+        return response;
     }
 
     @Override
-    public DoctorCategoryResponse updateCategory(Long id, DoctorCategoryRequest request) throws JsonProcessingException {
+    public DoctorCategoryResponse updateCategory(Long id, DoctorCategoryRequest request) {
         String cacheKey = doctorCategoryByIdCache + id;
         redisUtil.delete(allDoctorsCategoryCache);
         redisUtil.delete(cacheKey);
@@ -85,18 +86,15 @@ public class DoctorCategoryServiceImpl implements DoctorCategoryService {
 
         DoctorCategoryEntity doctorCategory = doctorCategoryRepository.save(doctorCategoryEntity);
 
-        return getDoctorCategoryResponse(id, doctorCategory);
+        return getDoctorCategoryResponse(doctorCategory);
     }
 
-    private DoctorCategoryResponse getDoctorCategoryResponse(Long id, DoctorCategoryEntity doctorCategory) throws JsonProcessingException {
-        String cacheKey = doctorCategoryByIdCache + id;
-        DoctorCategoryResponse doctorCategoryResponse = readCacheValue(cacheKey, new TypeReference<>() {
-        });
-
-        if (doctorCategoryResponse != null) return doctorCategoryResponse;
+    private DoctorCategoryResponse getDoctorCategoryResponse(DoctorCategoryEntity doctorCategory) {
         List<DoctorOverview> doctors = doctorCategory.getDoctors().stream()
                 .map(doctorCategoryMapper::fromEntity).toList();
-        DoctorCategoryResponse response = new DoctorCategoryResponse(
+
+        log.info("----------->Doctors for category {} are {}", doctorCategory.getId(), doctors);
+        return new DoctorCategoryResponse(
                 doctorCategory.getId(),
                 doctorCategory.getCategoryIcon(),
                 doctorCategory.getDescription(),
@@ -104,8 +102,6 @@ public class DoctorCategoryServiceImpl implements DoctorCategoryService {
                 doctorCategory.getDoctorsCount(),
                 doctors
         );
-        setCacheValue(redisUtil, cacheKey, response);
-        return response;
     }
 
     @Transactional

@@ -39,7 +39,6 @@ public class SecurityConfiguration {
                         response.setContentType("application/json");
 
                         ApiResponse<Object> apiResponse = new ApiResponse<>(
-                                HttpStatus.FORBIDDEN.value(),
                                 authException.getMessage(),
                                 null
                         );

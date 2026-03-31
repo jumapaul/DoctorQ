@@ -64,7 +64,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         } catch (MalformedJwtException | ExpiredJwtException e) {
             log.error(e.getMessage());
-            writeErrorResponse(response, HttpServletResponse.SC_FORBIDDEN, e.getMessage());
+            writeErrorResponse(response, e.getMessage());
             return;
         }
 
@@ -81,10 +81,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    private void writeErrorResponse(HttpServletResponse response, int status, String message) throws IOException {
-        response.setStatus(status);
+    private void writeErrorResponse(HttpServletResponse response, String message) throws IOException {
         response.setContentType("application/json");
-        ApiResponse<Object> apiResponse = new ApiResponse<>(status, message, null);
+        ApiResponse<Object> apiResponse = new ApiResponse<>(message, null);
         response.getWriter().write(new ObjectMapper().writeValueAsString(apiResponse));
     }
 }
