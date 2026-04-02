@@ -58,4 +58,14 @@ public class GlobalExceptionHandler {
                 HttpStatus.FORBIDDEN
         );
     }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<ApiResponse<Object>> handleUnauthorizedException(UnauthorizedException exception) {
+        return new ResponseEntity<>(
+                new ApiResponse<>(
+                        exception.getMessage(), null
+                ),
+                HttpStatus.UNAUTHORIZED
+        );
+    }
 }

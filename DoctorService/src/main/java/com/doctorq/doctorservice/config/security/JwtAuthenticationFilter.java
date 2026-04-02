@@ -1,6 +1,8 @@
 package com.doctorq.doctorservice.config.security;
 
 import com.doctorq.doctorservice.dtos.response.ApiResponse;
+import com.doctorq.doctorservice.exception.ForbiddenException;
+import com.doctorq.doctorservice.exception.UnauthorizedException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -8,6 +10,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,6 +25,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import javax.crypto.SecretKey;
 import java.io.IOException;
@@ -31,6 +35,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+    private final HandlerExceptionResolver handlerExceptionResolver;
 
     @Value("${security.jwt.secret-key}")
     private String jwtSecret;
@@ -62,9 +67,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 
-        } catch (MalformedJwtException | ExpiredJwtException e) {
-            log.error(e.getMessage());
-            writeErrorResponse(response, e.getMessage());
+        } catch (MalformedJwtException | ExpiredJwtException | SignatureException e) {
+            handlerExceptionResolver.resolveException(request, response, null, new UnauthorizedException(e.getMessage()));
             return;
         }
 
@@ -81,9 +85,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    private void writeErrorResponse(HttpServletResponse response, String message) throws IOException {
-        response.setContentType("application/json");
-        ApiResponse<Object> apiResponse = new ApiResponse<>(message, null);
-        response.getWriter().write(new ObjectMapper().writeValueAsString(apiResponse));
-    }
+//    private void writeErrorResponse(HttpServletResponse response, String message) throws IOException {
+//        response.setContentType("application/json");
+//        ApiResponse<Object> apiResponse = new ApiResponse<>(message, null);
+//        response.getWriter().write(new ObjectMapper().writeValueAsString(apiResponse));
+//    }
 }
