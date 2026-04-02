@@ -80,7 +80,7 @@ public class DoctorServiceImpl implements DoctorService {
 
     @Override
     public PaginatedResponse<DoctorOverview> getAllDoctors(int page, int size, boolean sortByRating) throws JsonProcessingException {
-        String cacheKey = allDoctorsCache + "::" + page + size;
+        String cacheKey = allDoctorsCache + page + size;
         Object doctorsCache = redisUtil.get(cacheKey);
 
         if (doctorsCache != null) return readCacheValue(doctorsCache, new TypeReference<>() {
@@ -155,6 +155,7 @@ public class DoctorServiceImpl implements DoctorService {
         redisUtil.deleteGroup(topDoctorsCache);
         redisUtil.deleteGroup(userFavoriteDoctors);
         redisUtil.delete(categoryTopDoctorCache + "*");
+        redisUtil.deleteGroup(searchedDoctorsCache);
         DoctorEntity doctor = doctorRepository.findById(id).orElseThrow(() ->
                 new ResourceNotFoundException("Doctor not found")
         );
@@ -182,12 +183,9 @@ public class DoctorServiceImpl implements DoctorService {
     @Override
     public PaginatedResponse<DoctorOverview> getCategoryTopDoctor(int page, int size, Long categoryId) throws JsonProcessingException {
 
-        log.info("----------->Category top doctor method is called");
         String cacheKey = categoryTopDoctorCache + page + size + categoryId;
 
         Object categoriesTopDoctorCache = redisUtil.get(cacheKey);
-
-        log.info("--------> {}", categoriesTopDoctorCache);
 
         if (categoriesTopDoctorCache != null) return readCacheValue(categoriesTopDoctorCache, new TypeReference<>() {
         });
@@ -197,7 +195,6 @@ public class DoctorServiceImpl implements DoctorService {
         List<DoctorOverview> response = topDoctors.stream().map(doctorMapper::fromDoctorEntityToOverview).toList();
 
         PaginatedResponse<DoctorOverview> paginatedResponse = paginate(response, topDoctors);
-        log.info("------------>Paginated response is: {}", paginatedResponse);
 
         setGroupCacheValue(redisUtil, cacheKey, paginatedResponse);
         return paginatedResponse;
@@ -206,9 +203,9 @@ public class DoctorServiceImpl implements DoctorService {
     @Override
     public PaginatedResponse<DoctorOverview> searchDoctorByName(String name, int page, int size) throws JsonProcessingException {
         String cacheKey = searchedDoctorsCache + name + page + size;
-        PaginatedResponse<DoctorOverview> searchedDoctor = readCacheValue(cacheKey, new TypeReference<>() {
+        Object cachedSearchResults = redisUtil.get(cacheKey);
+        PaginatedResponse<DoctorOverview> searchedDoctor = readCacheValue(cachedSearchResults, new TypeReference<>() {
         });
-
         if (searchedDoctor != null) return searchedDoctor;
 
         Pageable pageable = PageRequest.of(page, size);
@@ -216,13 +213,15 @@ public class DoctorServiceImpl implements DoctorService {
         List<DoctorOverview> response = searchedDoctors.stream().map(doctorMapper::fromDoctorEntityToOverview).toList();
 
         PaginatedResponse<DoctorOverview> paginatedResponse = paginate(response, searchedDoctors);
-        redisUtil.setGroup(cacheKey, paginatedResponse.data());
-//            setGroupCacheValue(redisUtil, searchedDoctorsCache + name + page + size, paginatedResponse.data());
+        setGroupCacheValue(redisUtil, cacheKey, paginatedResponse);
         return paginatedResponse;
     }
 
     @Override
     public DoctorResponse updateSchedule(WorkingHours workingHours) {
+        redisUtil.deleteGroup(allDoctorsCache);
+        redisUtil.deleteGroup(topDoctorsCache);
+        redisUtil.deleteGroup(searchedDoctorsCache);
         WorkingHours workTime = workingHoursRepository.findById(workingHours.getId()).orElseThrow(() ->
                 new ResourceNotFoundException("")
         );
