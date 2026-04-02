@@ -30,15 +30,7 @@ spring:
                   args:
                     name: userServiceCircuitBreaker
                     fallbackUri: forward:/fallback/userService
-            - id: favorite-service
-              uri: lb://USER-SERVICE
-              predicates:
-                - Path=/api/v1/favorite/**
-              filters:
-                - name: CircuitBreaker
-                  args:
-                    name: userServiceCircuitBreaker
-                    fallbackUri: forward:/fallback/userService
+
             - id: management-service
               uri: lb://USER-SERVICE
               predicates:
@@ -63,6 +55,16 @@ spring:
               uri: lb://DOCTOR-SERVICE
               predicates:
                 - Path=/api/v1/feedbacks/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: doctorServiceCircuitBreaker
+                    fallbackUri: forward:/fallback/doctorService
+
+            - id: favorite-service
+              uri: lb://DOCTOR-SERVICE
+              predicates:
+                - Path=/api/v1/favorite/**
               filters:
                 - name: CircuitBreaker
                   args:

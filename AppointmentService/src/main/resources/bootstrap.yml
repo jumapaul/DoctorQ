@@ -1,5 +1,5 @@
 spring:
   config:
-    import: optional:configserver:https://config-server.jollydesert-ec6b85c2.spaincentral.azurecontainerapps.io
+    import: optional:configserver:https://config-server-5fjwr.ondigitalocean.app
   application:
     name: appointment-service

@@ -11,8 +11,10 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 
 import static com.doctorq.doctorservice.utils.Constants.userFavoriteDoctors;
 import static com.doctorq.doctorservice.utils.RedisReadWriteMethods.*;
@@ -71,11 +73,11 @@ public class FavoriteService {
         if (cachedData != null) return readCacheValue(cachedData, new TypeReference<>() {
         });
 
-        UserFavoritesEntity entity = favoriteRepository.findByUserId(userId).orElseThrow(() ->
-                new ResourceNotFoundException("No favorites found")
-        );
+        Optional<UserFavoritesEntity> entity = favoriteRepository.findByUserId(userId);
 
-        List<DoctorResponse> doctorResponses = entity.getFavoriteDoctors().stream().map(doctorMapper::fromDoctorEntity).toList();
+        if (entity.isEmpty()) return Collections.emptyList();
+
+        List<DoctorResponse> doctorResponses = entity.get().getFavoriteDoctors().stream().map(doctorMapper::fromDoctorEntity).toList();
 
         setGroupCacheValue(redisUtil, cacheKey, doctorResponses);
         return doctorResponses;
