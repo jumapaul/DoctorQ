@@ -5,7 +5,6 @@ import com.doctorq.appointmentservice.appointment.exception.BadRequestException;
 import com.doctorq.appointmentservice.appointment.exception.ResourceNotFoundException;
 import com.doctorq.appointmentservice.appointment.exception.ServiceUnavailableException;
 import com.doctorq.appointmentservice.appointment.feign_client.DoctorClient;
-import com.doctorq.appointmentservice.appointment.feign_client.UserClient;
 import com.doctorq.appointmentservice.appointment.mappers.AppointmentMapper;
 import com.doctorq.appointmentservice.appointment.entity.AppointmentEntity;
 import com.doctorq.appointmentservice.appointment.mail.EmailService;
@@ -13,7 +12,6 @@ import com.doctorq.appointmentservice.appointment.repository.AppointmentReposito
 import com.doctorq.appointmentservice.history.HistoryRepository;
 import com.doctorq.appointmentservice.kafka.AppointmentCompletionEvent;
 import com.doctorq.appointmentservice.kafka.KafkaProducer;
-import com.doctorq.appointmentservice.notification.Notification;
 import com.doctorq.appointmentservice.notification.NotificationService;
 import com.doctorq.appointmentservice.util.Constants;
 import com.doctorq.appointmentservice.util.RedisUtil;
@@ -26,15 +24,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+import static com.doctorq.appointmentservice.appointment.dtos.AppointmentStatus.SCHEDULED;
 import static com.doctorq.appointmentservice.appointment.mail.EmailTemplate.DOCTOR_MAIL;
-import static com.doctorq.appointmentservice.notification.NotificationType.*;
 import static com.doctorq.appointmentservice.util.Constants.*;
 import static com.doctorq.appointmentservice.util.RedisRetrieveMethods.readCacheValue;
 import static com.doctorq.appointmentservice.util.RedisRetrieveMethods.setCacheValue;
@@ -50,7 +49,6 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final AppointmentMapper appointmentMapper;
     private final EmailService emailService;
     private final DoctorClient doctorClient;
-    private final UserClient userClient;
     private final NotificationService notificationService;
     private final RedisUtil redisUtil;
     private final KafkaProducer kafkaProducer;
@@ -59,8 +57,8 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Override
     public AppointmentResponse addAppointment(AddAppointmentRequest request, String authToken) throws MessagingException {
 
-        redisUtil.deleteByPrefix(userAppointmentByStatusCache);
-        redisUtil.deleteByPrefix(doctorAppointmentByStatusCache);
+        redisUtil.delete(userAppointmentByStatusCache + SCHEDULED + request.userId());
+        redisUtil.delete(doctorAppointmentByStatusCache + SCHEDULED + request.doctorId());
         DoctorResponse doctorResponse = getDoctorById(request.doctorId(), authToken).getData();
 
         validateAppointment(request, doctorResponse);
@@ -84,33 +82,34 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Transactional
     @Override
     public AppointmentResponse approveAppointment(Long id, String token) {
-        redisUtil.deleteByPrefix(userAppointmentByStatusCache);
-        redisUtil.deleteByPrefix(doctorAppointmentByStatusCache);
+
+        log.info("------------>Appointment method is called");
 
         AppointmentResponse response = updateAppointmentStatus(id, AppointmentStatus.APPROVED);
 
-        DoctorResponse doctorResponse = getDoctorById(response.doctorId(), token).getData();
+        redisUtil.delete(userAppointmentByStatusCache + AppointmentStatus.APPROVED + response.userId());
+        redisUtil.delete(doctorAppointmentByStatusCache + AppointmentStatus.APPROVED + response.doctorId());
+
+//        DoctorResponse doctorResponse = getDoctorById(response.doctorId(), token).getData();
 
         historyRepository.save(appointmentMapper.toHistoryEntity(response.userId(), response.doctorId(), HistoryStatus.APPROVED));
 
         //Send in app notification to user.
-        Notification notification = Notification.builder()
-                .message("Appointment with doctor " + doctorResponse.getFullName() + " at " + response.startTime())
-                .title("Appointment confirmed")
-                .type(APPROVED)
-                .timestamp(LocalDateTime.now())
-                .build();
-        notificationService.sendNotification(response.userId(), notification);
+//        Notification notification = Notification.builder()
+//                .message("Appointment with doctor " + doctorResponse.getFullName() + " at " + response.startTime())
+//                .title("Appointment confirmed")
+//                .type(APPROVED)
+//                .timestamp(LocalDateTime.now())
+//                .build();
+//        notificationService.sendNotification(response.userId(), notification);
         return response;
     }
 
     @Transactional
     @Override
     public AppointmentResponse cancelAppointment(Long id) {
-
-        redisUtil.deleteByPrefix(userAppointmentByStatusCache);
-        redisUtil.deleteByPrefix(doctorAppointmentByStatusCache);
-
+        redisUtil.deleteGroup(userAppointmentByStatusCache);
+        redisUtil.deleteGroup(doctorAppointmentByStatusCache);
         AppointmentResponse response = updateAppointmentStatus(id, AppointmentStatus.CANCELLED);
 
 //        DoctorResponse doctorResponse = getDoctorById(response.doctorId(), token).getData();
@@ -120,13 +119,13 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         //Send mail to doctor
         //send in app notification
-        Notification notification = Notification.builder()
-                .message("Appointment successfully cancelled")
-                .title("Appointment cancellation")
-                .type(CANCELLED)
-                .timestamp(LocalDateTime.now())
-                .build();
-        notificationService.sendNotification(response.userId(), notification);
+//        Notification notification = Notification.builder()
+//                .message("Appointment successfully cancelled")
+//                .title("Appointment cancellation")
+//                .type(CANCELLED)
+//                .timestamp(LocalDateTime.now())
+//                .build();
+//        notificationService.sendNotification(response.userId(), notification);
 
         return response;
     }
@@ -135,10 +134,9 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Override
     public AppointmentResponse completeAppointment(Long id) {
 
-        redisUtil.deleteByPrefix(userAppointmentByStatusCache);
-        redisUtil.deleteByPrefix(doctorAppointmentByStatusCache);
-
         AppointmentResponse response = updateAppointmentStatus(id, AppointmentStatus.COMPLETED);
+        redisUtil.delete(userAppointmentByStatusCache + AppointmentStatus.APPROVED + response.userId());
+        redisUtil.delete(doctorAppointmentByStatusCache + AppointmentStatus.APPROVED + response.doctorId());
 
         //Save to history
         historyRepository.save(appointmentMapper.toHistoryEntity(response.userId(), response.doctorId(), HistoryStatus.COMPLETE));
@@ -151,13 +149,13 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         kafkaProducer.publish(event);
         //Send notification to user.
-        Notification notification = Notification.builder()
-                .message("Appointment successfully completed")
-                .title("Appointment completion")
-                .type(COMPLETED)
-                .timestamp(LocalDateTime.now())
-                .build();
-        notificationService.sendNotification(response.userId(), notification);
+//        Notification notification = Notification.builder()
+//                .message("Appointment successfully completed")
+//                .title("Appointment completion")
+//                .type(COMPLETED)
+//                .timestamp(LocalDateTime.now())
+//                .build();
+//        notificationService.sendNotification(response.userId(), notification);
 
         return response;
     }
@@ -174,8 +172,9 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
-    public List<AppointmentEntity> getUserAppointmentByStatus(Long userId, AppointmentStatus status) throws JsonProcessingException {
-        Object appointmentByStatusCache = redisUtil.get(userAppointmentByStatusCache + status);
+    public List<AppointmentEntity> getUserAppointmentByStatus(Long userId, AppointmentStatus status)
+            throws JsonProcessingException {
+        Object appointmentByStatusCache = redisUtil.get(userAppointmentByStatusCache + userId + status);
 
         if (appointmentByStatusCache == null) {
             List<AppointmentEntity> appointment = appointmentRepository.findAllByUserIdAndAppointmentStatus(userId, status);
@@ -188,13 +187,19 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
-    public List<AppointmentEntity> getAppointmentsByDateAndStatus(LocalDate date, AppointmentStatus status) throws JsonProcessingException {
-        Object appointmentByDateCache = redisUtil.get(Constants.appointmentByDateCacheAndStatus);
+    public List<AppointmentEntity> getUserAppointmentsByDateAndStatus(Long userId, LocalDate date, AppointmentStatus status)
+            throws JsonProcessingException {
+
+        log.info("----------->By date method called");
+        String cacheKey = Constants.appointmentByDateCacheAndStatus + status + date + userId;
+
+        Object appointmentByDateCache = redisUtil.get(cacheKey);
 
         if (appointmentByDateCache == null) {
-            List<AppointmentEntity> appointments = appointmentRepository.findAllByDateAndAppointmentStatus(date, status);
+            List<AppointmentEntity> appointments =
+                    appointmentRepository.findAllByUserIdAndAndDateAndAppointmentStatus(userId, date, status);
 
-            setCacheValue(redisUtil, Constants.appointmentByDateCacheAndStatus, appointments);
+            setCacheValue(redisUtil, cacheKey, appointments);
             return appointments;
         }
 
@@ -204,11 +209,12 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
     public List<AppointmentEntity> getDoctorAppointmentByStatus(Long doctorId, AppointmentStatus status) throws JsonProcessingException {
-        Object appointmentByStatusCache = redisUtil.get(doctorAppointmentByStatusCache + status);
+        String cacheKey = doctorAppointmentByStatusCache + status + doctorId;
+        Object appointmentByStatusCache = redisUtil.get(cacheKey);
 
         if (appointmentByStatusCache == null) {
             List<AppointmentEntity> appointment = appointmentRepository.findAllByDoctorIdAndAppointmentStatus(doctorId, status);
-            setCacheValue(redisUtil, doctorAppointmentByStatusCache + status, appointment);
+            setCacheValue(redisUtil, cacheKey, appointment);
 
             return appointment;
         }

@@ -20,14 +20,14 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<Object> handleUserNotFoundException(ResourceNotFoundException exception) {
         return new ResponseEntity<>(new ApiResponse<>(
-                HttpStatus.NOT_FOUND.value(), exception.getMessage(), null
+                exception.getMessage(), null
         ), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Object> handleIllegalArgumentException(IllegalArgumentException exception) {
         return new ResponseEntity<>(new ApiResponse<>(
-                HttpStatus.BAD_REQUEST.value(), exception.getMessage(), null
+                exception.getMessage(), null
         ), HttpStatus.BAD_REQUEST);
     }
 
@@ -41,35 +41,45 @@ public class GlobalExceptionHandler {
                     errors.add(errorMessage);
                 });
         return new ResponseEntity<>(new ApiResponse<>(
-                HttpStatus.BAD_REQUEST.value(), errors.isEmpty() ? "Validation Failed" : errors.get(0), null
+                errors.isEmpty() ? "Validation Failed" : errors.get(0), null
         ), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(MessagingException.class)
     public ResponseEntity<Object> handleMessagingException(MessagingException exception) {
         return new ResponseEntity<>(new ApiResponse<>(
-                HttpStatus.INTERNAL_SERVER_ERROR.value(), exception.getMessage(), null
+                exception.getMessage(), null
         ), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<Object> handleBadRequestException(BadRequestException exception) {
         return new ResponseEntity<>(new ApiResponse<>(
-                HttpStatus.BAD_REQUEST.value(), exception.getMessage(), null
+               exception.getMessage(), null
         ), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Object> handleAccessDeniedException(AccessDeniedException exception) {
         return new ResponseEntity<>(new ApiResponse<>(
-                HttpStatus.FORBIDDEN.value(), exception.getMessage(), null
+                exception.getMessage(), null
         ), HttpStatus.FORBIDDEN);
     }
 
     @ExceptionHandler(JsonProcessingException.class)
     public ResponseEntity<Object> handleJsonProcessingException(JsonProcessingException exception) {
         return new ResponseEntity<>(new ApiResponse<>(
-                HttpStatus.BAD_REQUEST.value(), exception.getMessage(), null
+                exception.getMessage(), null
         ), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<ApiResponse<Object>> handleUnauthorizedException(UnauthorizedException exception) {
+        return new ResponseEntity<>(
+                new ApiResponse<>(
+                        exception.getMessage(), null
+                ),
+                HttpStatus.UNAUTHORIZED
+        );
     }
 }

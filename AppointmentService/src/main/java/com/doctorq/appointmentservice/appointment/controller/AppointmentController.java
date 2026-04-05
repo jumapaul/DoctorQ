@@ -6,6 +6,7 @@ import com.doctorq.appointmentservice.appointment.service.AppointmentService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("api/v1/appointment")
 @RequiredArgsConstructor
@@ -70,7 +72,7 @@ public class AppointmentController {
         );
     }
 
-    @GetMapping("user/{userId}")
+    @GetMapping("/user/{userId}")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'DOCTOR')")
     public ResponseEntity<ApiResponse<List<AppointmentEntity>>> getUserAppointmentByStatus(
             @PathVariable Long userId,
@@ -82,7 +84,7 @@ public class AppointmentController {
         return ResponseEntity.ok(success(allAppointments, "Appointments retrieved"));
     }
 
-    @GetMapping("doctor/{doctorId}")
+    @GetMapping("/doctor/{doctorId}")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'DOCTOR')")
     public ResponseEntity<ApiResponse<List<AppointmentEntity>>> getDoctorAppointmentByStatus(
             @PathVariable Long doctorId,
@@ -94,19 +96,21 @@ public class AppointmentController {
         return ResponseEntity.ok(success(allAppointments, "Appointments retrieved"));
     }
 
-    @GetMapping("/date")
+    @GetMapping("/appointByDate/{userId}/user")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'DOCTOR')")
     public ResponseEntity<ApiResponse<List<AppointmentEntity>>> getAppointmentByDate(
+            @PathVariable Long userId,
             @RequestParam(name = "date") LocalDate date,
             @RequestParam(name = "status") AppointmentStatus status
     ) throws JsonProcessingException {
-        List<AppointmentEntity> appointments = appointmentService.getAppointmentsByDateAndStatus(date, status);
+        log.info("---------->Controller triggered");
+        List<AppointmentEntity> appointments = appointmentService.getUserAppointmentsByDateAndStatus(userId, date, status);
         return ResponseEntity.ok(success(appointments, "Appointments retrieved"));
     }
 
 
     private <T> ApiResponse<T> success(T data, String message) {
-        return new ApiResponse<T>(
-                HttpStatus.OK.value(),
+        return new ApiResponse<>(
                 message,
                 data
         );

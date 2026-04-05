@@ -8,6 +8,8 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
+
 import static com.doctorq.appointmentservice.util.Constants.timeToLive;
 
 @Service
@@ -25,6 +27,8 @@ public class RedisRetrieveMethods {
     }
 
     public static <T> void setCacheValue(RedisUtil redisUtil, String key, T data) throws JsonProcessingException {
+        if (data == null) return;
+        if (data instanceof Collection<?> collection && collection.isEmpty()) return;
         redisUtil.set(key, objectMapper.writeValueAsString(data), timeToLive);
     }
 }

@@ -20,7 +20,7 @@ public interface AppointmentService {
 
     List<AppointmentEntity> getUserAppointmentByStatus(Long userId, AppointmentStatus status) throws JsonProcessingException;
 
-    List<AppointmentEntity> getAppointmentsByDateAndStatus(LocalDate date, AppointmentStatus status) throws JsonProcessingException;
+    List<AppointmentEntity> getUserAppointmentsByDateAndStatus(Long userId, LocalDate date, AppointmentStatus status) throws JsonProcessingException;
 
     List<AppointmentEntity> getDoctorAppointmentByStatus(Long doctorId, AppointmentStatus status) throws JsonProcessingException;
 

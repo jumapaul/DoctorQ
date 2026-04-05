@@ -21,7 +21,9 @@ public interface AppointmentRepository extends JpaRepository<AppointmentEntity, 
 
     List<AppointmentEntity> findAllByDoctorIdAndAppointmentStatus(Long doctorId, AppointmentStatus status);
 
-    List<AppointmentEntity> findAllByDateAndAppointmentStatus(LocalDate date, AppointmentStatus status);
+//    List<AppointmentEntity> findAllByDateAndAppointmentStatus(LocalDate date, AppointmentStatus status);
+
+    List<AppointmentEntity> findAllByUserIdAndAndDateAndAppointmentStatus(Long userId, LocalDate date, AppointmentStatus status);
 
     @Query("""
             select a from AppointmentEntity a

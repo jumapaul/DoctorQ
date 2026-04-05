@@ -1,6 +1,9 @@
 package com.doctorq.appointmentservice.config.security;
 
+import com.doctorq.appointmentservice.appointment.exception.UnauthorizedException;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,6 +17,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.servlet.HandlerExceptionResolver;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -22,6 +27,7 @@ import java.util.List;
 @Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
+    private final HandlerExceptionResolver handlerExceptionResolver;
 
     @Override
     protected void doFilterInternal(
@@ -55,11 +61,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
-        } catch (MalformedJwtException e) {
-            log.error("Malformed jwt: {}", e.getMessage());
-            throw new RuntimeException(e);
-        } catch (Exception e) {
-            log.error("Exception: {}", e.getMessage());
+        } catch (MalformedJwtException | ExpiredJwtException | SignatureException e) {
+            handlerExceptionResolver.resolveException(request, response, null, new UnauthorizedException(e.getMessage()));
+            return;
         }
 
         filterChain.doFilter(request, response);
