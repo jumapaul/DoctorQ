@@ -28,7 +28,8 @@ public class KafkaConsumer {
 
     @KafkaListener(
             topics = "COMPLETION_TOPIC",
-            groupId = "COMPLETION_GROUP"
+            groupId = "COMPLETION_GROUP",
+            containerFactory = "completionListenerContainerFactory"
     )
     public void listenToCompletionEvent(AppointmentCompletionEvent event) {
         log.info("------------>Consuming completion event: {}", event);

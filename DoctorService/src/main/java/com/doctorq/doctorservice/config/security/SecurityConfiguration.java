@@ -1,6 +1,7 @@
 package com.doctorq.doctorservice.config.security;
 
 import com.doctorq.doctorservice.dtos.response.ApiResponse;
+import com.doctorq.doctorservice.exception.UnauthorizedException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -13,6 +14,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 
 @Configuration
 @EnableWebSecurity
@@ -21,7 +23,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfiguration {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
-    private final ObjectMapper objectMapper;
+    private final HandlerExceptionResolver handlerExceptionResolver;
+
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -35,15 +38,8 @@ public class SecurityConfiguration {
                 ).addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(((request, response, authException) -> {
                     if (authException.getMessage() != null) {
-                        response.setStatus(HttpStatus.FORBIDDEN.value());
-                        response.setContentType("application/json");
-
-                        ApiResponse<Object> apiResponse = new ApiResponse<>(
-                                authException.getMessage(),
-                                null
-                        );
-
-                        response.getWriter().write(objectMapper.writeValueAsString(apiResponse));
+                        handlerExceptionResolver.resolveException(request, response, null,
+                                new UnauthorizedException(authException.getMessage()));
                     }
                 })));
 

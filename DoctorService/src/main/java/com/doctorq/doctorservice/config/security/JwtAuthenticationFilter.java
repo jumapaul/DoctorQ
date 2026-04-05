@@ -84,10 +84,4 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         return Keys.hmacShaKeyFor(keyBytes);
     }
-
-//    private void writeErrorResponse(HttpServletResponse response, String message) throws IOException {
-//        response.setContentType("application/json");
-//        ApiResponse<Object> apiResponse = new ApiResponse<>(message, null);
-//        response.getWriter().write(new ObjectMapper().writeValueAsString(apiResponse));
-//    }
 }
