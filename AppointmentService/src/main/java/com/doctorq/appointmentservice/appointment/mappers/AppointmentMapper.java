@@ -41,6 +41,24 @@ public class AppointmentMapper {
         );
     }
 
+    public AppointmentResponse fromAppointmentEntityWithDoctorOverview(AppointmentEntity appointmentEntity, DoctorResponse response) {
+        return new AppointmentResponse(
+                appointmentEntity.getId(),
+                appointmentEntity.getPatientName(),
+                appointmentEntity.getPatientAge(),
+                appointmentEntity.getPatientContact(),
+                appointmentEntity.getPatientGender(),
+                appointmentEntity.getPatientDescription(),
+                appointmentEntity.getDoctorId(),
+                appointmentEntity.getUserId(),
+                appointmentEntity.getAppointmentStatus(),
+                appointmentEntity.getDate(),
+                appointmentEntity.getStarTime(),
+                appointmentEntity.getEndTime(),
+                response
+        );
+    }
+
     public HistoryEntity toHistoryEntity(Long userId, Long doctorId, HistoryStatus status) {
         return HistoryEntity.builder()
                 .userId(userId)

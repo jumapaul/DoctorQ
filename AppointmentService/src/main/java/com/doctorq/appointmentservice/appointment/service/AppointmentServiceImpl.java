@@ -56,41 +56,44 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Transactional
     @Override
     public AppointmentResponse addAppointment(AddAppointmentRequest request, String authToken) throws MessagingException {
+        try {
 
-        redisUtil.delete(userAppointmentByStatusCache + SCHEDULED + request.userId());
-        redisUtil.delete(doctorAppointmentByStatusCache + SCHEDULED + request.doctorId());
-        DoctorResponse doctorResponse = getDoctorById(request.doctorId(), authToken).getData();
+            redisUtil.delete(userAppointmentByStatusCache + SCHEDULED + request.userId());
+            redisUtil.delete(doctorAppointmentByStatusCache + SCHEDULED + request.doctorId());
 
-        validateAppointment(request, doctorResponse);
+            log.info("--------------->Add appointment called");
+            DoctorResponse doctorResponse = getDoctorById(request.doctorId(), authToken).getData();
 
-        AppointmentEntity entity = appointmentMapper.toAppointmentEntity(request);
+            log.info("------------>Doctor response is {}", doctorResponse.getId());
+            validateAppointment(request, doctorResponse);
 
-        appointmentRepository.save(entity);
+            AppointmentEntity entity = appointmentMapper.toAppointmentEntity(request);
 
-        AppointmentResponse response = appointmentMapper.fromAppointmentEntity(entity);
+            appointmentRepository.save(entity);
 
-        //Send mail to doctor when appointment is created
-        sendMail(doctorResponse.getEmail(), doctorResponse.getFullName(), response,
-                "You have a new appointment scheduled.", DOCTOR_MAIL.getTemplate());
+            AppointmentResponse response = appointmentMapper.fromAppointmentEntity(entity);
 
-        //Send in app notification
-        historyRepository.save(appointmentMapper.toHistoryEntity(response.userId(), response.doctorId(), HistoryStatus.CREATED));
+            //Send mail to doctor when appointment is created
+            sendMail(doctorResponse.getEmail(), doctorResponse.getFullName(), response,
+                    "You have a new appointment scheduled.", DOCTOR_MAIL.getTemplate());
 
-        return response;
+            //Send in app notification
+            historyRepository.save(appointmentMapper.toHistoryEntity(response.userId(), response.doctorId(), HistoryStatus.CREATED));
+
+            return response;
+        } catch (RuntimeException e) {
+            log.error("--------------->{}", e.getMessage());
+            throw new RuntimeException(e.getMessage());
+        }
     }
 
     @Transactional
     @Override
     public AppointmentResponse approveAppointment(Long id, String token) {
-
-        log.info("------------>Appointment method is called");
-
         AppointmentResponse response = updateAppointmentStatus(id, AppointmentStatus.APPROVED);
 
         redisUtil.delete(userAppointmentByStatusCache + AppointmentStatus.APPROVED + response.userId());
         redisUtil.delete(doctorAppointmentByStatusCache + AppointmentStatus.APPROVED + response.doctorId());
-
-//        DoctorResponse doctorResponse = getDoctorById(response.doctorId(), token).getData();
 
         historyRepository.save(appointmentMapper.toHistoryEntity(response.userId(), response.doctorId(), HistoryStatus.APPROVED));
 
@@ -111,8 +114,6 @@ public class AppointmentServiceImpl implements AppointmentService {
         redisUtil.deleteGroup(userAppointmentByStatusCache);
         redisUtil.deleteGroup(doctorAppointmentByStatusCache);
         AppointmentResponse response = updateAppointmentStatus(id, AppointmentStatus.CANCELLED);
-
-//        DoctorResponse doctorResponse = getDoctorById(response.doctorId(), token).getData();
 
         //Save to history
         historyRepository.save(appointmentMapper.toHistoryEntity(response.userId(), response.doctorId(), HistoryStatus.CANCEL));
@@ -172,54 +173,70 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
-    public List<AppointmentEntity> getUserAppointmentByStatus(Long userId, AppointmentStatus status)
+    public List<AppointmentResponse> getUserAppointmentByStatus(Long userId, AppointmentStatus status, String token)
             throws JsonProcessingException {
         Object appointmentByStatusCache = redisUtil.get(userAppointmentByStatusCache + userId + status);
 
-        if (appointmentByStatusCache == null) {
-            List<AppointmentEntity> appointment = appointmentRepository.findAllByUserIdAndAppointmentStatus(userId, status);
-            setCacheValue(redisUtil, userAppointmentByStatusCache + status, appointment);
-            return appointment;
-        }
+        if (appointmentByStatusCache != null)
+            return readCacheValue(appointmentByStatusCache.toString(), new TypeReference<>() {
+            });
 
-        return readCacheValue(appointmentByStatusCache.toString(), new TypeReference<>() {
-        });
+        List<AppointmentEntity> appointment = appointmentRepository.findAllByUserIdAndAppointmentStatus(userId, status);
+
+        List<AppointmentResponse> appointmentResponses = appointment.stream().map(appointments -> {
+            ApiResponse<DoctorResponse> response = doctorClient.getDoctorById(appointments.getDoctorId(), token);
+
+            return appointmentMapper.fromAppointmentEntityWithDoctorOverview(appointments, response.getData());
+        }).toList();
+        setCacheValue(redisUtil, userAppointmentByStatusCache + status, appointmentResponses);
+        return appointmentResponses;
     }
 
     @Override
-    public List<AppointmentEntity> getUserAppointmentsByDateAndStatus(Long userId, LocalDate date, AppointmentStatus status)
+    public List<AppointmentResponse> getUserAppointmentsByDateAndStatus(Long userId, LocalDate date, AppointmentStatus status, String token)
             throws JsonProcessingException {
 
-        log.info("----------->By date method called");
         String cacheKey = Constants.appointmentByDateCacheAndStatus + status + date + userId;
 
         Object appointmentByDateCache = redisUtil.get(cacheKey);
 
-        if (appointmentByDateCache == null) {
-            List<AppointmentEntity> appointments =
-                    appointmentRepository.findAllByUserIdAndAndDateAndAppointmentStatus(userId, date, status);
+        if (appointmentByDateCache != null)
+            return readCacheValue(appointmentByDateCache.toString(), new TypeReference<>() {
+            });
 
-            setCacheValue(redisUtil, cacheKey, appointments);
-            return appointments;
-        }
+        List<AppointmentEntity> appointments =
+                appointmentRepository.findAllByUserIdAndAndDateAndAppointmentStatus(userId, date, status);
 
-        return readCacheValue(appointmentByDateCache.toString(), new TypeReference<>() {
-        });
+        List<AppointmentResponse> appointmentResponses = appointments.stream().map(appointment -> {
+            ApiResponse<DoctorResponse> response = doctorClient.getDoctorById(appointment.getDoctorId(), token);
+
+            return appointmentMapper.fromAppointmentEntityWithDoctorOverview(appointment, response.getData());
+        }).toList();
+
+        setCacheValue(redisUtil, cacheKey, appointmentResponses);
+        return appointmentResponses;
+
     }
 
     @Override
-    public List<AppointmentEntity> getDoctorAppointmentByStatus(Long doctorId, AppointmentStatus status) throws JsonProcessingException {
+    public List<AppointmentResponse> getDoctorAppointmentByStatus(Long doctorId, AppointmentStatus status, String token) throws JsonProcessingException {
         String cacheKey = doctorAppointmentByStatusCache + status + doctorId;
         Object appointmentByStatusCache = redisUtil.get(cacheKey);
 
-        if (appointmentByStatusCache == null) {
-            List<AppointmentEntity> appointment = appointmentRepository.findAllByDoctorIdAndAppointmentStatus(doctorId, status);
-            setCacheValue(redisUtil, cacheKey, appointment);
+        if (appointmentByStatusCache != null)
+            return readCacheValue(appointmentByStatusCache.toString(), new TypeReference<>() {
+            });
 
-            return appointment;
-        }
-        return readCacheValue(appointmentByStatusCache.toString(), new TypeReference<>() {
-        });
+        List<AppointmentEntity> appointments = appointmentRepository.findAllByDoctorIdAndAppointmentStatus(doctorId, status);
+
+        List<AppointmentResponse> appointmentResponses = appointments.stream().map(appointment -> {
+            ApiResponse<DoctorResponse> response = doctorClient.getDoctorById(appointment.getDoctorId(), token);
+
+            return appointmentMapper.fromAppointmentEntityWithDoctorOverview(appointment, response.getData());
+        }).toList();
+        setCacheValue(redisUtil, cacheKey, appointmentResponses);
+
+        return appointmentResponses;
     }
 
     private void validateAppointment(AddAppointmentRequest request, DoctorResponse doctorResponse) {
@@ -233,7 +250,7 @@ public class AppointmentServiceImpl implements AppointmentService {
             throw new BadRequestException("Doctor will be out at " + request.startTime());
 
         Optional<AppointmentEntity> appointment = appointmentRepository.findOverlappingAppointment(request.date(),
-                request.startTime(), request.endTime());
+                request.startTime(), request.endTime(), request.doctorId());
 
         if (appointment.isPresent())
             throw new BadRequestException("Slot already taken");

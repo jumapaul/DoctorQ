@@ -28,14 +28,17 @@ public interface AppointmentRepository extends JpaRepository<AppointmentEntity, 
     @Query("""
             select a from AppointmentEntity a
             where a.date = :date
+            and a.doctorId = :doctorId
             and :startTime < a.endTime
             and :endTime > a.starTime
+            and a.appointmentStatus NOT IN ('CANCELLED', 'COMPLETED')
             """)
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<AppointmentEntity> findOverlappingAppointment(
             @Param("date") LocalDate date,
             @Param("startTime") LocalTime startTime,
-            @Param("endTime") LocalTime endTime
+            @Param("endTime") LocalTime endTime,
+            @Param("doctorId") Long doctorId
     );
 
     @Query("""

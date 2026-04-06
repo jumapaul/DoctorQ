@@ -18,11 +18,11 @@ public interface AppointmentService {
 
     AppointmentResponse completeAppointment(Long id);
 
-    List<AppointmentEntity> getUserAppointmentByStatus(Long userId, AppointmentStatus status) throws JsonProcessingException;
+    List<AppointmentResponse> getUserAppointmentByStatus(Long userId, AppointmentStatus status, String token) throws JsonProcessingException;
 
-    List<AppointmentEntity> getUserAppointmentsByDateAndStatus(Long userId, LocalDate date, AppointmentStatus status) throws JsonProcessingException;
+    List<AppointmentResponse> getUserAppointmentsByDateAndStatus(Long userId, LocalDate date, AppointmentStatus status, String token) throws JsonProcessingException;
 
-    List<AppointmentEntity> getDoctorAppointmentByStatus(Long doctorId, AppointmentStatus status) throws JsonProcessingException;
+    List<AppointmentResponse> getDoctorAppointmentByStatus(Long doctorId, AppointmentStatus status, String token) throws JsonProcessingException;
 
 //    void updateAppointmentStatus(Long id);
 }

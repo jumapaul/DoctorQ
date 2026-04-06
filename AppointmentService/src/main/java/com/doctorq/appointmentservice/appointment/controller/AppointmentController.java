@@ -1,13 +1,11 @@
 package com.doctorq.appointmentservice.appointment.controller;
 
 import com.doctorq.appointmentservice.appointment.dtos.*;
-import com.doctorq.appointmentservice.appointment.entity.AppointmentEntity;
 import com.doctorq.appointmentservice.appointment.service.AppointmentService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -74,37 +72,39 @@ public class AppointmentController {
 
     @GetMapping("/user/{userId}")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'DOCTOR')")
-    public ResponseEntity<ApiResponse<List<AppointmentEntity>>> getUserAppointmentByStatus(
+    public ResponseEntity<ApiResponse<List<AppointmentResponse>>> getUserAppointmentByStatus(
             @PathVariable Long userId,
-            @RequestParam AppointmentStatus status
+            @RequestParam AppointmentStatus status,
+            @RequestHeader("Authorization") String token
 
     ) throws JsonProcessingException {
-        List<AppointmentEntity> allAppointments = appointmentService.getUserAppointmentByStatus(userId, status);
+        List<AppointmentResponse> allAppointments = appointmentService.getUserAppointmentByStatus(userId, status, token);
 
         return ResponseEntity.ok(success(allAppointments, "Appointments retrieved"));
     }
 
     @GetMapping("/doctor/{doctorId}")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'DOCTOR')")
-    public ResponseEntity<ApiResponse<List<AppointmentEntity>>> getDoctorAppointmentByStatus(
+    public ResponseEntity<ApiResponse<List<AppointmentResponse>>> getDoctorAppointmentByStatus(
             @PathVariable Long doctorId,
-            @RequestParam AppointmentStatus status
+            @RequestParam AppointmentStatus status,
+            @RequestHeader("Authorization") String token
 
     ) throws JsonProcessingException {
-        List<AppointmentEntity> allAppointments = appointmentService.getDoctorAppointmentByStatus(doctorId, status);
+        List<AppointmentResponse> allAppointments = appointmentService.getDoctorAppointmentByStatus(doctorId, status, token);
 
         return ResponseEntity.ok(success(allAppointments, "Appointments retrieved"));
     }
 
     @GetMapping("/appointByDate/{userId}/user")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'DOCTOR')")
-    public ResponseEntity<ApiResponse<List<AppointmentEntity>>> getAppointmentByDate(
+    public ResponseEntity<ApiResponse<List<AppointmentResponse>>> getAppointmentByDate(
             @PathVariable Long userId,
             @RequestParam(name = "date") LocalDate date,
-            @RequestParam(name = "status") AppointmentStatus status
+            @RequestParam(name = "status") AppointmentStatus status,
+            @RequestHeader("Authorization") String token
     ) throws JsonProcessingException {
-        log.info("---------->Controller triggered");
-        List<AppointmentEntity> appointments = appointmentService.getUserAppointmentsByDateAndStatus(userId, date, status);
+        List<AppointmentResponse> appointments = appointmentService.getUserAppointmentsByDateAndStatus(userId, date, status, token);
         return ResponseEntity.ok(success(appointments, "Appointments retrieved"));
     }
 

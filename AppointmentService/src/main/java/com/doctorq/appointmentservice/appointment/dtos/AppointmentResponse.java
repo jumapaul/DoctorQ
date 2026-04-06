@@ -15,7 +15,26 @@ public record AppointmentResponse(
         AppointmentStatus appointmentStatus,
         LocalDate date,
         LocalTime startTime,
-        LocalTime endTime
-
+        LocalTime endTime,
+        DoctorResponse doctorResponse
 ) {
+
+    public AppointmentResponse(
+            Long id,
+            String patientName,
+            Integer patientAge,
+            String patientContact,
+            String patientGender,
+            String patientDescription,
+            Long doctorId,
+            Long userId,
+            AppointmentStatus appointmentStatus,
+            LocalDate date,
+            LocalTime startTime,
+            LocalTime endTime
+    ) {
+        this(id, patientName, patientAge, patientContact, patientGender,
+                patientDescription, doctorId, userId, appointmentStatus,
+                date, startTime, endTime, null);
+    }
 }

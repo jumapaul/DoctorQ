@@ -1,9 +1,9 @@
 package com.doctorq.appointmentservice.util;
 
 public class Constants {
-    static public final Integer timeToLive = 10;
-    static public final String allHistoryCache = "allHistory";
-    static public final String userAppointmentByStatusCache = "userAppointmentByStatus::";
-    static public final String doctorAppointmentByStatusCache = "doctorAppointmentByStatus::";
-    static public final String appointmentByDateCacheAndStatus = "appointmentByDateAndStatusCache::";
+    static final Integer timeToLive = 10;
+    public static final String allHistoryCache = "allHistory";
+    public static final String userAppointmentByStatusCache = "userAppointmentByStatus::";
+    public static final String doctorAppointmentByStatusCache = "doctorAppointmentByStatus::";
+    public static final String appointmentByDateCacheAndStatus = "appointmentByDateAndStatusCache::";
 }
