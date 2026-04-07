@@ -9,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
 import java.time.LocalDate;
 import java.util.List;
 
@@ -20,6 +19,19 @@ import java.util.List;
 public class AppointmentController {
 
     private final AppointmentService appointmentService;
+
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'DOCTOR')")
+    public ResponseEntity<ApiResponse<AppointmentResponse>> getAppointmentById(
+            @PathVariable Long id,
+            @RequestHeader("Authorization") String token
+    ) throws JsonProcessingException {
+        AppointmentResponse appointmentResponse = appointmentService.getAppointmentById(id, token);
+
+        return ResponseEntity.ok(
+                success(appointmentResponse, "Appointment retrieved successfully")
+        );
+    }
 
     @PostMapping("/add")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'DOCTOR')")

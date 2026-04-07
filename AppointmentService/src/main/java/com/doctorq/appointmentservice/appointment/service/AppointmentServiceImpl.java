@@ -61,10 +61,8 @@ public class AppointmentServiceImpl implements AppointmentService {
             redisUtil.delete(userAppointmentByStatusCache + SCHEDULED + request.userId());
             redisUtil.delete(doctorAppointmentByStatusCache + SCHEDULED + request.doctorId());
 
-            log.info("--------------->Add appointment called");
             DoctorResponse doctorResponse = getDoctorById(request.doctorId(), authToken).getData();
 
-            log.info("------------>Doctor response is {}", doctorResponse.getId());
             validateAppointment(request, doctorResponse);
 
             AppointmentEntity entity = appointmentMapper.toAppointmentEntity(request);
@@ -237,6 +235,27 @@ public class AppointmentServiceImpl implements AppointmentService {
         setCacheValue(redisUtil, cacheKey, appointmentResponses);
 
         return appointmentResponses;
+    }
+
+    @Override
+    public AppointmentResponse getAppointmentById(Long id, String token) throws JsonProcessingException {
+
+        String cacheKey = appointmentById + id;
+        Object appointmentByIdCache = redisUtil.get(cacheKey);
+
+        if (appointmentByIdCache != null) return readCacheValue(appointmentByIdCache, new TypeReference<>() {
+        });
+
+        AppointmentEntity appointment = appointmentRepository.findById(id).orElseThrow(() ->
+                new ResourceNotFoundException("Appoint with id " + id + " not found")
+        );
+
+        ApiResponse<DoctorResponse> doctorResponse = doctorClient.getDoctorById(appointment.getDoctorId(), token);
+
+        AppointmentResponse response = appointmentMapper.fromAppointmentEntityWithDoctorOverview(appointment, doctorResponse.getData());
+
+        setCacheValue(redisUtil, cacheKey, response);
+        return response;
     }
 
     private void validateAppointment(AddAppointmentRequest request, DoctorResponse doctorResponse) {

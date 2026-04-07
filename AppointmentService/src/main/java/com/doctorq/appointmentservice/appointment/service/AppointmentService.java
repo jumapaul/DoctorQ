@@ -1,7 +1,6 @@
 package com.doctorq.appointmentservice.appointment.service;
 
 import com.doctorq.appointmentservice.appointment.dtos.*;
-import com.doctorq.appointmentservice.appointment.entity.AppointmentEntity;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.mail.MessagingException;
 
@@ -24,5 +23,5 @@ public interface AppointmentService {
 
     List<AppointmentResponse> getDoctorAppointmentByStatus(Long doctorId, AppointmentStatus status, String token) throws JsonProcessingException;
 
-//    void updateAppointmentStatus(Long id);
+    AppointmentResponse getAppointmentById(Long id, String token) throws JsonProcessingException;
 }
