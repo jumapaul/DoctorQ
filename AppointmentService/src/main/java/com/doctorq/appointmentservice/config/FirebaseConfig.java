@@ -14,6 +14,7 @@ import java.io.InputStream;
 @Configuration
 public class FirebaseConfig {
 
+    //Initialize firebase
     @Bean
     public FirebaseApp firebaseApp() throws IOException {
         if (FirebaseApp.getApps().isEmpty()) {

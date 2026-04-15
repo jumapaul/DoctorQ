@@ -18,6 +18,11 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v4
 
+      - name: Recreate firebase client.json
+        run: |
+          mkdir -p src/main/resources
+          echo "${{ secrets.FIREBASE_CLIENT_JSON }}" | base64 -d > src/main/resources/client_secret.json
+
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
