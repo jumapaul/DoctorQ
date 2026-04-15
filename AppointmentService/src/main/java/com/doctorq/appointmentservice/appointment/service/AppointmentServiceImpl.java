@@ -39,9 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.doctorq.appointmentservice.appointment.dtos.AppointmentStatus.SCHEDULED;
-import static com.doctorq.appointmentservice.appointment.dtos.AppointmentStatus.APPROVED;
-import static com.doctorq.appointmentservice.appointment.dtos.AppointmentStatus.COMPLETED;
+import static com.doctorq.appointmentservice.appointment.dtos.AppointmentStatus.*;
 import static com.doctorq.appointmentservice.appointment.mail.EmailTemplate.DOCTOR_MAIL;
 import static com.doctorq.appointmentservice.util.Constants.*;
 import static com.doctorq.appointmentservice.util.RedisRetrieveMethods.readCacheValue;
@@ -143,7 +141,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Override
     public AppointmentResponse completeAppointment(Long id) {
 
-        AppointmentResponse response = updateAppointmentStatus(id, AppointmentStatus.COMPLETED);
+        AppointmentResponse response = updateAppointmentStatus(id, COMPLETED);
         redisUtil.delete(userAppointmentByStatusCache + APPROVED + response.userId());
         redisUtil.delete(doctorAppointmentByStatusCache + APPROVED + response.doctorId());
 
