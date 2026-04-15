@@ -1,9 +1,11 @@
 package com.doctorq.appointmentservice.appointment.service;
 
 import com.doctorq.appointmentservice.appointment.dtos.*;
-import com.doctorq.appointmentservice.appointment.exception.BadRequestException;
-import com.doctorq.appointmentservice.appointment.exception.ResourceNotFoundException;
-import com.doctorq.appointmentservice.appointment.exception.ServiceUnavailableException;
+import com.doctorq.appointmentservice.appointment.feign_client.UserClient;
+import com.doctorq.appointmentservice.exception.BadRequestException;
+import com.doctorq.appointmentservice.exception.FirebaseMessaginException;
+import com.doctorq.appointmentservice.exception.ResourceNotFoundException;
+import com.doctorq.appointmentservice.exception.ServiceUnavailableException;
 import com.doctorq.appointmentservice.appointment.feign_client.DoctorClient;
 import com.doctorq.appointmentservice.appointment.mappers.AppointmentMapper;
 import com.doctorq.appointmentservice.appointment.entity.AppointmentEntity;
@@ -12,7 +14,10 @@ import com.doctorq.appointmentservice.appointment.repository.AppointmentReposito
 import com.doctorq.appointmentservice.history.HistoryRepository;
 import com.doctorq.appointmentservice.kafka.AppointmentCompletionEvent;
 import com.doctorq.appointmentservice.kafka.KafkaProducer;
+import com.doctorq.appointmentservice.notification.NotificationEvent;
+import com.doctorq.appointmentservice.notification.NotificationRequest;
 import com.doctorq.appointmentservice.notification.NotificationService;
+import com.doctorq.appointmentservice.notification.NotificationType;
 import com.doctorq.appointmentservice.util.Constants;
 import com.doctorq.appointmentservice.util.RedisUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -21,9 +26,11 @@ import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -33,6 +40,8 @@ import java.util.Map;
 import java.util.Optional;
 
 import static com.doctorq.appointmentservice.appointment.dtos.AppointmentStatus.SCHEDULED;
+import static com.doctorq.appointmentservice.appointment.dtos.AppointmentStatus.APPROVED;
+import static com.doctorq.appointmentservice.appointment.dtos.AppointmentStatus.COMPLETED;
 import static com.doctorq.appointmentservice.appointment.mail.EmailTemplate.DOCTOR_MAIL;
 import static com.doctorq.appointmentservice.util.Constants.*;
 import static com.doctorq.appointmentservice.util.RedisRetrieveMethods.readCacheValue;
@@ -52,6 +61,8 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final NotificationService notificationService;
     private final RedisUtil redisUtil;
     private final KafkaProducer kafkaProducer;
+    private final UserClient userClient;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     @Override
@@ -62,6 +73,7 @@ public class AppointmentServiceImpl implements AppointmentService {
             redisUtil.delete(doctorAppointmentByStatusCache + SCHEDULED + request.doctorId());
 
             DoctorResponse doctorResponse = getDoctorById(request.doctorId(), authToken).getData();
+            getUserById(request.userId(), authToken).getData();
 
             validateAppointment(request, doctorResponse);
 
@@ -75,13 +87,12 @@ public class AppointmentServiceImpl implements AppointmentService {
             sendMail(doctorResponse.getEmail(), doctorResponse.getFullName(), response,
                     "You have a new appointment scheduled.", DOCTOR_MAIL.getTemplate());
 
-            //Send in app notification
             historyRepository.save(appointmentMapper.toHistoryEntity(response.userId(), response.doctorId(), HistoryStatus.CREATED));
 
             return response;
         } catch (RuntimeException e) {
             log.error("--------------->{}", e.getMessage());
-            throw new RuntimeException(e.getMessage());
+            throw new MessagingException(e.getMessage());
         }
     }
 
@@ -90,19 +101,19 @@ public class AppointmentServiceImpl implements AppointmentService {
     public AppointmentResponse approveAppointment(Long id, String token) {
         AppointmentResponse response = updateAppointmentStatus(id, AppointmentStatus.APPROVED);
 
-        redisUtil.delete(userAppointmentByStatusCache + AppointmentStatus.APPROVED + response.userId());
-        redisUtil.delete(doctorAppointmentByStatusCache + AppointmentStatus.APPROVED + response.doctorId());
+        redisUtil.delete(userAppointmentByStatusCache + APPROVED + response.userId());
+        redisUtil.delete(doctorAppointmentByStatusCache + APPROVED + response.doctorId());
+        redisUtil.delete(userAppointmentByStatusCache + SCHEDULED + response.userId());
+        redisUtil.delete(doctorAppointmentByStatusCache + SCHEDULED + response.doctorId());
 
         historyRepository.save(appointmentMapper.toHistoryEntity(response.userId(), response.doctorId(), HistoryStatus.APPROVED));
 
-        //Send in app notification to user.
-//        Notification notification = Notification.builder()
-//                .message("Appointment with doctor " + doctorResponse.getFullName() + " at " + response.startTime())
-//                .title("Appointment confirmed")
-//                .type(APPROVED)
-//                .timestamp(LocalDateTime.now())
-//                .build();
-//        notificationService.sendNotification(response.userId(), notification);
+        NotificationEvent event = new NotificationEvent(
+                response,
+                "has been approved"
+        );
+
+        handleNotification(event);
         return response;
     }
 
@@ -117,14 +128,13 @@ public class AppointmentServiceImpl implements AppointmentService {
         historyRepository.save(appointmentMapper.toHistoryEntity(response.userId(), response.doctorId(), HistoryStatus.CANCEL));
 
         //Send mail to doctor
-        //send in app notification
-//        Notification notification = Notification.builder()
-//                .message("Appointment successfully cancelled")
-//                .title("Appointment cancellation")
-//                .type(CANCELLED)
-//                .timestamp(LocalDateTime.now())
-//                .build();
-//        notificationService.sendNotification(response.userId(), notification);
+
+        NotificationEvent event = new NotificationEvent(
+                response,
+                "has been cancelled"
+        );
+
+        handleNotification(event);
 
         return response;
     }
@@ -134,8 +144,8 @@ public class AppointmentServiceImpl implements AppointmentService {
     public AppointmentResponse completeAppointment(Long id) {
 
         AppointmentResponse response = updateAppointmentStatus(id, AppointmentStatus.COMPLETED);
-        redisUtil.delete(userAppointmentByStatusCache + AppointmentStatus.APPROVED + response.userId());
-        redisUtil.delete(doctorAppointmentByStatusCache + AppointmentStatus.APPROVED + response.doctorId());
+        redisUtil.delete(userAppointmentByStatusCache + APPROVED + response.userId());
+        redisUtil.delete(doctorAppointmentByStatusCache + APPROVED + response.doctorId());
 
         //Save to history
         historyRepository.save(appointmentMapper.toHistoryEntity(response.userId(), response.doctorId(), HistoryStatus.COMPLETE));
@@ -148,13 +158,12 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         kafkaProducer.publish(event);
         //Send notification to user.
-//        Notification notification = Notification.builder()
-//                .message("Appointment successfully completed")
-//                .title("Appointment completion")
-//                .type(COMPLETED)
-//                .timestamp(LocalDateTime.now())
-//                .build();
-//        notificationService.sendNotification(response.userId(), notification);
+        NotificationEvent notificationEvent = new NotificationEvent(
+                response,
+                "has been approved"
+        );
+
+        handleNotification(notificationEvent);
 
         return response;
     }
@@ -163,6 +172,9 @@ public class AppointmentServiceImpl implements AppointmentService {
         AppointmentEntity appointment = appointmentRepository.findById(id).orElseThrow(() ->
                 new ResourceNotFoundException("Appointment not found")
         );
+
+        if (appointment.getAppointmentStatus() == status)
+            throw new IllegalArgumentException("Appointment already " + status);
 
         appointment.setAppointmentStatus(status);
         appointmentRepository.save(appointment);
@@ -258,6 +270,20 @@ public class AppointmentServiceImpl implements AppointmentService {
         return response;
     }
 
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handleNotification(NotificationEvent event) {
+        try {
+            NotificationRequest request = new NotificationRequest(
+                    event.response().userId(),
+                    "Appointment with Dr." + event.response().doctorResponse().getFullName() + " " + event.desc(),
+                    NotificationType.APPROVED.name()
+            );
+            notificationService.sendNotification(request);
+        } catch (FirebaseMessaginException e) {
+            log.error(e.getMessage());
+        }
+    }
+
     private void validateAppointment(AddAppointmentRequest request, DoctorResponse doctorResponse) {
         if (request.date().isBefore(LocalDate.now()))
             throw new BadRequestException("Cannot make appointment for past date");
@@ -287,12 +313,20 @@ public class AppointmentServiceImpl implements AppointmentService {
                 doctorVariables, title);
     }
 
+    @CircuitBreaker(name = "userCircuitBreaker", fallbackMethod = "userServiceFallback")
+    public ApiResponse<UserResponse> getUserById(Long userId, String token) {
+        try {
+            return userClient.getUser(userId, token);
+        } catch (Exception exception) {
+            throw new ResourceNotFoundException(exception.getMessage());
+        }
+    }
+
     @CircuitBreaker(name = "doctorCircuitBreaker", fallbackMethod = "doctorFallback")
-    private ApiResponse<DoctorResponse> getDoctorById(Long doctorId, String token) {
+    public ApiResponse<DoctorResponse> getDoctorById(Long doctorId, String token) {
         try {
             return doctorClient.getDoctorById(doctorId, token);
         } catch (Exception exception) {
-            log.error("------------>Error: {}", exception.getMessage());
             throw new ResourceNotFoundException(exception.getMessage());
         }
     }
@@ -303,23 +337,11 @@ public class AppointmentServiceImpl implements AppointmentService {
                 "Doctor service temporarily unavailable please try again later"
         );
     }
-//
-//    private UserResponse userServiceFallback(AddAppointmentRequest request, Exception exception) {
-//        log.error("Circuit breaker activated: {}", exception.getMessage());
-//        throw new ServiceUnavailableException(
-//                "User service temporarily unavailable please try again later"
-//        );
-//    }
 
-    private <T> PaginatedResponse<T> paginate(List<T> data, Page<?> paginatedData) {
-        return new PaginatedResponse<>(
-                data,
-                paginatedData.getNumber(),
-                paginatedData.getTotalPages(),
-                paginatedData.getSize(),
-                paginatedData.getNumberOfElements(),
-                paginatedData.getSort().isSorted(),
-                paginatedData.isLast()
+    private UserResponse userServiceFallback(AddAppointmentRequest request, Exception exception) {
+        log.error("Circuit breaker activated: {}", exception.getMessage());
+        throw new ServiceUnavailableException(
+                "User service temporarily unavailable please try again later"
         );
     }
 }

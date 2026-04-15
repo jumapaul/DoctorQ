@@ -1,4 +1,4 @@
-package com.doctorq.appointmentservice.appointment.exception;
+package com.doctorq.appointmentservice.exception;
 
 import com.doctorq.appointmentservice.appointment.dtos.ApiResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -55,7 +55,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<Object> handleBadRequestException(BadRequestException exception) {
         return new ResponseEntity<>(new ApiResponse<>(
-               exception.getMessage(), null
+                exception.getMessage(), null
         ), HttpStatus.BAD_REQUEST);
     }
 
@@ -80,6 +80,16 @@ public class GlobalExceptionHandler {
                         exception.getMessage(), null
                 ),
                 HttpStatus.UNAUTHORIZED
+        );
+    }
+
+    @ExceptionHandler(FirebaseMessaginException.class)
+    public ResponseEntity<ApiResponse<Object>> handleFirebaseMessagingException(FirebaseMessaginException exception) {
+        return new ResponseEntity<>(
+                new ApiResponse<>(
+                        exception.getMessage(), null
+                ),
+                exception.getStatus()
         );
     }
 }

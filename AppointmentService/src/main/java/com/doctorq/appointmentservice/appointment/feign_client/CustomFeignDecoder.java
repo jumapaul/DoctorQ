@@ -1,8 +1,8 @@
 package com.doctorq.appointmentservice.appointment.feign_client;
 
-import com.doctorq.appointmentservice.appointment.exception.AccessDeniedException;
-import com.doctorq.appointmentservice.appointment.exception.ResourceNotFoundException;
-import com.doctorq.appointmentservice.appointment.exception.ServiceUnavailableException;
+import com.doctorq.appointmentservice.exception.AccessDeniedException;
+import com.doctorq.appointmentservice.exception.ResourceNotFoundException;
+import com.doctorq.appointmentservice.exception.ServiceUnavailableException;
 import feign.Response;
 import feign.codec.ErrorDecoder;
 import lombok.extern.slf4j.Slf4j;

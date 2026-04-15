@@ -1,4 +1,4 @@
-package com.doctorq.appointmentservice.appointment.exception;
+package com.doctorq.appointmentservice.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;

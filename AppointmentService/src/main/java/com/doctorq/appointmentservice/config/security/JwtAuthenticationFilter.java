@@ -1,6 +1,6 @@
 package com.doctorq.appointmentservice.config.security;
 
-import com.doctorq.appointmentservice.appointment.exception.UnauthorizedException;
+import com.doctorq.appointmentservice.exception.UnauthorizedException;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.SignatureException;

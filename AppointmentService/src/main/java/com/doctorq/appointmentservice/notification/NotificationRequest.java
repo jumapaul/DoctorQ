@@ -11,13 +11,8 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-@ToString
-public class Notification {
-    private NotificationType type;
+public class NotificationRequest {
+    private Long userId;
     private String message;
     private String title;
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime timestamp;
 }

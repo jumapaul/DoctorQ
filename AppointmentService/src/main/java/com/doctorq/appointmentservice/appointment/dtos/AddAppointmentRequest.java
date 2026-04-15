@@ -2,8 +2,6 @@ package com.doctorq.appointmentservice.appointment.dtos;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
@@ -24,6 +22,7 @@ public record AddAppointmentRequest(
         LocalDate date,
         @NotBlank(message = "start time is required")
         LocalTime startTime,
-        LocalTime endTime
+        LocalTime endTime,
+        String deviceToken
 ) {
 }

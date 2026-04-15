@@ -1,11 +1,11 @@
-package com.doctorq.appointmentservice.appointment.exception;
+package com.doctorq.appointmentservice.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(HttpStatus.UNAUTHORIZED)
-public class AccessDeniedException extends RuntimeException {
-    public AccessDeniedException(String message) {
+public class UnauthorizedException extends RuntimeException {
+    public UnauthorizedException(String message) {
         super(message);
     }
 }

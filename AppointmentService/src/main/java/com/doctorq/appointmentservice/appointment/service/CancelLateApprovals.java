@@ -2,18 +2,16 @@ package com.doctorq.appointmentservice.appointment.service;
 
 import com.doctorq.appointmentservice.appointment.dtos.AppointmentStatus;
 import com.doctorq.appointmentservice.appointment.repository.AppointmentRepository;
-import com.doctorq.appointmentservice.notification.Notification;
+import com.doctorq.appointmentservice.notification.NotificationRequest;
 import com.doctorq.appointmentservice.notification.NotificationService;
+import com.doctorq.appointmentservice.notification.NotificationType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 
-import static com.doctorq.appointmentservice.notification.NotificationType.CREATED;
-import static com.doctorq.appointmentservice.notification.NotificationType.REMINDER;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Service
 @RequiredArgsConstructor
@@ -38,13 +36,14 @@ public class CancelLateApprovals {
         appointmentRepository.findAppointmentsInNext30Minutes(
                 LocalDate.now(), now, now.plusMinutes(30), AppointmentStatus.APPROVED
         ).forEach(appointmentEntity -> {
-            Notification notification = Notification.builder()
-                    .message("You have an appoint in 30 minutes")
-                    .title("Appointment reminder")
-                    .type(REMINDER)
-                    .timestamp(LocalDateTime.now())
-                    .build();
-            notificationService.sendNotification(appointmentEntity.getUserId(), notification);
+
+            NotificationRequest request = new NotificationRequest(
+                    appointmentEntity.getUserId(),
+                    "You have an appointment in 30 minutes",
+                    NotificationType.REMINDER.name()
+            );
+
+            notificationService.sendNotification(request);
         });
     }
 

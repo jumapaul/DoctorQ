@@ -1,10 +1,14 @@
 package com.doctorq.appointmentservice.notification;
 
+import com.doctorq.appointmentservice.exception.FirebaseMessaginException;
+import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.FirebaseMessagingException;
+import com.google.firebase.messaging.Message;
+import com.google.firebase.messaging.Notification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.messaging.simp.user.SimpUser;
-import org.springframework.messaging.simp.user.SimpUserRegistry;
+import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -12,28 +16,27 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class NotificationService {
 
-    private final SimpMessagingTemplate messagingTemplate;
-    private final SimpUserRegistry userRegistry;
-
-    public void sendNotification(Long userId, Notification notification) {
-
+    @Async
+    public void sendNotification(NotificationRequest request) {
+        String topic = "user_" + request.getUserId();
         try {
-            String userIdStr = String.valueOf(userId);
-            SimpUser user = userRegistry.getUser(userIdStr);
-
-            if (user == null) {
-                log.warn("User {} is not connected via WebSocket", userIdStr);
-                return;
-            }
-
-            messagingTemplate.convertAndSendToUser(
-                    userIdStr,
-                    "/queue/notifications",
-                    notification
-            );
-            log.info("-----------Notification sent: {}", notification.getType());
-        } catch (RuntimeException exception) {
-            log.error("----------------> {}", exception.getMessage());
+            Message message = Message.builder()
+                    .setTopic(topic)
+                    .setNotification(Notification.builder()
+                            .setTitle(request.getTitle())
+                            .setBody(request.getMessage())
+                            .build())
+                    .build();
+            FirebaseMessaging.getInstance().send(message);
+        } catch (FirebaseMessagingException e) {
+            HttpStatus status = switch (e.getMessagingErrorCode()) {
+                case INVALID_ARGUMENT -> HttpStatus.BAD_REQUEST;
+                case UNREGISTERED -> HttpStatus.NOT_FOUND;
+                case QUOTA_EXCEEDED -> HttpStatus.TOO_MANY_REQUESTS;
+                case UNAVAILABLE -> HttpStatus.SERVICE_UNAVAILABLE;
+                default -> HttpStatus.INTERNAL_SERVER_ERROR;
+            };
+            throw new FirebaseMessaginException(e.getMessage(), status);
         }
     }
 }
