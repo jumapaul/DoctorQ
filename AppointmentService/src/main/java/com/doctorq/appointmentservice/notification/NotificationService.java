@@ -19,6 +19,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 import static com.doctorq.appointmentservice.util.Constants.notificationByUserId;
 import static com.doctorq.appointmentservice.util.RedisRetrieveMethods.readCacheValue;
 import static com.doctorq.appointmentservice.util.RedisRetrieveMethods.setCacheValue;
@@ -42,9 +44,10 @@ public class NotificationService {
         Page<NotificationEntity> notifications = notificationRepository
                 .findByUserId(userId, pageable);
 
-        setCacheValue(redisUtil, cacheKey, notifications);
-        return new PaginatedResponse<>(
-                notifications.stream().toList(),
+        List<NotificationEntity> notificationResponse = notifications.stream().toList();
+
+        PaginatedResponse<NotificationEntity> paginatedResponse = new PaginatedResponse<>(
+                notificationResponse,
                 notifications.getNumber(),
                 notifications.getTotalPages(),
                 notifications.getSize(),
@@ -52,6 +55,10 @@ public class NotificationService {
                 notifications.getSort().isSorted(),
                 notifications.isLast()
         );
+
+        setCacheValue(redisUtil, cacheKey, paginatedResponse);
+
+        return paginatedResponse;
     }
 
     @Async
