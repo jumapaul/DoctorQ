@@ -80,6 +80,15 @@ spring:
                   args:
                     name: appointmentServiceCircuitBreaker
                     fallbackUri: forward:/fallback/appointmentService
+            - id: appointment-service
+              uri: lb://APPOINTMENT-SERVICE
+              predicates:
+                - Path=/api/v1/notifications/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: appointmentServiceCircuitBreaker
+                    fallbackUri: forward:/fallback/appointmentService
 
             - id: history-service
               uri: lb://APPOINTMENT-SERVICE
