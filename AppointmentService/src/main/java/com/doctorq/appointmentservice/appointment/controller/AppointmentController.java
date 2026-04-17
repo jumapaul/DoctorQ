@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
 import java.time.LocalDate;
 import java.util.List;
 
@@ -61,9 +62,10 @@ public class AppointmentController {
     @PostMapping("/cancel/{id}")
     @PreAuthorize("hasAnyRole('USER', 'DOCTOR')")
     public ResponseEntity<ApiResponse<AppointmentResponse>> cancelAppointment(
-            @PathVariable Long id
+            @PathVariable Long id,
+            @RequestHeader("Authorization") String token
     ) {
-        AppointmentResponse appointment = appointmentService.cancelAppointment(id);
+        AppointmentResponse appointment = appointmentService.cancelAppointment(id, token);
 
         return ResponseEntity.ok(
                 success(appointment, "Appointment cancelled successfully")
@@ -73,9 +75,10 @@ public class AppointmentController {
     @GetMapping("/complete/{id}")
     @PreAuthorize("hasRole('DOCTOR')")
     public ResponseEntity<ApiResponse<AppointmentResponse>> completeAppointment(
-            @PathVariable Long id
+            @PathVariable Long id,
+            @RequestHeader("Authorization") String token
     ) {
-        AppointmentResponse appointment = appointmentService.completeAppointment(id);
+        AppointmentResponse appointment = appointmentService.completeAppointment(id, token);
 
         return ResponseEntity.ok(
                 success(appointment, "Appointment completed successfully")

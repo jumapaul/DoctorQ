@@ -7,4 +7,5 @@ public class Constants {
     public static final String doctorAppointmentByStatusCache = "doctorAppointmentByStatus::";
     public static final String appointmentByDateCacheAndStatus = "appointmentByDateAndStatusCache::";
     public static final String appointmentById = "appointmentById::";
+    public static final String notificationByUserId = "notificationByUserId::";
 }

@@ -14,10 +14,7 @@ import com.doctorq.appointmentservice.appointment.repository.AppointmentReposito
 import com.doctorq.appointmentservice.history.HistoryRepository;
 import com.doctorq.appointmentservice.kafka.AppointmentCompletionEvent;
 import com.doctorq.appointmentservice.kafka.KafkaProducer;
-import com.doctorq.appointmentservice.notification.NotificationEvent;
-import com.doctorq.appointmentservice.notification.NotificationRequest;
-import com.doctorq.appointmentservice.notification.NotificationService;
-import com.doctorq.appointmentservice.notification.NotificationType;
+import com.doctorq.appointmentservice.notification.*;
 import com.doctorq.appointmentservice.util.Constants;
 import com.doctorq.appointmentservice.util.RedisUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -33,6 +30,7 @@ import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.List;
@@ -60,7 +58,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final RedisUtil redisUtil;
     private final KafkaProducer kafkaProducer;
     private final UserClient userClient;
-    private final ApplicationEventPublisher eventPublisher;
+    private final NotificationRepository notificationRepository;
 
     @Transactional
     @Override
@@ -97,7 +95,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Transactional
     @Override
     public AppointmentResponse approveAppointment(Long id, String token) {
-        AppointmentResponse response = updateAppointmentStatus(id, AppointmentStatus.APPROVED);
+        AppointmentResponse response = updateAppointmentStatus(id, AppointmentStatus.APPROVED, token);
 
         redisUtil.delete(userAppointmentByStatusCache + APPROVED + response.userId());
         redisUtil.delete(doctorAppointmentByStatusCache + APPROVED + response.doctorId());
@@ -108,7 +106,8 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         NotificationEvent event = new NotificationEvent(
                 response,
-                "has been approved"
+                "has been approved",
+                "Appointment confirmed"
         );
 
         handleNotification(event);
@@ -117,19 +116,20 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Transactional
     @Override
-    public AppointmentResponse cancelAppointment(Long id) {
+    public AppointmentResponse cancelAppointment(Long id, String token) {
         redisUtil.deleteGroup(userAppointmentByStatusCache);
         redisUtil.deleteGroup(doctorAppointmentByStatusCache);
-        AppointmentResponse response = updateAppointmentStatus(id, AppointmentStatus.CANCELLED);
+        AppointmentResponse response = updateAppointmentStatus(id, AppointmentStatus.CANCELLED, token);
 
         //Save to history
         historyRepository.save(appointmentMapper.toHistoryEntity(response.userId(), response.doctorId(), HistoryStatus.CANCEL));
 
-        //Send mail to doctor
+//        Send mail to doctor
 
         NotificationEvent event = new NotificationEvent(
                 response,
-                "has been cancelled"
+                "has been cancelled",
+                "Appointment cancelled"
         );
 
         handleNotification(event);
@@ -139,9 +139,9 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Transactional
     @Override
-    public AppointmentResponse completeAppointment(Long id) {
+    public AppointmentResponse completeAppointment(Long id, String token) {
 
-        AppointmentResponse response = updateAppointmentStatus(id, COMPLETED);
+        AppointmentResponse response = updateAppointmentStatus(id, COMPLETED, token);
         redisUtil.delete(userAppointmentByStatusCache + APPROVED + response.userId());
         redisUtil.delete(doctorAppointmentByStatusCache + APPROVED + response.doctorId());
 
@@ -158,7 +158,8 @@ public class AppointmentServiceImpl implements AppointmentService {
         //Send notification to user.
         NotificationEvent notificationEvent = new NotificationEvent(
                 response,
-                "has been approved"
+                "has been completed",
+                "Appointment completed"
         );
 
         handleNotification(notificationEvent);
@@ -166,18 +167,19 @@ public class AppointmentServiceImpl implements AppointmentService {
         return response;
     }
 
-    private AppointmentResponse updateAppointmentStatus(Long id, AppointmentStatus status) {
+    private AppointmentResponse updateAppointmentStatus(Long id, AppointmentStatus status, String token) {
         AppointmentEntity appointment = appointmentRepository.findById(id).orElseThrow(() ->
                 new ResourceNotFoundException("Appointment not found")
         );
+//        if (appointment.getAppointmentStatus() == status)
+//            throw new IllegalArgumentException("Appointment already " + status);
 
-        if (appointment.getAppointmentStatus() == status)
-            throw new IllegalArgumentException("Appointment already " + status);
+        DoctorResponse response = getDoctorById(appointment.getDoctorId(), token).getData();
 
         appointment.setAppointmentStatus(status);
         appointmentRepository.save(appointment);
 
-        return appointmentMapper.fromAppointmentEntity(appointment);
+        return appointmentMapper.fromAppointmentEntityWithDoctorOverview(appointment, response);
     }
 
     @Override
@@ -270,12 +272,21 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleNotification(NotificationEvent event) {
+        String cacheKey = notificationByUserId + event.response().userId() + 0 + 10;
         try {
             NotificationRequest request = new NotificationRequest(
                     event.response().userId(),
                     "Appointment with Dr." + event.response().doctorResponse().getFullName() + " " + event.desc(),
-                    NotificationType.APPROVED.name()
+                    event.title()
             );
+            NotificationEntity notification = NotificationEntity.builder()
+                    .userId(request.getUserId())
+                    .title(event.title())
+                    .description(request.getMessage())
+                    .date(LocalDateTime.now())
+                    .build();
+            notificationRepository.save(notification);
+            redisUtil.delete(cacheKey);
             notificationService.sendNotification(request);
         } catch (FirebaseMessaginException e) {
             log.error(e.getMessage());

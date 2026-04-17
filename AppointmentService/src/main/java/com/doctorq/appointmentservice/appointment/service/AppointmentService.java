@@ -13,9 +13,9 @@ public interface AppointmentService {
 
     AppointmentResponse approveAppointment(Long id, String token) throws MessagingException;
 
-    AppointmentResponse cancelAppointment(Long id);
+    AppointmentResponse cancelAppointment(Long id, String token);
 
-    AppointmentResponse completeAppointment(Long id);
+    AppointmentResponse completeAppointment(Long id, String token);
 
     List<AppointmentResponse> getUserAppointmentByStatus(Long userId, AppointmentStatus status, String token) throws JsonProcessingException;
 

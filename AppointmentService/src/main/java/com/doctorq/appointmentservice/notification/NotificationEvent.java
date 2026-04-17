@@ -4,6 +4,7 @@ import com.doctorq.appointmentservice.appointment.dtos.AppointmentResponse;
 
 public record NotificationEvent(
         AppointmentResponse response,
-        String desc
+        String desc,
+        String title
 ) {
 }
