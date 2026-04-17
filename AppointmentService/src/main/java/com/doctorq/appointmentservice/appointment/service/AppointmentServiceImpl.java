@@ -171,8 +171,8 @@ public class AppointmentServiceImpl implements AppointmentService {
         AppointmentEntity appointment = appointmentRepository.findById(id).orElseThrow(() ->
                 new ResourceNotFoundException("Appointment not found")
         );
-//        if (appointment.getAppointmentStatus() == status)
-//            throw new IllegalArgumentException("Appointment already " + status);
+        if (appointment.getAppointmentStatus() == status)
+            throw new IllegalArgumentException("Appointment already " + status);
 
         DoctorResponse response = getDoctorById(appointment.getDoctorId(), token).getData();
 
