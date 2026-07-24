@@ -10,7 +10,7 @@ spec:
   source:
     repoURL: https://github.com/jumapaul/DoctorQ
     targetRevision: appointment
-    path: ./ConfigServer/helm-config
+    path: ./ConfigServer/helm_config
   destination:
     server: https://kubernetes.default.svc
     namespace: config-service
