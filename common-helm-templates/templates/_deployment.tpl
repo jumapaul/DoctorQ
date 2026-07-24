@@ -40,7 +40,7 @@ spec:
             - name: {{ $key }}
               valueFrom:
                 configMapKeyRef:
-                  name: {{ include "common-helm-templates.configName" $ }}
+                  name: {{ include "common-helm-templates.configMapName" $ }}
                   key: {{ $key }}
           {{- end }}
           {{- end }}
