@@ -53,12 +53,12 @@ jobs:
 
       - name: Update image tag
         run: |
-          sed -i "s/tag: .*/tag: \"${{ needs.build.outputs.image_tag }}\"/" ConfigServer/helm-config/values.yaml
+          sed -i "s/tag: .*/tag: \"${{ needs.build.outputs.image_tag }}\"/" ConfigServer/helm_config/values.yaml
 
       - name: Commit and push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add ConfigServer/helm-config/values.yaml
+          git add ConfigServer/helm_config/values.yaml
           git commit -m "chore: bump config-service image to ${{ needs.build.outputs.image_tag }}"
           git push
