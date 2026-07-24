@@ -37,4 +37,4 @@ configMap:
 secretVolume:
   name: doctorq-secret-vol
   mountPath: "/app/doctorq-crds"
-  secretName: doctorq-secret
+  secretName: config-service-secret
