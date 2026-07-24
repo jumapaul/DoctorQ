@@ -13,7 +13,7 @@ spec:
     path: ./EurekaDiscoveryService/eureka-helm-chart
   destination:
     server: https://kubernetes.default.svc
-    namespace: eureka-service
+    namespace: doctorq
   syncPolicy:
     automated:
       prune: true

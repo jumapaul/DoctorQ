@@ -13,7 +13,7 @@ spec:
     path: ./GatewayService/gateway_chart
   destination:
     server: https://kubernetes.default.svc
-    namespace: gateway-service
+    namespace: doctorq
   syncPolicy:
     automated:
       prune: true

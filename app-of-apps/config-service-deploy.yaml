@@ -13,7 +13,7 @@ spec:
     path: ./ConfigServer/helm_config
   destination:
     server: https://kubernetes.default.svc
-    namespace: config-service
+    namespace: doctorq
   syncPolicy:
     automated:
       prune: true
