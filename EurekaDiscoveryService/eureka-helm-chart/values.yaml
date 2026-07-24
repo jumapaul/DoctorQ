@@ -21,4 +21,4 @@ probes:
     failureThreshold: 3
 configMap:
   data:
-    CONFIG_URL: "http://config-service-service:8000"
+    CONFIG_URL: "http://config-service-service:80"
