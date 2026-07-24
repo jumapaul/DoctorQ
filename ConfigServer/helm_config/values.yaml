@@ -2,7 +2,7 @@ replicaCount: 1
 image:
   repository: jumapaul/config-service
   pullPolicy: IfNotPresent
-  tag: "d7c83d8"
+  tag: "54df438"
 serviceType: ClusterIP
 servicePort: 80
 targetPort: 8000
