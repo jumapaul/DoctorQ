@@ -53,12 +53,12 @@ jobs:
 
       - name: Update image tag
         run: |
-          sed -i "s/tag: .*/tag: \"${{ needs.build.outputs.image_tag }}\"/" GatewayService/gateway-chart/values.yaml
+          sed -i "s/tag: .*/tag: \"${{ needs.build.outputs.image_tag }}\"/" GatewayService/gateway_chart/values.yaml
 
       - name: Commit and push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add GatewayService/gateway-chart/values.yaml
+          git add GatewayService/gateway_chart/values.yaml
           git commit -m "chore: bump gateway-service image to ${{ needs.build.outputs.image_tag }}"
           git push
