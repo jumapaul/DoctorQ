@@ -1,7 +1,7 @@
 image:
   repository: jumapaul/eureka-service
   pullPolicy: IfNotPresent
-  tag: "cd06c05"
+  tag: "5ff8842"
 containerPort: 8761
 serviceType: NodePort
 servicePort: 80
