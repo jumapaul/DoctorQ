@@ -33,7 +33,7 @@ spec:
             initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds }}
             periodSeconds: {{ .Values.probes.readiness.periodSeconds }}
             failureThreshold: {{ .Values.probes.readiness.failureThreshold }}
-          {{- if .Values.env }}
+          {{- if or .Values.env .Values.configMap }}
           env:
             {{- if .Values.configMap }}
             {{- range $key, $value := .Values.configMap.data }}
@@ -42,7 +42,7 @@ spec:
                 configMapKeyRef:
                   name: {{ include "common-helm-templates.configMapName" $ }}
                   key: {{ $key }}
-          {{- end }}
+            {{- end }}
           {{- end }}
           {{- range .Values.env }}
             - name: {{ .name }}
