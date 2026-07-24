@@ -57,7 +57,7 @@ spec:
           {{- end }}
       {{- if .Values.secretVolume }}
       volumes:
-        - name: {{ .Values.secretVolume }}
+        - name: {{ .Values.secretVolume.name }}
           secret:
             secretName: {{ .Values.secretVolume.secretName }}
       {{- end }}
