@@ -1,0 +1,40 @@
+replicaCount: 1
+image:
+  repository: jumapaul/config-service
+  pullPolicy: IfNotPresent
+  tag: "2.5"
+serviceType: ClusterIP
+servicePort: 80
+targetPort: 8000
+containerPort: 8000
+probes:
+  liveness:
+    path: /actuator/health/liveness
+    port: 8000
+    initialDelaySeconds: 60
+    periodSeconds: 10
+    failureThreshold: 3
+  readiness:
+    path: /actuator/health/readiness
+    port: 8000
+    initialDelaySeconds: 60
+    periodSeconds: 10
+    failureThreshold: 3
+env:
+  - name: DB_USERNAME
+    valueFrom:
+      secretKeyRef:
+        name: config-service-secret
+        key: DB_USERNAME
+  - name: DB_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: config-service-secret
+        key: DB_PASSWORD
+configMap:
+  data:
+    DB_URL: "jdbc:postgresql://aws-1-eu-central-1.pooler.supabase.com:6543/postgres"
+secretVolume:
+  name: doctorq-secret-vol
+  mountPath: "/app/doctorq-crds"
+  secretName: doctorq-secret

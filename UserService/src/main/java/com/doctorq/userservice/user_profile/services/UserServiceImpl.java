@@ -1,6 +1,8 @@
 package com.doctorq.userservice.user_profile.services;
 
 import com.doctorq.userservice.exception.BadRequestException;
+import com.doctorq.userservice.exception.IllegalArgumentException;
+import com.doctorq.userservice.exception.InternalServerErrorException;
 import com.doctorq.userservice.user.entities.User;
 import com.doctorq.userservice.user.repository.UserRepository;
 import com.doctorq.userservice.response.PaginatedResponse;
@@ -51,35 +53,39 @@ public class UserServiceImpl implements UserService {
     private final RedisUtil redisUtil;
 
     @Override
-    public PaginatedResponse<UserResponseDto> getAllUsers(int page, int size) throws JsonProcessingException {
-        Object allUsersCache = redisUtil.get(getAllUsersCache + "::" + page + size);
+    public PaginatedResponse<UserResponseDto> getAllUsers(int page, int size) {
+        try {
+            Object allUsersCache = redisUtil.get(getAllUsersCache + "::" + page + size);
 
-        if (allUsersCache == null) {
-            Pageable pageable = PageRequest.of(page, size);
-            Page<User> paginatedUsers = userRepository.findAll(pageable);
+            if (allUsersCache == null) {
+                Pageable pageable = PageRequest.of(page, size);
+                Page<User> paginatedUsers = userRepository.findAll(pageable);
 
-            List<UserResponseDto> response = paginatedUsers
-                    .getContent()
-                    .stream()
-                    .map(mapper::fromUser).toList();
-            PaginatedResponse<UserResponseDto> users = new PaginatedResponse<>(
-                    response,
-                    paginatedUsers.getNumber(),
-                    paginatedUsers.getTotalPages(),
-                    paginatedUsers.getSize(),
-                    paginatedUsers.getNumberOfElements(),
-                    paginatedUsers.getSort().isSorted(),
-                    paginatedUsers.isLast()
+                List<UserResponseDto> response = paginatedUsers
+                        .getContent()
+                        .stream()
+                        .map(mapper::fromUser).toList();
+                PaginatedResponse<UserResponseDto> users = new PaginatedResponse<>(
+                        response,
+                        paginatedUsers.getNumber(),
+                        paginatedUsers.getTotalPages(),
+                        paginatedUsers.getSize(),
+                        paginatedUsers.getNumberOfElements(),
+                        paginatedUsers.getSort().isSorted(),
+                        paginatedUsers.isLast()
 
-            );
+                );
 
-            setGroupCacheValue(redisUtil, getAllUsersCache + "::" + page + size, users);
+                setGroupCacheValue(redisUtil, getAllUsersCache + "::" + page + size, users);
 
-            return users;
+                return users;
+            }
+
+            return readCacheValue(allUsersCache.toString(), new TypeReference<>() {
+            });
+        } catch (JsonProcessingException e) {
+            throw new InternalServerErrorException(e.getMessage());
         }
-
-        return readCacheValue(allUsersCache.toString(), new TypeReference<>() {
-        });
     }
 
     @Override
@@ -128,23 +134,27 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponseDto getUserById(Long userId) throws JsonProcessingException {
-        Object userCache = redisUtil.get(getUserById + userId);
+    public UserResponseDto getUserById(Long userId) {
+        try {
+            Object userCache = redisUtil.get(getUserById + userId);
 
-        if (userCache == null) {
-            User user = userRepository.findById(userId).orElseThrow(() ->
-                    new UsernameNotFoundException("User with id " + userId + " not found")
-            );
+            if (userCache == null) {
+                User user = userRepository.findById(userId).orElseThrow(() ->
+                        new UsernameNotFoundException("User with id " + userId + " not found")
+                );
 
-            UserResponseDto responseDto = mapper.fromUser(user);
+                UserResponseDto responseDto = mapper.fromUser(user);
 
-            setCacheValue(redisUtil, getUserById + userId, responseDto);
+                setCacheValue(redisUtil, getUserById + userId, responseDto);
 
-            return responseDto;
+                return responseDto;
+            }
+
+            return readCacheValue(userCache.toString(), new TypeReference<>() {
+            });
+        } catch (JsonProcessingException e) {
+            throw new InternalServerErrorException(e.getMessage());
         }
-
-        return readCacheValue(userCache.toString(), new TypeReference<>() {
-        });
     }
 
     @Override
@@ -159,10 +169,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String uploadProfileImage(MultipartFile multipartFile, Long userId) throws Exception {
+    public String uploadProfileImage(MultipartFile multipartFile, Long userId) {
         try {
             String fileName = multipartFile.getOriginalFilename();
-            assert fileName != null;
+
+            if (fileName == null || fileName.isBlank()) throw new IllegalArgumentException("File name cannot be empty");
 
             String name = String.format("%s%s%s", "profile_", userId, ".jpeg");
 
@@ -170,11 +181,11 @@ public class UserServiceImpl implements UserService {
             return this.uploadFile(jpegFile, name);
 
         } catch (Exception exception) {
-            throw new Exception(exception.getMessage());
+            throw new InternalServerErrorException(exception.getMessage());
         }
     }
 
-    private File convertToJpegFile(MultipartFile multipartFile, String name) throws IOException {
+    private File convertToJpegFile(MultipartFile multipartFile, String name) {
         File tempFile = new File(System.getProperty("java.io.tmpdir"), name);
 
         try {
@@ -212,23 +223,31 @@ public class UserServiceImpl implements UserService {
             }
 
         } catch (IOException exception) {
-            throw new IOException("Error converting image to jpeg: " + exception.getMessage());
+            throw new InternalServerErrorException("Error converting image to jpeg: " + exception.getMessage());
         }
         return tempFile;
     }
 
-    private String uploadFile(File file, String fileName) throws IOException {
+    private String uploadFile(File file, String fileName) {
 
-        BlobId blobId = BlobId.of("doctorq-q.firebasestorage.app", fileName);
+        try {
+            BlobId blobId = BlobId.of("doctorq-q.firebasestorage.app", fileName);
 
-        BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType("image/jpeg").build();
+            BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType("image/jpeg").build();
 
-        storage.create(blobInfo, Files.readAllBytes(file.toPath()));
+            storage.create(blobInfo, Files.readAllBytes(file.toPath()));
 
-        file.delete();
+            boolean isDeleted = file.delete();
 
-        String DOWNLOAD_URL = "https://firebasestorage.googleapis.com/v0/b/doctorq-q.firebasestorage.app/o/%s?alt=media";
+            if (isDeleted) {
+                log.info("The previous profile image is deleted successfully");
+            }
 
-        return String.format(DOWNLOAD_URL, URLEncoder.encode(fileName, StandardCharsets.UTF_8));
+            String DOWNLOAD_URL = "https://firebasestorage.googleapis.com/v0/b/doctorq-q.firebasestorage.app/o/%s?alt=media";
+
+            return String.format(DOWNLOAD_URL, URLEncoder.encode(fileName, StandardCharsets.UTF_8));
+        } catch (IOException e) {
+            throw new InternalServerErrorException(e.getMessage());
+        }
     }
 }

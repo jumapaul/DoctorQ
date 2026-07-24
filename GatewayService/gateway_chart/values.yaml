@@ -1,0 +1,25 @@
+replicaCount: 1
+image:
+  repository: jumapaul/gateway-service
+  pullPolicy: IfNotPresent
+  tag: "1.2"
+serviceType: NodePort
+servicePort: 80
+targetPort: 8222
+containerPort: 8222
+probes:
+  liveness:
+    path: /actuator/health/liveness
+    port: 8222
+    initialDelaySeconds: 60
+    periodSeconds: 10
+    failureThreshold: 3
+  readiness:
+    path: /actuator/health/readiness
+    port: 8222
+    initialDelaySeconds: 60
+    periodSeconds: 10
+    failureThreshold: 3
+configMap:
+  data:
+    config_url: "http://config-service-service:8000"

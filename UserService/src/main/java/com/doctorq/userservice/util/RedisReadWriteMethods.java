@@ -3,14 +3,15 @@ package com.doctorq.userservice.util;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import static com.doctorq.userservice.util.Constants.timeToLive;
 
 @Service
-@RequiredArgsConstructor
 public class RedisReadWriteMethods {
+    private RedisReadWriteMethods() {
+        /* This utility class should not be instantiated */
+    }
+
     //Mapping json objects to string and vice versa
 
     private static final ObjectMapper objectMapper = new ObjectMapper();

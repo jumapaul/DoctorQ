@@ -1,25 +1,22 @@
-#spring:
-#  cloud:
-#    config:
-#      override-system-properties: false
-#eureka:
-#  client:
-#    service-url:
-#      defaultZone: http://44.244.227.40:8761/eureka/
-#  instance:
-#    prefer-ip-address: false
-#    hostname: localhost
-#    instance-id: ${spring.application.name}:${server.port}
-#management:
-#  endpoint:
-#    health:
-#      show-details: always
-#
-#  endpoints:
-#    web:
-#      exposure:
-#        include: health
-#  health:
-#    circuitbreakers:
-#      enabled: true
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,info,prometheus
+  endpoint:
+    health:
+      show-details: always
+    metrics:
+      access: read_only
+  info:
+    env:
+      enabled: true
+  health:
+    db:
+      enabled: false
+info:
+  app:
+    name: "DoctorQ"
+    description: "An application for booking and talking to your doctor"
+    version: "1.0"
 

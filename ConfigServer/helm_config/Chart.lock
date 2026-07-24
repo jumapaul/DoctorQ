@@ -1,0 +1,6 @@
+dependencies:
+- name: common-helm-templates
+  repository: file://../../common-helm-templates
+  version: 0.1.0
+digest: sha256:5a2328a48695a0d9a850a8c46ac83c9209907eb5f499c5baec184f910ae375ea
+generated: "2026-07-23T15:23:37.86441982+03:00"

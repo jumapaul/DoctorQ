@@ -14,7 +14,7 @@ public class Resilience4jConfig {
 
     @Bean
     public CircuitBreakerRegistry circuitBreakerRegistry() {
-        CircuitBreakerConfig doctorCircuitBreaker = CircuitBreakerConfig.custom()
+        CircuitBreakerConfig userCircuitBreaker = CircuitBreakerConfig.custom()
                 .failureRateThreshold(50)
                 .minimumNumberOfCalls(5)
                 .automaticTransitionFromOpenToHalfOpenEnabled(true)
@@ -28,7 +28,7 @@ public class Resilience4jConfig {
                 .build();
 
         CircuitBreakerRegistry registry = CircuitBreakerRegistry.ofDefaults();
-        registry.circuitBreaker("doctorCircuitBreaker", doctorCircuitBreaker);
+        registry.circuitBreaker("userCircuitBreaker", userCircuitBreaker);
         return registry;
     }
 }

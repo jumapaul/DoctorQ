@@ -1,0 +1,24 @@
+image:
+  repository: jumapaul/eureka-service
+  pullPolicy: IfNotPresent
+  tag: "1.2"
+containerPort: 8761
+serviceType: NodePort
+servicePort: 80
+targetPort: 8761
+probes:
+  liveness:
+    path: /actuator/health/liveness
+    port: 8761
+    initialDelaySeconds: 60
+    periodSeconds: 10
+    failureThreshold: 3
+  readiness:
+    path: /actuator/health/readiness
+    port: 8761
+    initialDelaySeconds: 60
+    periodSeconds: 10
+    failureThreshold: 3
+configMap:
+  data:
+    config-url: "http://config-service-service:8000"

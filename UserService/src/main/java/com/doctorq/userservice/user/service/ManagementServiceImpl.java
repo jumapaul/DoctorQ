@@ -72,8 +72,6 @@ public class ManagementServiceImpl {
 
     private static UserResponseDto buildResponse(User user) {
 
-        log.info("---------->User profile is: {}", user.getUserProfile());
-
         UserProfileResponse userProfileResponse = null;
         if (user.getUserProfile() != null) {
             userProfileResponse = new UserProfileResponse(
@@ -84,8 +82,6 @@ public class ManagementServiceImpl {
                     user.getUserProfile().getProfileUrl()
             );
         }
-
-        log.info("------------>Profile: {}", userProfileResponse);
 
         return new UserResponseDto(
                 user.getId(),

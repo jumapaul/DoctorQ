@@ -13,9 +13,9 @@ spring:
           search-locations: classpath:/configurations
 
   datasource:
-    url: ${DATABASE_URL}
-    username: ${USERNAME}
-    password: ${PASSWORD}
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     hikari:
       maximum-pool-size: 5
       minimum-idle: 2
@@ -30,4 +30,4 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
 server:
-  port: ${PORT}
+  port: 8000

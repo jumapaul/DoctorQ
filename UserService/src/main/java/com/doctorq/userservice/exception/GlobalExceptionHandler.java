@@ -87,6 +87,17 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(InternalServerErrorException.class)
+    public ResponseEntity<Object> handleInternalServerErrorException(InternalServerErrorException exception) {
+        return new ResponseEntity<>(
+                new ApiResponse<>(
+                        HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                        exception.getMessage(),
+                        null
+                ), HttpStatus.INTERNAL_SERVER_ERROR
+        );
+    }
+
     @ExceptionHandler(ServiceUnavailableException.class)
     public ResponseEntity<Object> handleServiceUnavailable(ServiceUnavailableException exception) {
         return new ResponseEntity<>(

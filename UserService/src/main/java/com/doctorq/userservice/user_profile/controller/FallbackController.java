@@ -16,7 +16,7 @@ public class FallbackController {
     }
 
     private <T> ApiResponse<T> success(String message) {
-        return new ApiResponse<T>(
+        return new ApiResponse<>(
                 HttpStatus.SERVICE_UNAVAILABLE.value(),
                 message,
                 null

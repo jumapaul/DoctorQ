@@ -84,7 +84,7 @@ public class UserController {
     }
 
     private <T> ApiResponse<T> response(T data) {
-        return new ApiResponse<T>(
+        return new ApiResponse<>(
                 HttpStatus.OK.value(),
                 "Success",
                 data

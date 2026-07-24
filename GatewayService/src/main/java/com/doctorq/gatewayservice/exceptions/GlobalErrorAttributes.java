@@ -19,14 +19,15 @@ public class GlobalErrorAttributes extends DefaultErrorAttributes {
         Map<String, Object> errorResponse = super.getErrorAttributes(request, options);
 
         HttpStatus status = HttpStatus.valueOf((Integer) errorResponse.get("status"));
+        String Constant = "message";
 
         switch (status) {
-            case UNAUTHORIZED -> errorResponse.put("message", "Invalid token");
-            case BAD_REQUEST -> errorResponse.put("message", "Authorization token not passed");
-            case FORBIDDEN -> errorResponse.put("message", "Forbidden request");
-            case SERVICE_UNAVAILABLE, INTERNAL_SERVER_ERROR -> errorResponse.put("message", "Service not available");
-            case NOT_FOUND -> errorResponse.put("message", "Not found");
-            default -> errorResponse.put("message", "Something went wrong");
+            case UNAUTHORIZED -> errorResponse.put(Constant, "Invalid token");
+            case BAD_REQUEST -> errorResponse.put(Constant, "Authorization token not passed");
+            case FORBIDDEN -> errorResponse.put(Constant, "Forbidden request");
+            case SERVICE_UNAVAILABLE, INTERNAL_SERVER_ERROR -> errorResponse.put(Constant, "Service not available");
+            case NOT_FOUND -> errorResponse.put(Constant, "Not found");
+            default -> errorResponse.put(Constant, "Something went wrong");
         }
 
         return errorResponse;
