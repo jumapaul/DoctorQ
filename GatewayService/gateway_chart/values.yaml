@@ -2,7 +2,7 @@ replicaCount: 1
 image:
   repository: jumapaul/gateway-service
   pullPolicy: IfNotPresent
-  tag: "d017a6d"
+  tag: "4a7c5a4"
 serviceType: NodePort
 servicePort: 80
 targetPort: 8222
