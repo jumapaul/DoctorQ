@@ -3,3 +3,5 @@ spring:
     name: eureka-service
   config:
     import: configserver:${CONFIG_URL}
+server:
+  port: 8761
