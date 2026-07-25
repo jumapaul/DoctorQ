@@ -3,15 +3,6 @@ spring:
     name: config-server
   profiles:
     active: native
-
-  cloud:
-    config:
-      server:
-        jdbc:
-          sql: SELECT config_value FROM config WHERE serviceName=?
-        native:
-          search-locations: classpath:/configurations
-
   datasource:
     url: ${DB_URL}
     username: ${DB_USERNAME}
@@ -28,6 +19,5 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-
 server:
   port: 8000

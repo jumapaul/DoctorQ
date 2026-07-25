@@ -20,11 +20,6 @@ public class ConfigEntity {
 
     public ConfigEntity() {
     }
-
-    public void setServiceName(String serviceName) {
-        this.serviceName = serviceName;
-    }
-
     public String getServiceName() {
         return serviceName;
     }
