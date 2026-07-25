@@ -1,5 +1,5 @@
 apiVersion: v2
-name: gateway_service
+name: gateway-service
 description: A Helm chart for DoctorQ gateway.
 
 type: application
