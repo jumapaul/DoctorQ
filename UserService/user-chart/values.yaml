@@ -2,7 +2,7 @@ replicaCount: 1
 image:
   repository: jumapaul/user-service
   pullPolicy: Always
-  tag: "ddcd31f"
+  tag: "f8664ea"
 serviceType: ClusterIP
 servicePort: 80
 targetPort: 8010
