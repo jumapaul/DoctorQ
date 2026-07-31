@@ -1,0 +1,25 @@
+replicaCount: 1
+image:
+  repository: jumapaul/user-service
+  pullPolicy: Always
+  tag: "6aa775d"
+serviceType: ClusterIP
+servicePort: 80
+targetPort: 8020
+containerPort: 8020
+probes:
+  liveness:
+    path: /actuator/health/liveness
+    port: 8020
+    initialDelaySeconds: 60
+    periodSeconds: 10
+    failureThreshold: 3
+  readiness:
+    path: /actuator/health/readiness
+    port: 8020
+    initialDelaySeconds: 60
+    periodSeconds: 10
+    failureThreshold: 3
+configMap:
+  data:
+    CONFIG_URL: "http://config-service-service:80"

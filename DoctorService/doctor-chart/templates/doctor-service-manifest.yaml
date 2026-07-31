@@ -1,0 +1,9 @@
+{{- include "common-helm-templates.deployment" . }}
+
+---
+
+{{- include "common-helm-templates.service" . }}
+
+---
+
+{{- include "common-helm-templates.config-map" . }}
