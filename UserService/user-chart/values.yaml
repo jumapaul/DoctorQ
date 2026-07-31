@@ -2,7 +2,7 @@ replicaCount: 1
 image:
   repository: jumapaul/user-service
   pullPolicy: Always
-  tag: "bf3edbc"
+  tag: "5cd8877"
 serviceType: ClusterIP
 servicePort: 80
 targetPort: 8010
