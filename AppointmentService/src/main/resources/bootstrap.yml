@@ -3,3 +3,6 @@ spring:
     import: optional:configserver:${CONFIG_URL}
   application:
     name: appointment-service
+app:
+  google:
+    client-secret-path: ${FIREBASE_JSON_PATH}
