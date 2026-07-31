@@ -23,3 +23,7 @@ probes:
 configMap:
   data:
     CONFIG_URL: "http://config-service-service:80"
+secretVolume:
+  name: doctorq-secret-vol
+  mountPath: "/app/doctorq-crds"
+  secretName: user-client-secret
