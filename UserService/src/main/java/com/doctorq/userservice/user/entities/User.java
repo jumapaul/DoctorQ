@@ -15,6 +15,7 @@ import java.time.OffsetDateTime;
 import java.util.Collection;
 
 @Entity(name = "DoctorQUsers")
+@Table(name = "doctorqusers")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
