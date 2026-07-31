@@ -5,6 +5,7 @@ import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
@@ -14,11 +15,14 @@ import java.io.InputStream;
 
 @Configuration
 public class FirebaseConfig {
+    @Value("${app.google.client-secret-path}")
+    private String clientSecretPath;
 
     @Bean
     public FirebaseApp firebaseApp() throws IOException {
         if (FirebaseApp.getApps().isEmpty()) {
-            InputStream serviceAccount = new ClassPathResource("client_secret.json").getInputStream();
+//            InputStream serviceAccount = new ClassPathResource("client_secret.json").getInputStream();
+            InputStream serviceAccount = new ClassPathResource(clientSecretPath).getInputStream();
 
             FirebaseOptions options = FirebaseOptions.builder()
                     .setCredentials(GoogleCredentials.fromStream(serviceAccount))
@@ -33,7 +37,7 @@ public class FirebaseConfig {
 
     @Bean
     public Storage firebaseStorage() throws IOException {
-        InputStream serviceAccount = new ClassPathResource("client_secret.json").getInputStream();
+        InputStream serviceAccount = new ClassPathResource(clientSecretPath).getInputStream();
 
         GoogleCredentials googleCredentials = GoogleCredentials.fromStream(serviceAccount);
 

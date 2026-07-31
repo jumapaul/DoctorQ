@@ -1,5 +1,9 @@
 spring:
   application:
     name: user-service
+
   config:
     import: optional:configserver:${CONFIG_URL}
+app:
+  google:
+    client-secret-path: ${FIREBASE_JSON_PATH}
