@@ -11,6 +11,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @EnableFeignClients
 @EnableCaching
 public class UserServiceApplication {
+//User service app
 	public static void main(String[] args) {
 		SpringApplication.run(UserServiceApplication.class, args);
 	}
