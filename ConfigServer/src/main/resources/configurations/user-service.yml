@@ -10,6 +10,7 @@ spring:
     enabled: true
     locations: classpath:db/migrations
     baselineOnMigrate: true
+    baselineVersion: 1
   security:
     oauth2:
       client:
