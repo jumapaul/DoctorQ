@@ -11,13 +11,13 @@ probes:
   liveness:
     path: /actuator/health/liveness
     port: 8010
-    initialDelaySeconds: 60
+    initialDelaySeconds: 120
     periodSeconds: 10
     failureThreshold: 3
   readiness:
     path: /actuator/health/readiness
     port: 8010
-    initialDelaySeconds: 60
+    initialDelaySeconds: 120
     periodSeconds: 10
     failureThreshold: 3
 configMap:
