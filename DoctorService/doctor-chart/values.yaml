@@ -2,7 +2,7 @@ replicaCount: 1
 image:
   repository: jumapaul/doctor-service
   pullPolicy: Always
-  tag: "e120224"
+  tag: "fc6b8a6"
 serviceType: ClusterIP
 servicePort: 80
 targetPort: 8020
