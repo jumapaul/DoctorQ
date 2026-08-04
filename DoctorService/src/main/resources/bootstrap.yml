@@ -3,3 +3,5 @@ spring:
     name: doctor-service
   config:
     import: optional:configserver:${CONFIG_URL}
+server:
+  port: 8020

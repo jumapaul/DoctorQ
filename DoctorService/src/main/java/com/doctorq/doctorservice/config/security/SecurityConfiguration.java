@@ -1,12 +1,9 @@
 package com.doctorq.doctorservice.config.security;
 
-import com.doctorq.doctorservice.dtos.response.ApiResponse;
 import com.doctorq.doctorservice.exception.UnauthorizedException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -32,7 +29,7 @@ public class SecurityConfiguration {
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/actuator/health", "/actuator/info").permitAll()
+                        .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers("/api/v1/**").authenticated()
                         .anyRequest().authenticated()
                 ).addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
