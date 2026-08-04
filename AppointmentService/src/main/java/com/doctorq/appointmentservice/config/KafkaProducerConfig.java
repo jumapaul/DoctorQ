@@ -1,6 +1,8 @@
 package com.doctorq.appointmentservice.config;
 
 import com.doctorq.appointmentservice.kafka.AppointmentCompletionEvent;
+import org.apache.kafka.clients.admin.AdminClientConfig;
+import org.springframework.kafka.core.KafkaAdmin;
 import org.springframework.kafka.support.serializer.JsonSerializer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
@@ -53,5 +55,17 @@ public class KafkaProducerConfig {
     @Bean
     public KafkaTemplate<String, AppointmentCompletionEvent> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
+    }
+
+    @Bean
+    public KafkaAdmin kafkaAdmin() {
+        Map<String, Object> configs = new HashMap<>();
+        configs.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
+        configs.put("security.protocol", securityProtocol);
+        configs.put("sasl.mechanism", sslMechanism);
+        configs.put("sasl.jaas.config", jaasConfig);
+        configs.put("client.dns.lookup", clientDns);
+        configs.put("session.timeout.ms", sessionTimeout);
+        return new KafkaAdmin(configs);
     }
 }

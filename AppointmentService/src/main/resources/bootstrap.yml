@@ -1,10 +1,10 @@
 spring:
   config:
-    import: optional:configserver:${CONFIG_URL}
+    import: optional:configserver:http://localhost:8000
   application:
     name: appointment-service
 app:
   google:
-    client-secret-path: ${FIREBASE_JSON_PATH}
+    client-secret-path: ./AppointmentService/src/main/resources/client_secret.json
 server:
   port: 8040
