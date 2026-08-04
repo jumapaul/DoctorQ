@@ -2,7 +2,7 @@ replicaCount: 1
 image:
   repository: jumapaul/appointment-service
   pullPolicy: Always
-  tag: "ec448d6"
+  tag: "e3bcd83"
 serviceType: ClusterIP
 servicePort: 80
 targetPort: 8040
