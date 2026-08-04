@@ -71,4 +71,5 @@ public class KafkaProducerConfig {
         configs.put("session.timeout.ms", sessionTimeout);
         return new KafkaAdmin(configs);
     }
+//    redis://default:gilaaaa-gibbon-218283.upstash.io:6379
 }
