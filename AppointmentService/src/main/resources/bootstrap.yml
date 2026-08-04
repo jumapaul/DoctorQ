@@ -6,3 +6,5 @@ spring:
 app:
   google:
     client-secret-path: ${FIREBASE_JSON_PATH}
+server:
+  port: 8040

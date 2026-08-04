@@ -14,8 +14,6 @@ java {
 	}
 }
 
-//		{{/*  Jumah@2028!*/}}
-
 repositories {
 	mavenCentral()
 }

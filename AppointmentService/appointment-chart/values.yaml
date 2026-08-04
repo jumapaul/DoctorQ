@@ -1,6 +1,6 @@
 replicaCount: 1
 image:
-  repository: jumapaul/appointmet-service
+  repository: jumapaul/appointment-service
   pullPolicy: Always
   tag: "9883b4a"
 serviceType: ClusterIP
@@ -23,3 +23,8 @@ probes:
 configMap:
   data:
     CONFIG_URL: "http://config-service-service:80"
+    FIREBASE_JSON_PATH: "/app/doctorq-crds/client_secret.json"
+secretVolume:
+  name: doctorq-secret-vol
+  mountPath: "/app/doctorq-crds"
+  secretName: user-client-secret
