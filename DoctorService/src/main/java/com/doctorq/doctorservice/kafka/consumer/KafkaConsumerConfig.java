@@ -2,6 +2,7 @@ package com.doctorq.doctorservice.kafka.consumer;
 
 import com.doctorq.doctorservice.kafka.event.AppointmentCompletionEvent;
 import com.doctorq.doctorservice.kafka.event.UserToDoctorRequestEvent;
+import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,6 +12,7 @@ import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
+import org.springframework.kafka.core.KafkaAdmin;
 import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 
@@ -114,5 +116,17 @@ public class KafkaConsumerConfig {
         factory.setCommonErrorHandler(new DefaultErrorHandler());
 
         return factory;
+    }
+
+    @Bean
+    public KafkaAdmin kafkaAdmin() {
+        Map<String, Object> configs = new HashMap<>();
+        configs.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServer);
+        configs.put("security.protocol", securityProtocol);
+        configs.put("sasl.mechanism", saslMechanism);
+        configs.put("sasl.jaas.config", jaasConfig);
+        configs.put("client.dns.lookup", dnsLookUp);
+        configs.put("session.timeout.ms", sessionTimeOut);
+        return new KafkaAdmin(configs);
     }
 }
